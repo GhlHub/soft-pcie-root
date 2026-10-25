@@ -1,0 +1,18 @@
+{
+  "writes_by_job_bytes": {
+    "oldcrc": 0,
+    "verify": 268435456,
+    "verify_sector": 33554432,
+    "qd1": 5989466112,
+    "qd8": 7809794048,
+    "read8": 0,
+    "recheck": 0,
+    "profile-qd8-1": 2584739840,
+    "profile-qd8-2": 2589982720,
+    "profile-qd8-3": 2587885568,
+    "profile-qd1-1": 1987051520
+  },
+  "total_written_bytes": 23850909696,
+  "initial_sectors": 0,
+  "final_sectors": 46583808
+}

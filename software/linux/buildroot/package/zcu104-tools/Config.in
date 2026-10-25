@@ -1,0 +1,4 @@
+config BR2_PACKAGE_ZCU104_TOOLS
+ bool "ZCU104 soft PCIe laboratory tools"
+ help
+   Bounded UIO control and configuration-read utility; not a PCI host driver.

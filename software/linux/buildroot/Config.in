@@ -1,0 +1,2 @@
+source "$BR2_EXTERNAL_ZCU104_PATH/package/zcu104-tools/Config.in"
+source "$BR2_EXTERNAL_ZCU104_PATH/../../driver/Config.in"

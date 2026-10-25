@@ -1,0 +1,46 @@
+{
+  "baseline-ack1": {
+    "packets": 984.0,
+    "cycles": 65928.0,
+    "cycles_per_packet": 67.0,
+    "payload_MB_s": 238.80597,
+    "replay_read": 984.0,
+    "replay_offer": 19680.0,
+    "replay_wire": 43296.0,
+    "replay_idle": 1968.0,
+    "serial": 41328.0
+  },
+  "baseline-ack4": {
+    "packets": 984.0,
+    "cycles": 65190.0,
+    "cycles_per_packet": 66.25,
+    "payload_MB_s": 241.509434,
+    "replay_read": 984.0,
+    "replay_offer": 19680.0,
+    "replay_wire": 43296.0,
+    "replay_idle": 1230.0,
+    "serial": 41328.0
+  },
+  "profile-ack1": {
+    "packets": 984.0,
+    "cycles": 54120.0,
+    "cycles_per_packet": 55.0,
+    "payload_MB_s": 290.909091,
+    "replay_read": 984.0,
+    "replay_offer": 19680.0,
+    "replay_wire": 0.0,
+    "replay_idle": 33456.0,
+    "serial": 41328.0
+  },
+  "profile-ack4": {
+    "packets": 984.0,
+    "cycles": 48216.0,
+    "cycles_per_packet": 49.0,
+    "payload_MB_s": 326.530612,
+    "replay_read": 983.0,
+    "replay_offer": 19660.0,
+    "replay_wire": 0.0,
+    "replay_idle": 27573.0,
+    "serial": 41328.0
+  }
+}

@@ -1,0 +1,46 @@
+#!/bin/sh
+# Opt-in NFS server with persistent v4 client recovery and v3 NSM state.
+set -eu
+start() {
+ mkdir -p /run/nfs /var/lib/nfs/nfsdcld /var/lib/nfs/sm /var/lib/nfs/sm.bak /var/lib/nfs/rpc_pipefs /proc/fs/nfsd
+ chmod 700 /var/lib/nfs/nfsdcld
+ mountpoint -q /proc/fs/nfsd || mount -t nfsd nfsd /proc/fs/nfsd
+ mountpoint -q /var/lib/nfs/rpc_pipefs || mount -t rpc_pipefs sunrpc /var/lib/nfs/rpc_pipefs
+ mkdir -p /var/log
+ nfsdcld -F -p /var/lib/nfs/rpc_pipefs -s /var/lib/nfs/nfsdcld >>/var/log/nfsdcld.log 2>&1 &
+ cld_pid=$!
+ echo "$cld_pid" > /run/zcu104-nfsdcld.pid
+ # daemon() returns before the recovery DB/watch is ready. Wait for the
+ # upcall-directory inotify descriptor before starting the kernel server.
+ ready=0; attempt=0
+ while [ "$attempt" -lt 50 ]; do
+  kill -0 "$cld_pid" || { cat /var/log/nfsdcld.log >&2;return 1; }
+  for fd in /proc/"$cld_pid"/fd/*; do
+   if [ "$(readlink "$fd" 2>/dev/null || true)" = 'anon_inode:inotify' ]; then ready=1;break;fi
+  done
+  [ "$ready" = 1 ] && break
+  attempt=$((attempt+1));sleep 0.1
+ done
+ [ "$ready" = 1 ] || { echo 'nfsdcld failed readiness' >&2;kill "$cld_pid";return 1; }
+ rpc.statd -P /var/lib/nfs
+ exportfs -ra
+ rpc.mountd
+ rpc.nfsd "${NR_THREADS:-4}"
+}
+stop() {
+ rpc.nfsd 0
+ exportfs -au
+ killall -q rpc.mountd rpc.statd 2>/dev/null || true
+ if [ -r /run/zcu104-nfsdcld.pid ]; then
+  pid=$(cat /run/zcu104-nfsdcld.pid)
+  if [ "$(cat /proc/"$pid"/comm 2>/dev/null || true)" = nfsdcld ]; then kill "$pid";fi
+  rm -f /run/zcu104-nfsdcld.pid
+ fi
+}
+case "${1:-}" in
+ start) start ;;
+ stop) stop ;;
+ restart) stop; start ;;
+ reload) exportfs -ra ;;
+ *) echo 'Usage: S60nfs start|stop|restart|reload' >&2;exit 2 ;;
+esac

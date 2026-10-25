@@ -1,0 +1,53 @@
+{
+  "qd8_fio_MB_s": [
+    257.649505,
+    258.197858,
+    258.04024
+  ],
+  "qd8_cycle_percent_mean": {
+    "read_active": 93.01833545734574,
+    "slot_empty_wait": 30.012057910362177,
+    "slot_ready": 3.1358658650396354,
+    "tx_stall": 0.0,
+    "tx_dwords": 59.466446224907216,
+    "ar_stall": 0.0,
+    "r_wait": 51.03605060424173,
+    "r_first_wait": 51.03605060424173,
+    "slots_full": 77.52449444037816,
+    "issue_slots_full": 65.38034055295883,
+    "rx_empty": 4.644386497897042,
+    "rx_copy": 1.3536090642535508,
+    "check_fence": 0.16578560662830283,
+    "read_requests": 0.40396548268401405,
+    "drain": 0.4039654570367193,
+    "queued_blocked": 93.99839392768571
+  },
+  "qd8_mean_axi_burst_residence_ns": 258.36412577367,
+  "qd1": {
+    "capture_seconds": 10.3980154,
+    "cycle_percent": {
+      "read_active": 71.24164074617546,
+      "slot_empty_wait": 22.867509505708174,
+      "slot_ready": 2.407484874469411,
+      "tx_stall": 0.0,
+      "tx_dwords": 45.65672060843457,
+      "ar_stall": 0.0,
+      "r_wait": 39.00767002133888,
+      "r_first_wait": 39.00767002133888,
+      "slots_full": 59.38419017921439,
+      "issue_slots_full": 50.0848084529669,
+      "rx_empty": 26.91467935313887,
+      "rx_copy": 1.0910068857947643,
+      "check_fence": 0.12267617914857099,
+      "read_requests": 0.3099257575633135,
+      "drain": 0.3099257575633135,
+      "queued_blocked": 71.93811126688657
+    },
+    "completion_payload_MB_s": 192.1713299251317,
+    "mean_completion_payload_bytes": 63.85795631384296,
+    "mean_read_request_payload_bytes": 496.0448113406612,
+    "mean_axi_burst_residence_ns": 257.50253193128793,
+    "slot_empty_cycles_per_completion": 9.498505991963077,
+    "tx_stall_cycles_per_completion": 0.0
+  }
+}

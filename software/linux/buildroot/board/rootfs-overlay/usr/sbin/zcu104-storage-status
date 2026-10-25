@@ -1,0 +1,12 @@
+#!/bin/sh
+# Read-only inventory: no assembly, mount, filesystem repair or device writes.
+set -eu
+printf '%s\n' '=== Block devices ==='
+lsblk -o NAME,SIZE,TYPE,FSTYPE,UUID,MOUNTPOINTS
+printf '%s\n' '=== MD status ==='
+cat /proc/mdstat
+printf '%s\n' '=== Mounted filesystems ==='
+findmnt
+printf '%s\n' '=== Tool versions ==='
+mdadm --version
+btrfs --version

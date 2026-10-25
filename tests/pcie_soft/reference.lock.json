@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/wyvernSemi/pcievhost",
+  "commit": "b82b2ff3a047f742354c9607dea34b9b97bf108c",
+  "license": "GPL-3.0-or-later",
+  "purpose": "Optional external simulation oracle only; not a synthesized or vendored dependency",
+  "files": {
+    "LICENSE": "589ed823e9a84c56feb95ac58e7cf384626b9cbf4fda2a907bc36e103de1bad2",
+    "src/pcicrc32.c": "cd115d9deda06920a7e0ddd42c7351ac865de75dcfad38a815f7fa7ffc0d6ae6",
+    "verilog/lib/ScrambleCodec.v": "2fb9f66678761ef23f95f429a97cf59f98db39f999d0411dfe97fedd4f8064b8"
+  }
+}

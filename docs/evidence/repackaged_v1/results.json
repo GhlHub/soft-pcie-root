@@ -1,0 +1,98 @@
+{
+  "oldcrc": {
+    "read": {
+      "io_bytes": 268435456,
+      "bw_bytes": 403056240,
+      "runtime": 666
+    },
+    "write": {
+      "io_bytes": 0,
+      "bw_bytes": 0,
+      "runtime": 0
+    }
+  },
+  "verify": {
+    "read": {
+      "io_bytes": 268435456,
+      "bw_bytes": 424739645,
+      "runtime": 632
+    },
+    "write": {
+      "io_bytes": 268435456,
+      "bw_bytes": 250874257,
+      "runtime": 1070
+    }
+  },
+  "verify_sector": {
+    "read": {
+      "io_bytes": 33554432,
+      "bw_bytes": 185383602,
+      "runtime": 181
+    },
+    "write": {
+      "io_bytes": 33554432,
+      "bw_bytes": 99273467,
+      "runtime": 338
+    }
+  },
+  "qd1": {
+    "read": {
+      "io_bytes": 0,
+      "bw_bytes": 0,
+      "runtime": 0
+    },
+    "write": {
+      "io_bytes": 6006243328,
+      "bw_bytes": 200174748,
+      "runtime": 30005
+    }
+  },
+  "qd8": {
+    "read": {
+      "io_bytes": 0,
+      "bw_bytes": 0,
+      "runtime": 0
+    },
+    "write": {
+      "io_bytes": 7800356864,
+      "bw_bytes": 259734844,
+      "runtime": 30032
+    }
+  },
+  "read1": {
+    "read": {
+      "io_bytes": 11377049600,
+      "bw_bytes": 379222345,
+      "runtime": 30001
+    },
+    "write": {
+      "io_bytes": 0,
+      "bw_bytes": 0,
+      "runtime": 0
+    }
+  },
+  "read8": {
+    "read": {
+      "io_bytes": 12857638912,
+      "bw_bytes": 428330965,
+      "runtime": 30018
+    },
+    "write": {
+      "io_bytes": 0,
+      "bw_bytes": 0,
+      "runtime": 0
+    }
+  },
+  "recheck": {
+    "read": {
+      "io_bytes": 268435456,
+      "bw_bytes": 422068327,
+      "runtime": 636
+    },
+    "write": {
+      "io_bytes": 0,
+      "bw_bytes": 0,
+      "runtime": 0
+    }
+  }
+}

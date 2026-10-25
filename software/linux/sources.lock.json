@@ -1,0 +1,30 @@
+{
+  "buildroot": {
+    "version": "2025.02.18",
+    "url": "https://buildroot.org/downloads/buildroot-2025.02.18.tar.xz",
+    "sha256": "e38ad1df6ea0479fff6419a87a64535d02131674d463be154a763ef725b55321"
+  },
+  "board_base": {
+    "path": "configs/zynqmp_zcu104_defconfig",
+    "sha256": "561cda6b636296f5ecd6086e436b0534ec422fe16fa1b5c3bf7dc63db2b124e0",
+    "upstream": "https://github.com/buildroot/buildroot/blob/2025.02.18/configs/zynqmp_zcu104_defconfig"
+  },
+  "boot_sources": {
+    "linux": [
+      "sha256  b726226e8784d92049190f19768d393eccf3ad111c7a2e685bb29cfa1bdf1f70  xlnx_rebase_v6.6_LTS_merge_6.6.70.tar.gz"
+    ],
+    "uboot": [
+      "sha256  f1a86ccdbe60bac89177a24bbfd56fc6e8e67823669f0997de563c3cc0ea4dd1  xlnx_rebase_v2024.01_2024.2.tar.gz"
+    ],
+    "arm-trusted-firmware": [
+      "sha256  a45390c9e1d584a389abd37ee49dce3f8d3b41718b1fd7c977608b5387a38955  xlnx_rebase_v2.10_2024.2.tar.gz"
+    ],
+    "xilinx-embeddedsw": [
+      "# Locally calculated",
+      "sha256  550ba0b206848adb0085bc1ca5a6b6731681335c92912afb4a6a8dbb4c489a0c  xilinx-embeddedsw-xilinx_v2024.2.tar.gz",
+      "",
+      "# Locally calculated",
+      "sha256  12bf8dad928a59644758825758b0c9d42d54478f5b04c8beb714d6f792450849  license.txt"
+    ]
+  }
+}

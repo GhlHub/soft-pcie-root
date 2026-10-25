@@ -1,0 +1,6 @@
+# Provision authorized_keys and persistent per-device host keys before enabling.
+PermitRootLogin prohibit-password
+PasswordAuthentication no
+PermitEmptyPasswords no
+PubkeyAuthentication yes
+Subsystem sftp internal-sftp

@@ -1,0 +1,112 @@
+{
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_crc.sv": {
+    "baseline_sha256": "8ab1505319e965a672deee34eee30ef448f2f626fb22a3eabd060dc44d00b9e5",
+    "release_sha256": "8ab1505319e965a672deee34eee30ef448f2f626fb22a3eabd060dc44d00b9e5",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": {
+    "baseline_sha256": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "release_sha256": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_replay.sv": {
+    "baseline_sha256": "a4874778007c6703589c305a3ba0b63350ef01e97f6866c330a5e5045d0fbdbd",
+    "release_sha256": "a4874778007c6703589c305a3ba0b63350ef01e97f6866c330a5e5045d0fbdbd",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv": {
+    "baseline_sha256": "d2d85117263298325c0d35d94bb2acd0b3113c2ba85f55aedbb54ba689055476",
+    "release_sha256": "d2d85117263298325c0d35d94bb2acd0b3113c2ba85f55aedbb54ba689055476",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv": {
+    "baseline_sha256": "3cc2c166e70487ee11d2e3a6ba5db15aa3b0d3c17fc0061f0d7c8519ee03c9c0",
+    "release_sha256": "3cc2c166e70487ee11d2e3a6ba5db15aa3b0d3c17fc0061f0d7c8519ee03c9c0",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_training.sv": {
+    "baseline_sha256": "a05ba482e5671c328728f30dd3e76834094471927becd10f4687855782665439",
+    "release_sha256": "a05ba482e5671c328728f30dd3e76834094471927becd10f4687855782665439",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ltssm.sv": {
+    "baseline_sha256": "a82d433a6fa2b7e65c0b0a2b173b93e46589f26611f2f1c8b27bf6ad08fd8755",
+    "release_sha256": "a82d433a6fa2b7e65c0b0a2b173b93e46589f26611f2f1c8b27bf6ad08fd8755",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ack_capture.sv": {
+    "baseline_sha256": "5011fa6bbcb3ccf3907f8e02d03afdb2edfb64ebe66a48319b61cd02f503572b",
+    "release_sha256": "5011fa6bbcb3ccf3907f8e02d03afdb2edfb64ebe66a48319b61cd02f503572b",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv": {
+    "baseline_sha256": "d62a68a57a4969eafd02ef00028b35f39112954a094f36e31dfdc9be7b3123da",
+    "release_sha256": "d62a68a57a4969eafd02ef00028b35f39112954a094f36e31dfdc9be7b3123da",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_packet_tx.sv": {
+    "baseline_sha256": "d3c23f729de917bec88fabc832bce8f5905bccb59d71d5e69dd05d732432facf",
+    "release_sha256": "d3c23f729de917bec88fabc832bce8f5905bccb59d71d5e69dd05d732432facf",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_packet_rx.sv": {
+    "baseline_sha256": "674c56e3e745b2dd0ce6cc625b2197b06659ee9c07caa5bac8a7778e34c5ba1b",
+    "release_sha256": "674c56e3e745b2dd0ce6cc625b2197b06659ee9c07caa5bac8a7778e34c5ba1b",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_link.sv": {
+    "baseline_sha256": "42c292718fe837ba02e12ab390aa6d97b4e45a19a02f427c66d4820c82d35d31",
+    "release_sha256": "42c292718fe837ba02e12ab390aa6d97b4e45a19a02f427c66d4820c82d35d31",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv": {
+    "baseline_sha256": "de7dfbc1ea32b766c3c47c579aed71826ce2d4147385b5a0f6f9971ffebc4914",
+    "release_sha256": "de7dfbc1ea32b766c3c47c579aed71826ce2d4147385b5a0f6f9971ffebc4914",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_rate_control.sv": {
+    "baseline_sha256": "49a3ded5e28fb33292831481982d8daa3299baf910097434003c454a2ee92a7c",
+    "release_sha256": "49a3ded5e28fb33292831481982d8daa3299baf910097434003c454a2ee92a7c",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/management/pcie_root_csr.sv": {
+    "baseline_sha256": "184a6a490b4f3bad71618a33f6aa093a99e06cdf6ee23774e74245c6eef9470e",
+    "release_sha256": "184a6a490b4f3bad71618a33f6aa093a99e06cdf6ee23774e74245c6eef9470e",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv": {
+    "baseline_sha256": "337b9749c60c19869a2aadcb7f036c394f1194bff3f559f08e45d7228b71e460",
+    "release_sha256": "337b9749c60c19869a2aadcb7f036c394f1194bff3f559f08e45d7228b71e460",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/host/pcie_host_axi.sv": {
+    "baseline_sha256": "4d00fd266af841aa4d4f297ee47d77d03c153391765eb435b104a3fced83573e",
+    "release_sha256": "4d00fd266af841aa4d4f297ee47d77d03c153391765eb435b104a3fced83573e",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/host/pcie_cmd_mux.sv": {
+    "baseline_sha256": "5c0e4f648e98530d2e2e9045ee658dd6d1fa5eeb0531a4c59da47b4d8f29c5fd",
+    "release_sha256": "5c0e4f648e98530d2e2e9045ee658dd6d1fa5eeb0531a4c59da47b4d8f29c5fd",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv": {
+    "baseline_sha256": "788508fc86701142209bbfa38170fe722c8e704be6f9b6df2f1d53de9f6bcdd9",
+    "release_sha256": "788508fc86701142209bbfa38170fe722c8e704be6f9b6df2f1d53de9f6bcdd9",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/host/pcie_cmd_cdc.sv": {
+    "baseline_sha256": "ecc3425a9aec42e8a09dbbb8d34f1840ae2af1d845466fd2bf9e8ddb7029dae5",
+    "release_sha256": "ecc3425a9aec42e8a09dbbb8d34f1840ae2af1d845466fd2bf9e8ddb7029dae5",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/host/pcie_cmd_fifo.sv": {
+    "baseline_sha256": "17970452ce464bdaa7709bccd5f83d9d6f519bdc6b1ae33ca0a2e64282752de4",
+    "release_sha256": "17970452ce464bdaa7709bccd5f83d9d6f519bdc6b1ae33ca0a2e64282752de4",
+    "normalized_matches_baseline": true
+  },
+  "ip/soft_pcie_root/rtl/management/soft_pcie_root.sv": {
+    "baseline_sha256": "a4fb4b2d56f37259f6a0f90e4bb804bc5aacd49745657cfac7bbe9f8891ca82f",
+    "release_sha256": "34bcfb2e06d2fe21fa8b8bd3300fc9436369b617f01edd177b6e6754a95d2084",
+    "normalized_matches_baseline": true
+  }
+}

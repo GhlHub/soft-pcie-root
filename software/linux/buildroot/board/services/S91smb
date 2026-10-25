@@ -1,0 +1,15 @@
+#!/bin/sh
+# Opt-in SMB2/3 server. Legacy NetBIOS discovery can be configured separately.
+set -eu
+case "${1:-}" in
+ start)
+  [ -f /etc/samba/smb.conf ] || { echo 'Provision /etc/samba/smb.conf first' >&2;exit 1; }
+  mkdir -p /run/samba /run/lock/samba /var/cache/samba /var/log/samba /var/lib/samba/private
+  testparm -s /etc/samba/smb.conf >/dev/null
+  /usr/sbin/smbd -D
+  ;;
+ stop) start-stop-daemon -K -q -x /usr/sbin/smbd || true ;;
+ restart) "$0" stop;"$0" start ;;
+ reload) /usr/bin/smbcontrol all reload-config ;;
+ *) echo 'Usage: S91smb start|stop|restart|reload' >&2;exit 2 ;;
+esac

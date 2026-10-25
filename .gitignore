@@ -1,0 +1,16 @@
+/build/
+/.venv/
+__pycache__/
+.pytest_cache/
+.Xil/
+*.log
+*.jou
+*.pb
+*.wdb
+*.o
+*.ko
+*.mod
+*.mod.c
+.*.cmd
+Module.symvers
+modules.order

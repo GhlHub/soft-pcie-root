@@ -1,0 +1,17 @@
+{
+  "qd1": {
+    "baseline_MB_s": 182.160459,
+    "new_MB_s": 199.569042,
+    "percent_gain": 9.556729871876302
+  },
+  "qd8": {
+    "baseline_MB_s": 232.241045,
+    "new_MB_s": 260.057741,
+    "percent_gain": 11.977510693684668
+  },
+  "read8": {
+    "baseline_MB_s": 427.813419,
+    "new_MB_s": 428.575486,
+    "percent_gain": 0.1781306911272873
+  }
+}

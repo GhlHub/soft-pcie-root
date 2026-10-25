@@ -1,0 +1,61 @@
+{
+  "status": "packaged_example_route_and_reopened_audit_pass",
+  "tool": "Vivado 2026.1",
+  "regressions_passed": 39,
+  "lint_pass": true,
+  "package_integrity_pass": true,
+  "package_relative_files_checked": 45,
+  "rtl_baseline": "txdouble_v1; top identifier renamed only",
+  "hardware_tested": true,
+  "slack": {
+    "wns_ns": 0.225,
+    "whs_ns": 0.011,
+    "wpws_ns": 0.543
+  },
+  "resources": {
+    "CLB LUTs": {
+      "used": "11829",
+      "percent": "5.13"
+    },
+    "CLB Registers": {
+      "used": "11206",
+      "percent": "2.43"
+    },
+    "CLB": {
+      "used": "2675",
+      "percent": "9.29"
+    },
+    "Block RAM Tile": {
+      "used": "2",
+      "percent": "0.64"
+    },
+    "URAM": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "DSPs": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "PLL": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "MMCM": {
+      "used": "1",
+      "percent": "12.50"
+    },
+    "GTHE4_CHANNEL": {
+      "used": "1",
+      "percent": "5.00"
+    }
+  },
+  "bitstream_sha256": "041ca732584c4b522206e731ce2dacceff1ac64718e7ec30e64eb119be9d69da",
+  "source_guard_pass": true,
+  "structural_audit_pass": true,
+  "limitations": [
+    "OP063 not physically tested",
+    "No Linux rebuild in this packaging step; existing driver and firmware sources retained"
+  ],
+  "physical_evidence": "evidence/repackaged_v1/completion.json"
+}

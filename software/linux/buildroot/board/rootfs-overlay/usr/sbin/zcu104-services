@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+case "${1:-}" in
+ nfs) /usr/lib/zcu104/services/S30rpcbind start; /usr/lib/zcu104/services/S60nfs start; exportfs -v ;;
+ ssh) /usr/lib/zcu104/services/S50sshd start ;;
+ smb) /usr/lib/zcu104/services/S91smb start ;;
+ status) ip -brief address; exportfs -v; ps ;;
+ *) echo 'Usage: zcu104-services nfs|ssh|smb|status (provision configuration first)' >&2; exit 2 ;;
+esac

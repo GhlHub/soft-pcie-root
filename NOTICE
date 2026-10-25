@@ -1,0 +1,8 @@
+Soft PCIe Root Port
+Original project RTL, tools and documentation are licensed under Apache-2.0.
+The Linux PCI host driver is separately licensed GPL-2.0-only.
+
+This project includes a ZCU104 example measured with an Opsero OP047 Rev D and
+Samsung 990 EVO SSD. Manufacturer names are used for identification only.
+AMD-generated IP/libraries and fetched upstream software retain their own terms.
+See THIRD_PARTY.md for dependency provenance and exclusions.

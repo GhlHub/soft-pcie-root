@@ -1,0 +1,65 @@
+{
+  "status": "ZCU104_ROUTE_EVIDENCE_VALIDATED",
+  "slack": {
+    "wns_ns": 0.284,
+    "whs_ns": 0.011,
+    "wpws_ns": 0.543
+  },
+  "resources": {
+    "CLB LUTs": {
+      "used": "11881",
+      "percent": "5.16"
+    },
+    "CLB Registers": {
+      "used": "11171",
+      "percent": "2.42"
+    },
+    "CLB": {
+      "used": "2718",
+      "percent": "9.44"
+    },
+    "Block RAM Tile": {
+      "used": "2",
+      "percent": "0.64"
+    },
+    "URAM": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "DSPs": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "PLL": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "MMCM": {
+      "used": "1",
+      "percent": "12.50"
+    },
+    "GTHE4_CHANNEL": {
+      "used": "1",
+      "percent": "5.00"
+    }
+  },
+  "hardware_tested": false,
+  "files": {
+    "timing.rpt": "184988e5b81cf8cba1b7cb00f6284b281ca0fd2073eee517a01134f82ec721b5",
+    "utilization.rpt": "acffba86b74402e05a8f9f9dae1b9c2bda13e9dee76f49631b86ddf5f0582079",
+    "cdc.rpt": "4d71a0b0b5fbe95ff125710f19fd28623e4bdf3cdff25f623125679339bb6183",
+    "drc.rpt": "4173902b593847b691374f97819030e6bc3e72d9aa953641ae685b743480d4ec",
+    "route.rpt": "84cb8efab5fb5264ed8523fe13a0c529d8975667c4ed1b6c150b1fa3d6473ca6",
+    "bus_skew.rpt": "05a758b447e8b23955ea30c0a4dc05fbea829ce9b9c4728f06982be574b01d8b",
+    "check_timing.rpt": "e7e66ff7970b83e6bbf59b0151f8cb4f9671a460975bfcf185b01aaaaba5d68b",
+    "routed.dcp": "7fe744136c5e5da1083e1fc3435893cfb69cc3f6419e5d828e372176d649fc78",
+    "system.bit": "82a97ec256ff77b34bcabea9d991f24b5fd5fbf92c381fe557c44006de64dd68",
+    "system.xsa": "f4e75d25cb45509771d4adf98451c04aa6ad12f8aae8dd050cb3df2b91b47a18"
+  },
+  "limitations": [
+    "No physical board boot or serial PCIe link test",
+    "Experimental direct-endpoint PCI host/DDR bridge; no physical NVMe I/O, hotplug or live recovery qualification",
+    "Review scoped CDC waivers and remaining informational/enable warnings",
+    "Dedicated serial output has no conventional parallel output-delay contract"
+  ]
+}

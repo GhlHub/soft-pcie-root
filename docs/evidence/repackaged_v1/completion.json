@@ -1,0 +1,45 @@
+{
+  "status": "physically_verified",
+  "image": "packaged example_zcu104_v1",
+  "bitstream_sha256": "041ca732584c4b522206e731ce2dacceff1ac64718e7ec30e64eb119be9d69da",
+  "link": "Gen2 x1 (5 GT/s)",
+  "mps_bytes": 128,
+  "mrrs_bytes": 512,
+  "rcb_bytes": 64,
+  "interrupts": "MSI-X",
+  "fio": "3.38 direct/libaio one job, 1 MiB, QD1/QD8, 30 seconds",
+  "write_range": "[8 GiB,12 GiB)",
+  "read_range": "[0,4 GiB)",
+  "integrity": "previous 256 MiB CRC; fresh 256 MiB + 32 MiB sector-offset CRC; post-flush 256 MiB CRC",
+  "fio_jobs_passed": 8,
+  "written_bytes": 14108590080,
+  "write_sectors": 27555840,
+  "metrics": {
+    "write_qd1_MB_s": 200.174748,
+    "write_qd8_MB_s": 259.734844,
+    "read_qd1_MB_s": 379.222345,
+    "read_qd8_MB_s": 428.330965
+  },
+  "comparison": {
+    "write_qd1_MB_s": {
+      "baseline_MB_s": 199.569042,
+      "repackaged_MB_s": 200.174748,
+      "change_percent": 0.30350699383523416
+    },
+    "write_qd8_MB_s": {
+      "baseline_MB_s": 260.057741,
+      "repackaged_MB_s": 259.734844,
+      "change_percent": -0.12416357950291168
+    },
+    "read_qd8_MB_s": {
+      "baseline_MB_s": 428.575486,
+      "repackaged_MB_s": 428.330965,
+      "change_percent": -0.057054359847363845
+    }
+  },
+  "persistent": false,
+  "default_sd": "cmdxpm_v3 unchanged",
+  "limitations": [
+    "No cold power cycle, Gen1 retest, OP063, endurance or power-loss qualification"
+  ]
+}

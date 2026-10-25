@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-24",
+  "status": "implemented_and_physically_verified",
+  "image": "host_hardware_txdouble_v1",
+  "link": "Gen2 x1",
+  "default_boot": "cmdxpm_v3",
+  "persistent_deployment": false,
+  "tests_passed": 39,
+  "source_guard_pass": true,
+  "integrity_pass": true,
+  "wns_ns": 0.284,
+  "whs_ns": 0.011,
+  "wpws_ns": 0.543,
+  "lut": 11881,
+  "ff": 11171,
+  "bram_tiles": 2,
+  "write_qd1_MB_s": 199.569042,
+  "write_qd8_MB_s": 260.057741,
+  "read_qd8_MB_s": 428.575486,
+  "new_image_written_bytes": 23850909696,
+  "host_tx_stall_percent": 0,
+  "ordering": "all-B-before-MSI preserved",
+  "limitations": [
+    "Volatile deployment only; default SD unchanged",
+    "No new physical Gen1/cold-cycle/endurance/power-loss/analog qualification",
+    "No BRAM serializer variant evaluated"
+  ]
+}

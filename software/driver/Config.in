@@ -1,0 +1,6 @@
+config BR2_PACKAGE_ZCU104_PCIE_HOST
+ bool "ZCU104 experimental soft PCIe host driver"
+ depends on BR2_LINUX_KERNEL
+ help
+   GPL-2.0-only platform PCI host driver for this project's soft root port.
+   Loaded only by the explicit PL-first host DT profile, never the baseline DT.

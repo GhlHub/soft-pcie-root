@@ -1,0 +1,24 @@
+{
+  "status": "persistent_default_and_automatic_warm_boot_verified",
+  "image": "repackaged_v1 / example_zcu104_v1",
+  "bitstream_sha256": "041ca732584c4b522206e731ce2dacceff1ac64718e7ec30e64eb119be9d69da",
+  "boot_script_sha256": "c359d3a67d201bedf280cd7622ac379ef36f8164a27b06f59ffb45dcd96c7a2a",
+  "sd_bitstream": "/release-verify-v1/system.bit",
+  "default_script": "/boot.scr",
+  "rollback_script": "/boot.scr.pre-release-v1",
+  "fallback_script": "/cmdxpm-verify-v3/boot.scr",
+  "linux": "linux_gen2_v2 RAM root",
+  "link": "Gen2 x1 (5 GT/s)",
+  "vadj_telemetry_mV": 1801,
+  "crc_read_bytes": 268435456,
+  "crc_pass": true,
+  "ssd_write_sectors": 0,
+  "smart_media_errors": 0,
+  "smart_error_log_entries": 0,
+  "unsafe_shutdowns": 26,
+  "removed_sd_image": "/cplprofile-verify-v1/system.bit (matching local archive retained)",
+  "limitations": [
+    "No new cold power cycle",
+    "Fallback branch preserved but not deliberately exercised"
+  ]
+}

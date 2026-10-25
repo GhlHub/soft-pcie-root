@@ -29,7 +29,7 @@ families is not claimed.
 These measurements describe the complete ZCU104 example at the `txdouble_v1`
 hardware baseline, not standalone-core utilization or guaranteed drive speeds.
 See [validation and exact scope](docs/verification.md).
-The packaged example was also deployed and verified: QD8 read/write **428.33 / 259.73 MB/s**, within0.13% of that baseline; all integrity checks passed.
+The packaged example was also deployed and verified: QD8 read/write **428.33 / 259.73 MB/s**, within 0.13% of that baseline; all integrity checks passed.
 
 **Adapter succession:** Opsero discontinued OP047 and names **OP063 (FPGA Drive
 FMC Gen4)** as its replacement. The example was tested on OP047 Rev D, not OP063.
@@ -77,13 +77,13 @@ and [ZCU104 setup](examples/zcu104/README.md). These commands do not program a b
 
 ## Scope and limitations
 
-One direct endpoint, function0 only; up to16 MiB of endpoint BAR space; noncoherent
-DMA to lower2 GiB DDR in the example;32 MSI/MSI-X vectors. The DDR master is64-bit
-AXI at125MHz with two outstanding bursts; the ZCU104 interconnect converts to
-128-bit PS HP0. Read completion storage is128bytes; buffering remains a future
+One direct endpoint, function 0 only; up to 16 MiB of endpoint BAR space; noncoherent
+DMA to lower 2 GiB DDR in the example; 32 MSI/MSI-X vectors. The DDR master is 64-bit
+AXI at 125 MHz with two outstanding bursts; the ZCU104 interconnect converts to
+128-bit PS HP0. Read completion storage is 128 bytes; buffering remains a future
 performance research area.
 
-No PCIe compliance certification, switch topology, Type1 routing, multifunction,
+No PCIe compliance certification, switch topology, Type 1 routing, multifunction,
 INTx, hotplug, ASPM/AER or safe live PL replacement. Accepted AXI requests must
 finish; local reset cannot cancel them. Use a disposable, unmounted SSD for
 bring-up. See [integration and reset contract](docs/ip-guide.md),

@@ -27,34 +27,34 @@ logic implements framing, scrambling, CRC, flow control, ACK/NAK/replay, trainin
 and the direct-endpoint requester. It is a root-port implementation with a limited
 host integration, not a general switch fabric or a hardware NVMe controller.
 
-MPS128, RCB64 read completions, reads up to4KiB with64-bit address/range and4KiB
-boundary checks. Requests below4GiB use3DW headers. Relaxed ordering and no-snoop
+MPS128, RCB64 read completions, reads up to 4 KiB with 64-bit address/range and 4 KiB
+boundary checks. Requests below 4 GiB use 3 DW headers. Relaxed ordering and no-snoop
 are disabled by the driver. Packet validation completes before DDR effects.
 
-Two256-byte serializer banks overlap collection/LCRC with wire transmission.
+Two 256-byte serializer banks overlap collection/LCRC with wire transmission.
 Two original packets can be copied ahead, but sent ownership advances only at
 final wire completion. ACK/replay transitions wait for drain; replay stays
 serialized. CPU command completion uses the wire packet's identity. The replay
-store retains8x64DWORD (2KiB); shared link RX storage is4KiB. Advertised posted
-credits are4headers/32data units (512bytes), nonposted2headers/16data units.
+store retains 8 x 64 DWORD (2 KiB); shared link RX storage is 4 KiB. Advertised posted
+credits are 4 headers/32 data units (512 bytes), nonposted 2 headers/16 data units.
 These capacities are conservative and relatively small.
 
-Four validated pending request slots hold4x36DWORD (576bytes), behind one active
-ordered request. The DDR bridge has two outstanding same-ID AXI bursts, a128-byte
-write staging buffer, and two64-byte completion slots. It does not concurrently
+Four validated pending request slots hold 4 x 36 DWORD (576 bytes), behind one active
+ordered request. The DDR bridge has two outstanding same-ID AXI bursts, a 128-byte
+write staging buffer, and two 64-byte completion slots. It does not concurrently
 execute multiple endpoint read tags. CPU BAR/config operations remain single-tag.
 
 ## AXI, memory and ordering
 
-The fixed integration supports one direct endpoint at bus1/device0/function0;
-root requester/completer ID00:00.0. All assigned BARs fit a16MiB aperture. This
+The fixed integration supports one direct endpoint at bus 1/device 0/function 0;
+root requester/completer ID 00:00.0. All assigned BARs fit a 16 MiB aperture. This
 release retains the verified address constants; changing the base map requires
 coordinated RTL, driver and device-tree changes.
 
-`M_DDR` is64-bit/125MHz AXI4 with two outstanding reads/writes, max8-beat bursts.
-The example converts it to128-bit PS HP0. DMA is noncoherent; Linux PCI DMA APIs
+`M_DDR` is 64-bit/125 MHz AXI4 with two outstanding reads/writes, max 8-beat bursts.
+The example converts it to 128-bit PS HP0. DMA is noncoherent; Linux PCI DMA APIs
 perform cache maintenance. Do not add `dma-coherent` or unrelated SMMU bindings.
-The lower2GiB range guard is not an IOMMU or a security boundary. There is no
+The lower 2 GiB range guard is not an IOMMU or a security boundary. There is no
 private memory reservation and no PL-attached DDR dependency in this example.
 
 **All earlier accepted write responses, and held AW offers, fence MSI delivery,
@@ -64,14 +64,14 @@ lanes are preserved. The Linux host driver pins itself after successful probe.
 
 ## Clocks, reset and constraints
 
-- Management `aclk`:50MHz, independent of GTH, keeps SRP1 accessible.
-- Host `host_clk_i` / `core_clk_o`:125MHz, stable during link rate changes.
-- PCIe link:125MHz at Gen1,250MHz at Gen2; time at the fastest4ns period.
-- Reference:100MHz differential, supplied to GTH and SSD from the adapter.
+- Management `aclk`: 50 MHz, independent of GTH, keeps SRP1 accessible.
+- Host `host_clk_i` / `core_clk_o`: 125 MHz, stable during link rate changes.
+- PCIe link: 125 MHz at Gen1, 250 MHz at Gen2; time at the fastest 4 ns period.
+- Reference: 100 MHz differential, supplied to GTH and SSD from the adapter.
 
 Global reset clears ownership with local synchronized release. Software PERST
 must not clear mailbox/FIFO ownership or replay an old command. PERST_A is a
-registered active-high FPGA output, held100ms after enable at50MHz. The adapter
+registered active-high FPGA output, held 100 ms after enable at 50 MHz. The adapter
 inverts it to SSD PERST#. Packet RAM is unreset; state establishes validity.
 
 No AXI watchdog can safely cancel an accepted memory transaction. No local reset,
@@ -88,12 +88,12 @@ re-establish those checks; do not downgrade DRCs or add blanket false paths.
 
 ## Interrupts and errors
 
-The core intercepts MSI/MSI-X writes to0xFEE00000 before DDR, with32 vectors.
-`irq_o` is level-high; the ZCU104 example uses PL IRQ0/GIC SPI89 (hwirq121).
+The core intercepts MSI/MSI-X writes to 0xFEE00000 before DDR, with 32 vectors.
+`irq_o` is level-high; the ZCU104 example uses PL IRQ0/GIC SPI89 (hwirq 121).
 BAR failures return all-ones reads or retire writes instead of injecting ARM
-external aborts. A500ms PIO timeout quarantines and drains late ownership.
+external aborts. A 500 ms PIO timeout quarantines and drains late ownership.
 Only one driver may own the registers: never use UIO or pcie-rootctl concurrently
 with the bound Linux host driver.
 
-Unsupported: Type1 routing, multifunction/switch topology, INTx, hotplug, ASPM,
+Unsupported: Type 1 routing, multifunction/switch topology, INTx, hotplug, ASPM,
 AER, arbitrary endpoint compatibility and PCIe compliance certification.

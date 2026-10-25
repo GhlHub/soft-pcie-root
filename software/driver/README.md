@@ -1,11 +1,11 @@
 # Linux PCI host driver
 
 `zcu104-soft-pcie.c` is GPL-2.0-only; retain its SPDX identifier and COPYING.
-The Buildroot example builds it against Linux6.6.70. Device tree compatible:
+The Buildroot example builds it against Linux 6.6.70. Device tree compatible:
 `ngt,zcu104-soft-pcie-1.0`. The legacy name is retained to preserve the tested ABI.
 
-The driver exposes one direct PCI endpoint at bus1/device0/function0, programs
-BARs within16MiB, constrains MPS128 and relaxed/no-snoop policy, and implements32
+The driver exposes one direct PCI endpoint at bus 1/device 0/function 0, programs
+BARs within 16 MiB, constrains MPS128 and relaxed/no-snoop policy, and implements 32
 MSI/MSI-X vectors. Linux's standard NVMe driver enumerates and operates the SSD.
 DMA uses Linux cache-maintenance APIs for the noncoherent HP0 path.
 

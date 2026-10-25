@@ -53,7 +53,7 @@ The exact packaged bitstream was subsequently deployed after clean Linux reboot
 and CRC-checked DDR staging. SHA-256:
 `041ca732584c4b522206e731ce2dacceff1ac64718e7ec30e64eb119be9d69da`.
 Same ZCU104/OP047 Rev D/Samsung SSD and Linux/driver as above; Gen2 x1,
-MPS128/MRRS512/RCB64/MSI-X. U-Boot VADJ telemetry was1.801V.
+MPS128/MRRS512/RCB64/MSI-X. U-Boot VADJ telemetry was 1.801 V.
 
 | Test | Packaged example | Difference from txdouble_v1 |
 | --- | ---: | ---: |
@@ -62,17 +62,17 @@ MPS128/MRRS512/RCB64/MSI-X. U-Boot VADJ telemetry was1.801V.
 | Write QD1 | 200.174748 MB/s | +0.304% |
 | Write QD8 | 259.734844 MB/s | -0.124% |
 
-Same fio3.38, one job, direct/libaio,1MiB,30s and benchmark ranges as above.
-All eight I/O/CRC jobs passed, including previous256MiB CRC, fresh288MiB CRC,
-and post-flush256MiB CRC.14,108,590,080written bytes exactly match block-sector
-accounting. Final SMART media/error-log and critical warnings0;45C; unsafe
+Same fio 3.38, one job, direct/libaio, 1 MiB, 30 s and benchmark ranges as above.
+All eight I/O/CRC jobs passed, including previous 256 MiB CRC, fresh 288 MiB CRC,
+and post-flush 256 MiB CRC. 14,108,590,080 written bytes exactly match block-sector
+accounting. Final SMART media/error-log and critical warnings 0; 45 C; unsafe
 shutdown count unchanged. Link/DDR healthy; MSI-X delivered; SSD unmounted.
 Performance is essentially unchanged in these short runs, not a statistical
 or endurance qualification. Existing all-B-before-MSI logic is unchanged.
 
 [Physical evidence and exact parameters](evidence/repackaged_v1/completion.json).
 The image was initially deployed in volatile configuration. It subsequently
-became the SD default and passed uninterrupted warm boot plus256MiB read-only
+became the SD default and passed uninterrupted warm boot plus 256 MiB read-only
 CRC verification. [Default-boot evidence](evidence/repackaged_v1/default-boot.json).
 The prior boot script and cmdxpm image remain available for rollback. No OP063, Gen1 retest, cold power cycle or power-loss test was performed.
 

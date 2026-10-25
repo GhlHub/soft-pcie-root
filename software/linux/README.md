@@ -1,6 +1,6 @@
 # Reproducible ZCU104 Linux example
 
-Pinned Buildroot2025.02.18 builds AMD Linux6.6.70 and the AMD2024.2 boot chain
+Pinned Buildroot 2025.02.18 builds AMD Linux 6.6.70 and the AMD 2024.2 boot chain
 (SPL, PMU firmware, TF-A, full U-Boot). Exact upstream hashes are in
 `sources.lock.json`. The custom PCI host driver is built as a kernel module and
 uses the standard Linux PCI/NVMe and DMA APIs. The SSD remains a normal Linux
@@ -20,7 +20,7 @@ make soft-profile HARDWARE_OUTPUT=build/zcu104_v1 PROFILE_OUTPUT=build/profile_v
 The baseline SD image omits the PL host node. The optional profile adds a PL-first
 boot script, host DTB, matching bitstream and identities. The script expects its
 files at the SD boot partition root and the existing baseline ext4 rootfs
-PARTUUID1045a7a0-02. The reported lab benchmarks instead used the same kernel with
+PARTUUID 1045a7a0-02. The reported lab benchmarks instead used the same kernel with
 a RAM rootfs. Review the generated script before manually selecting it in U-Boot;
 packaging never writes SD media or programs hardware.
 
@@ -35,7 +35,7 @@ against source. After modifying the driver, run the Buildroot
 Full U-Boot calls the local initializer before boot commands. It operates only
 on the ZCU104 Rev C DT, refuses changes if PL is configured/unknown, checks FMC
 presence, validates the card FRU checksums and exact OP047 identity, then checks
-that the advertised VADJ range allows1.8V. It programs only IRPS5401 page3/SW-D
+that the advertised VADJ range allows 1.8 V. It programs only IRPS5401 page 3/SW-D
 with readback and bounded telemetry checks; successful boot sets
 `fmc_vadj_ready=1`. This flag does not replace a physical voltage measurement.
 The supplied boot profile refuses PL loading without the flag. OP063 is not yet

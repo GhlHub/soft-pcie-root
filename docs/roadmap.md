@@ -15,5 +15,5 @@ measurements:
 - Broader endpoint/device coverage, long-duration and cold-cycle qualification.
 
 The measured baseline has zero TX backpressure at the host completion interface,
-but approximately30% of host cycles wait for completion-slot data. That supports
+but approximately 30% of host cycles wait for completion-slot data. That supports
 further DDR-prefetch investigation; it does not prove a particular future speedup.

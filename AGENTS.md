@@ -21,7 +21,7 @@ writes and publishing require user instructions. Do not infer access to a board
 or a repository account from the existence of this example. No automatic SSD
 formatting or service provisioning. See Makefile for reproducible commands.
 
-Packaged example_zcu104_v1 subsequently passed physical Gen2x1 I/O/CRC tests.
+Packaged example_zcu104_v1 subsequently passed physical Gen2 x1 I/O/CRC tests.
 See docs/verification.md and docs/evidence/repackaged_v1/completion.json.
-The image subsequently became the SD default; automatic warm boot and256MiB
+The image subsequently became the SD default; automatic warm boot and 256 MiB
 read-only CRC passed. See the default-boot.json evidence beside completion.json.

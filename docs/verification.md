@@ -1,5 +1,48 @@
 # Verification and release scope
 
+## Verified banked-payload revision
+
+The DDR bridge now uses alternating payload RAM banks with ownership transfer
+instead of a parallel packet-to-writer copy. The pending request queue and read
+completion storage retain their existing organization. A fresh packaged ZCU104
+build passed full synthesis, placement, routing and reopened structural audit
+with Vivado 2026.1. The whole example uses 10,864 LUTs, 9,294 FFs, 445 control sets
+and two BRAM tiles. Setup/hold/pulse-width slack is +0.089/+0.010/+0.543 ns.
+DRC, scoped CDC, bus-skew, timing coverage and source-manifest checks passed.
+The regression suite passed 40 tests and lint/XPM elaboration passed.
+
+[Banked-payload implementation evidence](evidence/ddr_banked_v1/implementation.json)
+records the exact sources and generated-artifact hashes. The same image then
+passed a volatile boot and eight physical NVMe I/O/CRC tests on ZCU104 with
+OP047 Rev D and a Samsung 990 EVO 1 TB at Gen2 x1 using MSI-X. Read QD1/QD8
+measured 380.80/428.65 MB/s; write QD1/QD8 measured 200.24/259.17 MB/s. All four
+results are within 0.42% of the prior packaged image in these 30-second runs.
+Previous-pattern, fresh 256 MiB, 32 MiB sector-offset and post-flush CRC checks
+passed. The 14,093,910,016 written bytes exactly match block-sector accounting;
+SMART media errors and error-log entries remain zero, with no increase in unsafe
+shutdowns. See [physical test evidence](evidence/ddr_banked_v1/completion.json).
+
+The banked image is now the SD default. Uninterrupted warm boot, SD hash
+readback and a 256 MiB read-only CRC check passed. Obsolete FPGA images, rollback
+scripts and the unused legacy kernel/device tree were removed from the SD boot
+partition. See [default-boot evidence](evidence/ddr_banked_v1/default-boot.json).
+The boot configuration subsequently switched to a persistent read/write ext4
+SD root, expanded to the remaining card capacity. Two automatic boots, file
+persistence across reboot and a 256 MiB read-only NVMe CRC passed; see
+[SD-root evidence](evidence/ddr_banked_v1/sd-root.json).
+Fixed Linux MAC configuration also passed reboot verification; see
+[MAC evidence](evidence/ddr_banked_v1/fixed-mac.json). Sequential SD file I/O
+measured 23.81 MB/s read and 10.53 MB/s write; see
+[SD performance evidence](evidence/ddr_banked_v1/sd-performance.json).
+No cold-cycle, Gen1, endurance, power-loss or live recovery qualification was
+added. The baseline measurements below remain historical evidence for their
+named images.
+
+The frozen `docs/baseline-rtl.json` remains historical evidence.
+[rtl-updates.json](rtl-updates.json) records the DDR bridge change separately,
+linking its exact source hash to the routed image and physical test evidence.
+`make release-check` verifies this update and all unchanged baseline RTL.
+
 ## Physically verified baseline
 
 The `txdouble_v1` design was exercised on a ZCU104 with OP047 Rev D, SSD1 and a
@@ -33,10 +76,12 @@ The laboratory deployment was volatile; the prior SD default remained unchanged.
 
 ## Public IP refactor
 
-All protocol, DMA, CSR and PHY RTL is preserved from the accepted baseline.
+At the initial public refactor, all protocol, DMA, CSR and PHY RTL was preserved
+from the accepted baseline.
 Only the board-named top module identifier changed to `soft_pcie_root`.
 [baseline-rtl.json](baseline-rtl.json) records original and release hashes;
-`make release-check` verifies the rename-normalized contents and RTL inventory.
+`make release-check` checks the rename-normalized contents and RTL inventory
+against that frozen baseline.
 [source-origin.json](source-origin.json) records imported source provenance.
 
 The public example instantiates the packaged Vivado IP rather than a module
@@ -74,7 +119,7 @@ or endurance qualification. Existing all-B-before-MSI logic is unchanged.
 The image was initially deployed in volatile configuration. It subsequently
 became the SD default and passed uninterrupted warm boot plus 256 MiB read-only
 CRC verification. [Default-boot evidence](evidence/repackaged_v1/default-boot.json).
-The prior boot script and cmdxpm image remain available for rollback. No OP063, Gen1 retest, cold power cycle or power-loss test was performed.
+Those historical rollback files were later removed when the banked image became the SD default. No OP063, Gen1 retest, cold power cycle or power-loss test was performed.
 
 ## Limits and reproducing measurements
 

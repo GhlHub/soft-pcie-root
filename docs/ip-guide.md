@@ -40,8 +40,13 @@ credits are 4 headers/32 data units (512 bytes), nonposted 2 headers/16 data uni
 These capacities are conservative and relatively small.
 
 Four validated pending request slots hold 4 x 36 DWORD (576 bytes), behind one active
-ordered request. The DDR bridge has two outstanding same-ID AXI bursts, a 128-byte
-write staging buffer, and two 64-byte completion slots. It does not concurrently
+ordered request. The DDR bridge has two outstanding same-ID AXI bursts and two
+64-byte completion slots. Write preparation and execution use alternating payload
+RAM banks: validation transfers bank ownership without copying the payload.
+Each bank holds up to 17 aligned 64-bit beats (including a partial edge beat),
+with 32 beat positions reserved for simple addressing. The writer retains its
+bank through the final W handshake; B-response ownership persists separately.
+Control resets are synchronous and payload RAM is unreset. It does not concurrently
 execute multiple endpoint read tags. CPU BAR/config operations remain single-tag.
 
 ## AXI, memory and ordering

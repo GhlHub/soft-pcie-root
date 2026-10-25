@@ -1,0 +1,20 @@
+{
+  "test": "SD ext4 sequential file I/O",
+  "bytes_per_job": 1073741824,
+  "block_bytes": 1048576,
+  "queue_depth": 1,
+  "direct_io": true,
+  "write_end_fsync": true,
+  "temporary_file_removed": true,
+  "read_MB_s": 23.814887,
+  "read_seconds": 45.087,
+  "write_MB_s": 10.529771,
+  "write_seconds": 101.972,
+  "card": "16 GB SDHC, SC16G",
+  "bus_width_bits": 4,
+  "clock_hz": 50000000,
+  "signaling_volts": 3.3,
+  "bus_mode": "SD High Speed",
+  "theoretical_bus_MB_s": 25,
+  "scope": "Sequential temporary-file I/O on the mounted ext4 root; not a random-I/O, endurance or speed-class certification"
+}

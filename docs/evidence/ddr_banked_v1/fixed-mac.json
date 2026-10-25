@@ -1,0 +1,8 @@
+{
+  "status": "fixed_linux_mac_verified_after_reboot",
+  "mac": "02:00:00:10:04:00",
+  "configuration": "/etc/network/interfaces pre-up ip link set",
+  "dhcp": true,
+  "eeprom_modified": false,
+  "source_sha256": "2e2c610e4a455ed3b4d18425dc867391389f2a700d106d47389fa5cf902dc769"
+}

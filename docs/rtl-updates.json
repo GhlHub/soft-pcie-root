@@ -1,0 +1,9 @@
+{
+  "ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv": {
+    "previous_release_sha256": "337b9749c60c19869a2aadcb7f036c394f1194bff3f559f08e45d7228b71e460",
+    "release_sha256": "a7f5e617296289b9bc9f62ee94e879210df7288fdc6022f5380881df0f4f81b4",
+    "implementation": "docs/evidence/ddr_banked_v1/implementation.json",
+    "completion": "docs/evidence/ddr_banked_v1/completion.json",
+    "change": "Alternating payload RAM banks with ownership transfer"
+  }
+}

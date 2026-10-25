@@ -1,0 +1,10 @@
+# ZCU104 soft PCIe example: persistent board-specific Ethernet identity.
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+  pre-up /etc/network/nfs_check
+  pre-up ip link set dev eth0 address 02:00:00:10:04:00
+  wait-delay 15
+  hostname $(hostname)

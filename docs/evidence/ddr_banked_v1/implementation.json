@@ -1,0 +1,112 @@
+{
+  "status": "banked_payload_route_and_reopened_audit_pass",
+  "slack": {
+    "wns_ns": 0.089,
+    "whs_ns": 0.01,
+    "wpws_ns": 0.543
+  },
+  "resources": {
+    "CLB LUTs": {
+      "used": "10864",
+      "percent": "4.72"
+    },
+    "CLB Registers": {
+      "used": "9294",
+      "percent": "2.02"
+    },
+    "CLB": {
+      "used": "2488",
+      "percent": "8.64"
+    },
+    "Block RAM Tile": {
+      "used": "2",
+      "percent": "0.64"
+    },
+    "URAM": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "DSPs": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "PLL": {
+      "used": "0",
+      "percent": "0.00"
+    },
+    "MMCM": {
+      "used": "1",
+      "percent": "12.50"
+    },
+    "GTHE4_CHANNEL": {
+      "used": "1",
+      "percent": "5.00"
+    }
+  },
+  "hardware_tested": true,
+  "files": {
+    "timing.rpt": "a042e38a684cd72fbac53e8d26b42861f2ebee6ee85804b5d4b91edd86bc9703",
+    "utilization.rpt": "009f27a49ec93a1e2b9d4822eaff87de93273def6f29187793267990a5a5b658",
+    "cdc.rpt": "e2e3ecceccec46b756fc37330bea9cdeaa7bac45f637031f7d4f65c92b1395b2",
+    "drc.rpt": "47d10ae64a05cc363aead799886add99f7e37b641576186e58ab510ef4f6899e",
+    "route.rpt": "68a3f9813c7072332f682d8bb5209110cbe86e569a035f22385dc20226a94b53",
+    "bus_skew.rpt": "ec72740af8bf82a6b7a414b793e06b66905b6cad229f86f7a8337190942203c8",
+    "check_timing.rpt": "6a42381306ab17864dbd3b6c7b7016c52bd10e146290b6d8fb7a378be4f1802e",
+    "routed.dcp": "9ed15641b587e9c2a74a21fbf171dea86afa9ec79f1686791848eb6c4f648a83",
+    "system.bit": "d0e4ed9d19ab8af461ef4edc24b25322f40446544aba50c72e63a3a4ed0f2f66",
+    "system.xsa": "bf3f272be8ab6e1aa7bc27f2873354f3511816b3c463452459c894659ddaa406"
+  },
+  "limitations": [
+    "Physical Gen2 x1 I/O/CRC scope and remaining limitations are recorded in completion.json",
+    "Review scoped CDC waivers and remaining informational/enable warnings",
+    "Dedicated serial output has no conventional parallel output-delay contract"
+  ],
+  "tool": "Vivado 2026.1",
+  "part": "xczu7ev-ffvc1156-2-e",
+  "package_integrity_pass": true,
+  "packaged_rtl_byte_comparison_pass": true,
+  "source_guard_pass": true,
+  "structural_audit_pass": true,
+  "unique_control_sets": 445,
+  "regressions_passed": 40,
+  "lint_pass": true,
+  "sources": {
+    "ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv": "788508fc86701142209bbfa38170fe722c8e704be6f9b6df2f1d53de9f6bcdd9",
+    "ip/soft_pcie_root/rtl/host/pcie_cmd_cdc.sv": "ecc3425a9aec42e8a09dbbb8d34f1840ae2af1d845466fd2bf9e8ddb7029dae5",
+    "ip/soft_pcie_root/rtl/host/pcie_cmd_fifo.sv": "17970452ce464bdaa7709bccd5f83d9d6f519bdc6b1ae33ca0a2e64282752de4",
+    "ip/soft_pcie_root/rtl/host/pcie_cmd_mux.sv": "5c0e4f648e98530d2e2e9045ee658dd6d1fa5eeb0531a4c59da47b4d8f29c5fd",
+    "ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv": "a7f5e617296289b9bc9f62ee94e879210df7288fdc6022f5380881df0f4f81b4",
+    "ip/soft_pcie_root/rtl/host/pcie_host_axi.sv": "4d00fd266af841aa4d4f297ee47d77d03c153391765eb435b104a3fced83573e",
+    "ip/soft_pcie_root/rtl/management/pcie_root_csr.sv": "184a6a490b4f3bad71618a33f6aa093a99e06cdf6ee23774e74245c6eef9470e",
+    "ip/soft_pcie_root/rtl/management/soft_pcie_root.sv": "34bcfb2e06d2fe21fa8b8bd3300fc9436369b617f01edd177b6e6754a95d2084",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ack_capture.sv": "5011fa6bbcb3ccf3907f8e02d03afdb2edfb64ebe66a48319b61cd02f503572b",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_crc.sv": "8ab1505319e965a672deee34eee30ef448f2f626fb22a3eabd060dc44d00b9e5",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv": "d2d85117263298325c0d35d94bb2acd0b3113c2ba85f55aedbb54ba689055476",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv": "d62a68a57a4969eafd02ef00028b35f39112954a094f36e31dfdc9be7b3123da",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_link.sv": "42c292718fe837ba02e12ab390aa6d97b4e45a19a02f427c66d4820c82d35d31",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ltssm.sv": "a82d433a6fa2b7e65c0b0a2b173b93e46589f26611f2f1c8b27bf6ad08fd8755",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_packet_rx.sv": "674c56e3e745b2dd0ce6cc625b2197b06659ee9c07caa5bac8a7778e34c5ba1b",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_packet_tx.sv": "d3c23f729de917bec88fabc832bce8f5905bccb59d71d5e69dd05d732432facf",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_rate_control.sv": "49a3ded5e28fb33292831481982d8daa3299baf910097434003c454a2ee92a7c",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_replay.sv": "a4874778007c6703589c305a3ba0b63350ef01e97f6866c330a5e5045d0fbdbd",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv": "3cc2c166e70487ee11d2e3a6ba5db15aa3b0d3c17fc0061f0d7c8519ee03c9c0",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv": "de7dfbc1ea32b766c3c47c579aed71826ce2d4147385b5a0f6f9971ffebc4914",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_training.sv": "a05ba482e5671c328728f30dd3e76834094471927becd10f4687855782665439",
+    "ip/soft_pcie_root/create_gt.tcl": "c5cbf21a7fc9b5f65e4394c5abf659051f1656dd360849df3f2b7303f6e0e73a",
+    "ip/soft_pcie_root/package.tcl": "d73646b85d22fb96c87ec068c248b812009942f9015fe0858096259cd1f1995d",
+    "examples/zcu104/audit.tcl": "85fd05cd679a269a9206b804e9613d25777a0c611463fb69b3121c8f0c310988",
+    "examples/zcu104/build.tcl": "213843fccf1172d9dc22df8c36eb47a6638b0c6e459c00bc1e1eb7791f1206cc",
+    "examples/zcu104/check_structure.tcl": "fda6e92a9809e99420d4a7e95f90e2dfeeccdf52a20650c5f62ace54193dc322",
+    "examples/zcu104/constraints/zcu104_cdc.tcl": "f3fb0227a184f37f6bce6c5603c416622c5f3fbe2cb0de1c0c33e74e36b7ca87",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2",
+    "scripts/host_sources.py": "5caa3109922173ed2bc5a5a3fde5a2a3ec2547a7104aeb2b5db89a41207e8eeb"
+  },
+  "ddr_bridge_resources": {
+    "luts": 2787,
+    "flip_flops": 1523,
+    "lutram_luts": 214,
+    "bram_tiles": 0
+  },
+  "hardware_test_evidence": "completion.json"
+}

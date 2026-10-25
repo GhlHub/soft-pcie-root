@@ -30,13 +30,17 @@ module pcie_ddr_bridge(
  localparam [1:0] W_IDLE=0,W_ADDR=1,W_DATA=2;
  reg [3:0] state_q;
  // No reset on packet storage. State/counts alone establish validity.
- reg [31:0] packet_q[0:35],read_q[0:31];
+ reg [31:0] packet_q[0:3],read_q[0:31];
+ reg [31:0] first_payload_q;
  reg [5:0] count_q,write_index_q,tx_index_q;
  reg overflow_q,lost_q;
- // Independent execution buffer: preparation may overwrite packet_q only
- // after the validated write payload/metadata have transferred here. The
- // buffer is owned through WLAST; B ownership remains in write_out_q.
- reg [31:0] write_data_q[0:31];
+ // Preparation and writer own different banks. Payload is stored in its
+ // final AXI lane; a 32-DWORD write at offset four needs 17 beat positions.
+ // Pad each bank to 32 positions for simple addressing. RAM stays unreset.
+ (* ram_style="distributed" *) reg [31:0] payload_low_q[0:63],payload_high_q[0:63];
+ reg prepare_bank_q,write_bank_q;
+ reg [63:0] write_payload_q;
+ reg write_valid_q,write_last_q;
  reg [1:0] write_state_q;
  reg [31:2] write_address_q;
  reg [5:0] write_length_q;
@@ -94,7 +98,7 @@ module pcie_ddr_bridge(
  wire [5:0] header_dw=four?6'd4:6'd3;
  wire shape_bad=overflow_q || (write_req?({5'b0,count_q}!=({5'b0,header_dw}+length_dw)):count_q!=header_dw);
  wire msi_address=addr==64'hfee00000;
- wire [31:0] msi_data=four?packet_q[4]:packet_q[3];
+ wire [31:0] msi_data=first_payload_q;
  wire check_ready=!link_active_i||(!write_busy&&
      (write_out_q==0||(memory_req&&write_req&&!msi_address&&write_out_q<2)));
  wire write_launch=state_q==CHECK&&check_ready&&link_active_i&&
@@ -192,30 +196,44 @@ module pcie_ddr_bridge(
  // Align DDR bursts to eight bytes, masking unused write lanes. Validation
  // precedes rounding, so aligned reads stay inside DDR and the same 4KiB page.
  wire [6:0] write_beats=({1'b0,write_length_q}+{6'b0,write_address_q[2]}+7'd1)>>1;
+ // One elastic synchronous-read stage sustains one beat per cycle and
+ // holds all W-channel signals while stalled. Fetch starts during AW offer.
+ wire write_take=m_axi_wvalid&&m_axi_wready;
+ wire write_fetch=write_busy&&(!write_valid_q||write_take)&&
+                  {1'b0,write_index_q}<write_beats;
+ reg [7:0] fetch_strobe;
  integer lane,dword_index;
  always @* begin
-  m_axi_wdata=0;m_axi_wstrb=0;dword_index=0;
+  fetch_strobe=0;dword_index=0;
   for(lane=0;lane<2;lane=lane+1)begin
    dword_index=2*int'(write_index_q)+lane-int'(write_address_q[2]);
-   if(dword_index>=0&&dword_index<int'(write_length_q)&&dword_index<32)begin
-    m_axi_wdata[lane*32+:32]=write_data_q[dword_index];
-    m_axi_wstrb[lane*4+:4]=dword_index==0?write_first_be_q:
+   if(dword_index>=0&&dword_index<int'(write_length_q)&&dword_index<32)
+    fetch_strobe[lane*4+:4]=dword_index==0?write_first_be_q:
         dword_index==int'(write_length_q)-1?write_last_be_q:4'hf;
-   end
   end
+  // Unwritten edge lanes may contain stale data; never expose those bytes.
+  for(integer byte_lane=0;byte_lane<8;byte_lane=byte_lane+1)
+   m_axi_wdata[byte_lane*8+:8]=m_axi_wstrb[byte_lane]?write_payload_q[byte_lane*8+:8]:8'b0;
+ end
+ always @(posedge clk)if(write_fetch)begin
+  write_payload_q<={payload_high_q[{write_bank_q,write_index_q[4:0]}],
+                    payload_low_q[{write_bank_q,write_index_q[4:0]}]};
+  m_axi_wstrb<=fetch_strobe;
+  write_last_q<={1'b0,write_index_q}==write_beats-1'b1;
  end
  assign m_axi_awaddr={write_address_q[31:3],3'b0};assign m_axi_awlen={1'b0,write_beats}-1'b1;
  assign m_axi_awsize=3;assign m_axi_awburst=1;assign m_axi_awcache=4'b0011;assign m_axi_awprot=0;
  assign m_axi_awvalid=write_state_q==W_ADDR;
- assign m_axi_wlast={1'b0,write_index_q}==write_beats-1'b1;
- assign m_axi_wvalid=write_state_q==W_DATA;assign m_axi_bready=write_out_q!=0;
+ assign m_axi_wlast=write_last_q;
+ assign m_axi_wvalid=write_state_q==W_DATA&&write_valid_q;assign m_axi_bready=write_out_q!=0;
  assign m_axi_araddr={issue_address_q[31:3],3'b0};assign m_axi_arlen={3'b0,issue_beats}-1'b1;
  assign m_axi_arsize=3;assign m_axi_arburst=1;assign m_axi_arcache=4'b0011;assign m_axi_arprot=0;
  assign m_axi_arvalid=ar_offer_q;assign m_axi_rready=read_pending_q!=0;
  integer read_lane;
  wire [5:0] read_base={read_index_q,1'b0}-{5'b0,slot_offset_q[read_response_q]};
  always @(posedge clk) begin
-  if(engine_valid&&engine_ready&&count_q<36)packet_q[count_q]<=engine_data;
+  if(engine_valid&&engine_ready&&count_q<4)packet_q[count_q[1:0]]<=engine_data;
+  if(engine_valid&&engine_ready&&count_q==header_dw)first_payload_q<=engine_data;
   if(m_axi_rvalid&&m_axi_rready)begin
    for(read_lane=0;read_lane<2;read_lane=read_lane+1)begin
     if((read_index_q!=0||!slot_offset_q[read_response_q]||read_lane!=0)&&
@@ -290,27 +308,32 @@ module pcie_ddr_bridge(
  end
  // Whole-packet validation precedes this transfer. RAM has no reset.
  // Once offered, AW and W must drain even if link, admission or fault changes.
- integer write_copy;
+ wire [5:0] payload_position=count_q-header_dw+{5'b0,addr[2]};
+ wire payload_store=rst_n&&engine_valid&&engine_ready&&count_q>=header_dw&&
+                    count_q<36&&(count_q-header_dw)<32;
+ always @(posedge clk)if(payload_store)begin
+  if(payload_position[0])payload_high_q[{prepare_bank_q,payload_position[5:1]}]<=engine_data;
+  else payload_low_q[{prepare_bank_q,payload_position[5:1]}]<=engine_data;
+ end
  always @(posedge clk)begin
-  if(write_launch)begin
-   for(write_copy=0;write_copy<32;write_copy=write_copy+1)
-    write_data_q[write_copy]<=four?packet_q[write_copy+4]:packet_q[write_copy+3];
-  end
   if(!rst_n)begin
    write_state_q<=W_IDLE;write_index_q<=0;write_address_q<=0;
    write_length_q<=0;write_first_be_q<=0;write_last_be_q<=0;
-  end else case(write_state_q)
-   W_IDLE:if(write_launch)begin
-    write_state_q<=W_ADDR;write_index_q<=0;write_address_q<=addr[31:2];
-    write_length_q<=length_dw[5:0];write_first_be_q<=fbe;write_last_be_q<=lbe;
-   end
-   W_ADDR:if(m_axi_awready)write_state_q<=W_DATA;
-   W_DATA:if(m_axi_wready)begin
-    if(m_axi_wlast)write_state_q<=W_IDLE;
-    else write_index_q<=write_index_q+1'b1;
-   end
-   default:write_state_q<=W_IDLE;
-  endcase
+   prepare_bank_q<=0;write_bank_q<=0;write_valid_q<=0;
+  end else begin
+   if(write_take)write_valid_q<=0;
+   if(write_fetch)begin write_valid_q<=1;write_index_q<=write_index_q+1'b1;end
+   case(write_state_q)
+    W_IDLE:if(write_launch)begin
+     write_state_q<=W_ADDR;write_index_q<=0;write_address_q<=addr[31:2];
+     write_length_q<=length_dw[5:0];write_first_be_q<=fbe;write_last_be_q<=lbe;
+     write_bank_q<=prepare_bank_q;prepare_bank_q<=!prepare_bank_q;write_valid_q<=0;
+    end
+    W_ADDR:if(m_axi_awready)write_state_q<=W_DATA;
+    W_DATA:if(write_take&&m_axi_wlast)write_state_q<=W_IDLE;
+    default:write_state_q<=W_IDLE;
+   endcase
+  end
  end
  // AXI ownership is reset only by the system/global reset, never link/PERST.
  always @(posedge clk)begin

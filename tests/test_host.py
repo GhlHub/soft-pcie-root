@@ -54,3 +54,18 @@ def test_completion_tx_profile(tmp_path):
   run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
   assert run.returncode==0,run.stdout+run.stderr
   assert 'PASS COMPLETION TX:' in run.stdout
+
+
+def test_ddr_banked_stalls(tmp_path):
+ for four in (0,1):
+  for align in (0,1):
+   for words in (1,2,3,31,32):
+    exe=tmp_path/f'banked-{four}-{align}-{words}.vvp'
+    subprocess.run(['iverilog','-g2012','-s','tb_ddr_pipeline',
+      f'-Ptb_ddr_pipeline.FOUR={four}',f'-Ptb_ddr_pipeline.ALIGN={align}',
+      f'-Ptb_ddr_pipeline.WORDS={words}',
+      '-Ptb_ddr_pipeline.STALLS=1','-Ptb_ddr_pipeline.MAX_SERVICE_CYCLES=100',
+      '-o',exe,R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',R/'tests/host/tb_ddr_pipeline.sv'],check=True)
+    r=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+    assert r.returncode==0,r.stdout+r.stderr
+    assert 'PASS PIPELINE:' in r.stdout

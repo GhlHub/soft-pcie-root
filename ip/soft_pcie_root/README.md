@@ -3,7 +3,9 @@
 `soft_pcie_root` is the public top module. It combines the transceiver-facing
 root port, management mailbox, CPU BAR access, noncoherent DDR bridge and MSI
 integration. The top was extracted from the verified ZCU104 shell by changing
-its module identifier only. The protocol and DMA RTL bodies are preserved.
+its module identifier only. The current DDR payload-banking optimization departs
+from that baseline; see [verification status](../../docs/verification.md) for the
+source provenance and physical qualification of each revision.
 
 Run `make ip IP_OUTPUT=build/ip_v1` from the repository root. Add
 `build/ip_v1/core` to Vivado's IP repositories, or use the supplied ZCU104 example.

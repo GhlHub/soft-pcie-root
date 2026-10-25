@@ -29,6 +29,9 @@ families is not claimed.
 These measurements describe the complete ZCU104 example at the `txdouble_v1`
 hardware baseline, not standalone-core utilization or guaranteed drive speeds.
 See [validation and exact scope](docs/verification.md).
+The current banked-payload revision uses **10,864 LUTs / 9,294 FFs** and passed
+physical Gen2 x1 I/O/CRC tests, with QD8 read/write **428.65 / 259.17 MB/s**.
+The deployed Linux image now uses a persistent ext4 SD root.
 The packaged example was also deployed and verified: QD8 read/write **428.33 / 259.73 MB/s**, within 0.13% of that baseline; all integrity checks passed.
 
 **Adapter succession:** Opsero discontinued OP047 and names **OP063 (FPGA Drive

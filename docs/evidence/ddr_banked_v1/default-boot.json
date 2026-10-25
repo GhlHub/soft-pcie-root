@@ -1,0 +1,23 @@
+{
+  "status": "sd_default_warm_boot_verified",
+  "date": "2026-10-25",
+  "image": "ddr_banked_v1",
+  "bitstream_sha256": "d0e4ed9d19ab8af461ef4edc24b25322f40446544aba50c72e63a3a4ed0f2f66",
+  "boot_script_sha256": "777bb828d0c6ac4ee5fde12293187ed75b8c78e48706e78a7dd39d7e44db9693",
+  "automatic_boot": true,
+  "bitstream_crc32": "27927ff2",
+  "sd_sha256_readback_pass": true,
+  "link": "Gen2 x1",
+  "read_only_crc_bytes": 268435456,
+  "read_only_crc_pass": true,
+  "smart_media_errors": 0,
+  "smart_error_log_entries": 0,
+  "unsafe_shutdowns": 26,
+  "persistent": true,
+  "obsolete_fpga_images_removed": true,
+  "obsolete_boot_scripts_and_legacy_kernel_removed": true,
+  "boot_partition_free_KiB": 127216,
+  "limitations": [
+    "Warm reboot only; no cold power cycle or power-loss test"
+  ]
+}

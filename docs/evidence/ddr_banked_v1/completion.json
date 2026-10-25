@@ -1,0 +1,74 @@
+{
+  "status": "physically_verified",
+  "date": "2026-10-25",
+  "image": "banked DDR payload packaged ZCU104",
+  "bitstream_sha256": "d0e4ed9d19ab8af461ef4edc24b25322f40446544aba50c72e63a3a4ed0f2f66",
+  "bitstream_crc32": "27927ff2",
+  "source_manifest": "implementation.json",
+  "source_manifest_rechecked_after_test": true,
+  "board": "ZCU104 with OP047 Rev D, SSD1",
+  "ssd": "Samsung 990 EVO 1 TB",
+  "linux": "6.6.70",
+  "link": "Gen2 x1 (5 GT/s)",
+  "mps_bytes": 128,
+  "mrrs_bytes": 512,
+  "rcb_bytes": 64,
+  "interrupts": "MSI-X",
+  "fio": "3.38 direct/libaio one job, 1 MiB, QD1/QD8, 30 seconds",
+  "write_range": "[8 GiB,12 GiB)",
+  "read_range": "[0,4 GiB)",
+  "integrity": "previous 256 MiB CRC at 16 GiB; fresh 256 MiB CRC at 16 GiB; 32 MiB sector-offset CRC at 20 GiB + 512 bytes; post-flush 256 MiB CRC",
+  "fio_jobs_passed": 8,
+  "written_bytes": 14093910016,
+  "write_sectors": 27527168,
+  "metrics": {
+    "read_qd1_MB_s": 380.795157,
+    "read_qd8_MB_s": 428.645349,
+    "write_qd1_MB_s": 200.244641,
+    "write_qd8_MB_s": 259.16757
+  },
+  "comparison": {
+    "read_qd1_MB_s": {
+      "baseline_MB_s": 379.222345,
+      "banked_MB_s": 380.795157,
+      "change_percent": 0.4147466573996228
+    },
+    "read_qd8_MB_s": {
+      "baseline_MB_s": 428.330965,
+      "banked_MB_s": 428.645349,
+      "change_percent": 0.07339744862948638
+    },
+    "write_qd1_MB_s": {
+      "baseline_MB_s": 200.174748,
+      "banked_MB_s": 200.244641,
+      "change_percent": 0.034915992500716975
+    },
+    "write_qd8_MB_s": {
+      "baseline_MB_s": 259.734844,
+      "banked_MB_s": 259.16757,
+      "change_percent": -0.21840504387620197
+    }
+  },
+  "smart": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns_before": 26,
+    "unsafe_shutdowns_after": 26
+  },
+  "final_status": {
+    "link": "0x53",
+    "mailbox": "0x02",
+    "ddr": "0x0c",
+    "rate": "0x09"
+  },
+  "persistent": false,
+  "default_sd": "packaged example_zcu104_v1 unchanged",
+  "notes": [
+    "Initial explicit flush was rejected locally for namespace-ID mismatch; retried with namespace 1 successfully before post-flush CRC."
+  ],
+  "limitations": [
+    "Single volatile boot; no cold power cycle, Gen1 retest, OP063, endurance or power-loss qualification",
+    "No hotplug, live reset/remove or stopped-reference recovery qualification"
+  ]
+}

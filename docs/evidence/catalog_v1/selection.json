@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-26",
+  "tool": "Vivado 2026.1",
+  "catalog_vlnv": "soft-pcie.org:user:soft_pcie_root:1.1",
+  "default_enable_gen3": false,
+  "source_manifest_sha256": "67173d729a584a032abb6e55eddc51ecc0908fcf15564f22cb28a0568dcf767c",
+  "checks": {
+    "repository_tests_passed": 49,
+    "lint_and_xpm_elaboration": "pass",
+    "package_integrity": "pass",
+    "one_catalog_definition": "pass",
+    "repeated_bd_checkbox_changes": "pass",
+    "generated_hdl_parameter_0_and_1": "pass",
+    "both_configurations_synthesized": "pass",
+    "synthesis_critical_warnings": 0,
+    "unwaived_critical_cdc": 0,
+    "one_gth_per_configuration": "pass",
+    "no_hard_pcie": "pass",
+    "selected_backend_only": "pass",
+    "packet_bram_widths_36_and_72": "pass",
+    "read_owner_counter_widths_2_and_4": "pass",
+    "selected_phy_constraints_and_board_cdc_dispatch": "pass"
+  },
+  "configurations": [
+    {
+      "enable_gen3": false,
+      "packet_bits": 32,
+      "prefetch_slots": 2,
+      "bd_axi_read_outstanding": 2
+    },
+    {
+      "enable_gen3": true,
+      "packet_bits": 64,
+      "prefetch_slots": 8,
+      "bd_axi_read_outstanding": 8
+    }
+  ],
+  "limitations": [
+    "Out-of-context synthesis and CDC checks; no new full route or board test.",
+    "Use packaged Add IP block-design cell for AXI automation. Vivado 2026.1 standalone create_ip wrapper retains default two-read interface annotation; generated HDL ENABLE_GEN3 parameter and synthesized eight-slot hardware are correct.",
+    "Gen3 remains experimental and pending further stabilization."
+  ],
+  "post_validation_formatting_only": {
+    "file": "experiments/gen3/prepare_host_phy.tcl",
+    "change": "Removed one blank line at EOF during final documentation/commit review; Tcl commands unchanged.",
+    "validated_sha256": "6a212ad3c96ba2a00ec80454c0ade96a0086baedc7cb74ff28d7092617178188",
+    "committed_sha256": "36490e7e9872909b7c9b9c71071b70b19aa96fff852cbca3f856a13dd3fcd35c"
+  }
+}

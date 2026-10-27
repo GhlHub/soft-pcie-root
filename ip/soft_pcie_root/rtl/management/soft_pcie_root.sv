@@ -1,5 +1,5 @@
 // ZCU104 SSD1 laboratory top; management is independent of the PCIe clock.
-module soft_pcie_root(
+module soft_pcie_root #(parameter integer ENABLE_GEN3=0)(
  (* X_INTERFACE_INFO="xilinx.com:signal:clock:1.0 aclk CLK",
     X_INTERFACE_PARAMETER="ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET aresetn, FREQ_HZ 50000000" *)
  input wire aclk,
@@ -143,10 +143,10 @@ module soft_pcie_root(
  input wire refclk_p_i,refclk_n_i,rx_p_i,rx_n_i,
  output wire tx_p_o,tx_n_o,perst_a_o,disable_ssd2_power_o
 );
- // Packaging fixes the backend and these dimensions together. Negotiated
- // fallback speed does not change packet width or accepted-owner capacity.
- localparam integer PACKET_DWORDS=1;
- localparam integer READ_PREFETCH_SLOTS=2;
+ // The catalog checkbox fixes backend and dimensions together at elaboration.
+ // Link state never changes packet width or accepted-owner capacity.
+ localparam integer PACKET_DWORDS=ENABLE_GEN3 ? 2 : 1;
+ localparam integer READ_PREFETCH_SLOTS=ENABLE_GEN3 ? 8 : 2;
  wire enable,cv,cr,rv,rr;
  wire linkup_raw,active_raw,error_raw,linkup,active,error;
  wire [4:0] state_raw;
@@ -321,6 +321,17 @@ module soft_pcie_root(
   assign root_tx_payload={2'd2,6'b0,crossed_tx[35:33],crossed_tx[31:0]};
   assign root_txvalid=crossed_valid;assign root_txlast=crossed_last;assign crossed_ready=root_txready;
  end endgenerate
+ generate if(ENABLE_GEN3)begin: gen3_mode
+ gen3_native_root root_port(
+ .freerun_clk_i(aclk),.reset_i(!aresetn),.enable_i(enable),
+ .refclk_p_i(refclk_p_i),.refclk_n_i(refclk_n_i),.rx_p_i(rx_p_i),.rx_n_i(rx_n_i),
+ .tx_p_o(tx_p_o),.tx_n_o(tx_n_o),.core_clk_o(link_clk),.perst_a_o(perst_a_o),.perst_b_o(),.disable_ssd2_power_o(disable_ssd2_power_o),
+ .force_gen1_i(force_gen1),.gen2_o(gen2),.rate_busy_o(rate_busy),.fallback_o(fallback),.retrain_i(1'b0),.link_up_o(linkup_raw),.dl_active_o(active_raw),.state_o(state_raw),.diagnostic_o(phy_diagnostic),.completion_debug_o(completion_debug),
+ .cmd_valid_i(root_cv),.cmd_ready_o(root_cr),.cmd_op_i(root_command[118:116]),.cmd_address_i(root_command[115:52]),.cmd_bdf_i(root_command[51:36]),.cmd_data_i(root_command[35:4]),.cmd_be_i(root_command[3:0]),
+ .rsp_valid_o(root_rv),.rsp_ready_i(root_rr),.rsp_data_o(root_result),.rsp_status_o(root_status),
+ .app_tx_data_i(root_tx_payload[31:0]),.app_tx_valid_i(root_txvalid),.app_tx_last_i(root_txlast),.app_tx_ready_o(root_txready),.app_tx_class_i(root_tx_payload[42:41]),.app_tx_credits_i(root_tx_payload[40:32]),
+ .app_rx_data_o(root_rxdata),.app_rx_valid_o(root_rxvalid),.app_rx_last_o(root_rxlast),.app_rx_ready_i(root_rxready),.error_o(error_raw));
+ end else begin: gen2_mode
  pcie_soft_root_port root_port(
  .freerun_clk_i(aclk),.reset_i(!aresetn),.enable_i(enable),
  .refclk_p_i(refclk_p_i),.refclk_n_i(refclk_n_i),.rx_p_i(rx_p_i),.rx_n_i(rx_n_i),
@@ -330,4 +341,5 @@ module soft_pcie_root(
  .rsp_valid_o(root_rv),.rsp_ready_i(root_rr),.rsp_data_o(root_result),.rsp_status_o(root_status),
  .app_tx_data_i(root_tx_payload[31:0]),.app_tx_valid_i(root_txvalid),.app_tx_last_i(root_txlast),.app_tx_ready_o(root_txready),.app_tx_class_i(root_tx_payload[42:41]),.app_tx_credits_i(root_tx_payload[40:32]),
  .app_rx_data_o(root_rxdata),.app_rx_valid_o(root_rxvalid),.app_rx_last_o(root_rxlast),.app_rx_ready_i(root_rxready),.error_o(error_raw));
+ end endgenerate
 endmodule

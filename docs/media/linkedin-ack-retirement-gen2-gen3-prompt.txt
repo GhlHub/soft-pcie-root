@@ -1,0 +1,50 @@
+Generated with the built-in image generation tool after physical Gen2 ACK-retirement benchmarking.
+Gen2 source evidence: docs/evidence/prefetch_v1/ack-retirement-gen2.json
+Gen3 source evidence: docs/evidence/prefetch_v1/ack-retirement-performance.json
+Original shared Gen2: docs/evidence/repackaged_v1/completion.json
+
+Use case: ads-marketing.
+Create a polished 16:9 LinkedIn performance comparison graphic for soft-pcie-root. Dark graphite/navy circuit-board background, subtle conceptual FPGA and NVMe hardware on the right, crisp professional typography, cyan for Gen2 and warm amber for Gen3. Large legible figures, generous margins, no chart axes. The comparison dominates the composition. This is a new version based on real completed measurements.
+Headline exactly: "Soft PCIe. Measured progress."
+Subheading exactly: "Gen2 baseline vs. current ACK-retirement builds"
+Three equal-width cards with EXACT text:
+LEFT CARD:
+"ORIGINALLY SHARED"
+"Gen2 x1"
+"428.3 MB/s"
+"READ"
+"259.7 MB/s"
+"WRITE"
+"Packaged baseline"
+MIDDLE CARD:
+"ACK RETIREMENT"
+"Gen2 x1"
+"428.3 MB/s"
+"READ"
+"260.2 MB/s"
+"WRITE"
+"Newly measured"
+RIGHT CARD:
+"ACK RETIREMENT"
+"Gen3 x1"
+"745.4 MB/s"
+"READ"
+"567.7 MB/s"
+"WRITE"
+"Experimental"
+
+Prominent amber banner below cards, not tiny footnote:
+"Gen3 pending further stabilization"
+
+Readable benchmark line:
+"ZCU104 • Samsung 990 EVO • 1 MiB sequential • QD8 • direct I/O • 30 s"
+Readable configuration line:
+"Gen2: 32-bit paths / 2 prefetch slots • Gen3: 64-bit paths / 8 prefetch slots"
+Small scope line:
+"Historical build comparison • Gen3 gains include path-width and buffering changes"
+Footer:
+"No hard PCIe block. No vendor PCIe controller IP."
+"soft-pcie-root"
+"github.com/GhlHub/soft-pcie-root"
+
+Preserve every exact number. Original Gen2 and current ACK-retirement Gen2 reads BOTH display 428.3; do not invent improvement or change this value to 428.7. New Gen2 write is 260.2. No performance gain percentage, production-readiness claim or compliance badge. Do not imply Gen3 gains come from ACK retirement alone. No RAID mention, no vendor logos. Make read/write labels unambiguous and all technical text correctly spelled and comfortably readable. Hardware is an illustrative background, not a photograph of the tested board.

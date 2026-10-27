@@ -2,11 +2,13 @@
 
 Read README.md, docs/ip-guide.md, docs/registers.md, examples/zcu104/README.md and
 docs/verification.md first. This repository is the authoritative development source.
-Local board/deployment handoff, when available, is in ignored build/lab/HANDOFF.md. The frozen release stops at Gen1/Gen2 x1.
-Current development also includes optional experimental Gen3 and shared RTL
-changes; see docs/performance-history.md and docs/verification.md. Do not rewrite
-frozen provenance manifests to qualify experimental code. Latest physical tests
-cover Gen3; the current default Gen2 configuration needs fresh hardware evidence.
+Local board/deployment handoff, when available, is in ignored build/lab/HANDOFF.md. The
+frozen release stops at Gen1/Gen2 x1. Current development also includes optional
+experimental Gen3 and shared RTL changes; see docs/performance-history.md and
+docs/verification.md. Do not rewrite frozen provenance manifests to qualify experimental
+code. Latest physical tests cover both Gen3 and a fresh default Gen2 ACK-retirement
+build; these are short I/O/CRC tests, not full qualification. The later unified 1.1
+catalog/checkbox packaging has not yet been routed or tested on the board.
 
 Reusable sources: ip/soft_pcie_root/rtl; packaging: ip/soft_pcie_root/package.tcl;
 board build/audit/constraints: examples/zcu104; Linux integration: software/.

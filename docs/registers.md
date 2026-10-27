@@ -4,6 +4,12 @@ Registers are 32-bit, aligned, little-endian AXI accesses. Unknown/unimplemented
 register offsets return SLVERR; do not scan the address space with devmem.
 Use the Linux host driver for normal operation.
 
+The version 1.1 catalog checkbox is a synthesis-time configuration, not a new register
+or ABI version. In these configurable builds, DBR1 offset 0x90 reports 0x00000201 for
+Gen3 disabled (one DWORD/beat, two slots), or 0x00000802 for Gen3 enabled (two
+DWORDs/beat, eight slots). It reports built capacity, not negotiated link speed. See
+[catalog selection](ip-guide.md#optional-gen3-packaging).
+
 | Example address | Block |
 | --- | --- |
 | 0xA0000000–0xA0000FFF | S_AXI / SRP1 configuration mailbox |

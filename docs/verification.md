@@ -7,6 +7,57 @@ The latest results are first. Frozen Gen1/Gen2 provenance manifests remain
 unchanged. `make release-check` intentionally rejects newer shared RTL and RTL
 inventory; passing current development tests does not relabel that baseline.
 
+## Unified catalog development
+
+The current source now uses one version 1.1 catalog definition with a default-off
+**Enable experimental Gen3** checkbox. This packaging/elaboration change follows the
+physical measurements below; those exact images have not been replaced. The common host
+derives 32-bit/two-slot or 64-bit/eight-slot dimensions from the same HDL parameter.
+Native generated helpers are namespaced, and native constraints are generated only for
+the enabled native backend. See [catalog
+configuration](ip-guide.md#optional-gen3-packaging).
+
+Vivado 2026.1 package integrity, repeated block-design checkbox changes, and
+out-of-context synthesis of both configurations passed. Each elaborates one GTH and the
+selected backend only, with the expected packet RAM width and read-owner capacity.
+Matching PHY clocks and board CDC constraints passed with no critical warnings or
+unwaived critical CDC findings. All 49 repository tests and lint/XPM elaboration passed.
+See [sanitized catalog evidence](evidence/catalog_v1/selection.json). This is not route
+or physical qualification. The integration guide documents the standalone wrapper
+annotation limitation; use the packaged block-design cell for AXI automation.
+
+## Current Gen2 ACK retirement measurement
+
+The pre-unification default Gen2 package was freshly built with the same shared ACK
+retirement optimization and programmed after clean shutdown and an independently
+verified pre-kernel stop. The first boot negotiated Gen2 x1. Host packet paths are
+32-bit with two 64-byte prefetch slots; DDR AXI remains 64-bit/125 MHz.
+
+| Workload | Current Gen2 MB/s |
+| --- | ---: |
+| Read QD1 | 380.46 |
+| Read QD8 | 428.30 |
+| Write QD1 | 200.84 |
+| Write QD8 | 260.21 |
+
+One job, 1 MiB direct/libaio, 30 seconds per workload. This is essentially unchanged
+from the historical Gen2 baseline; it does not demonstrate an ACK-only speedup. All
+eight benchmark/CRC jobs passed, including existing/fresh/sector-offset and post-flush
+checks. Exact 14,142,144,512 written bytes match block accounting. SMART
+warnings/media/errors remain zero, unsafe shutdowns remain 26, and the board is
+healthy/idle. The timed write range is separate from CRC verification.
+
+Fresh synthesis/PNR and independent reopened audits passed. Both before-package and
+routed source manifests match. Resources: 9,214 LUTs, 8,185 FFs, 447 control sets, three
+RAMB18s, one GTH and no hard PCIe. Setup/hold slack is +0.068/+0.013 ns; there are no
+unwaived critical CDC findings. Existing reset-waiver count is 15.
+
+The board now runs `build/ack_gen2_board_v1/system.bit`; SD boot files are unchanged.
+[Exact build and physical evidence](evidence/prefetch_v1/ack-retirement-gen2.json). This
+adds a short Gen2 hardware test to the shared ACK change, not a Gen1, cold-cycle,
+endurance, full Recovery or compliance qualification. The Gen3 results below remain
+historical measurements on their matching image.
+
 ## Normal ACK retirement: implemented and physically tested
 
 Normal ACKs can now release the already-sent prefix while later original packets
@@ -45,10 +96,10 @@ and no I/O is in flight.
 
 Current image: `build/ack_retire_board_v1/system.bit`; audit reports:
 `build/ack_retire_audit_v1`. SD boot files are unchanged.
-[Evidence](evidence/prefetch_v1/ack-retirement.json).
-This is a short historical comparison, not statistical/endurance/compliance
-qualification. The successful boot does not resolve prior startup intermittence.
-Gen2 regression simulation passed; no new Gen2 physical image was tested.
+[Evidence](evidence/prefetch_v1/ack-retirement.json). This is a short historical
+comparison, not statistical/endurance/compliance qualification. The successful boot does
+not resolve prior startup intermittence. At that stage Gen2 regression simulation
+passed; the subsequent Gen2 physical measurement is recorded above.
 
 ### Current-image 30-second remeasurement
 
@@ -173,25 +224,24 @@ eight 64-byte read slots and overlap between validated SSD memory-read requests.
 Both retain AXI64/125 MHz, two write owners, ordered completions, all-B-before-MSI
 and accepted-AXI drain. See [packaging](ip-guide.md#optional-gen3-packaging).
 
-Subsequent ten-second write counter captures on the corrected eight-slot image
-measured 294.43 MB/s at QD1 and 454.16 MB/s at QD8. Bridge-to-TX-CDC stalls
-occupied 22.14%/34.17% of capture cycles, while waiting for the next completed
-DDR slot occupied only 0.35%/0.51%. All eight slots were occupied for
-53.53%/82.58%; issuance was blocked by full slots for 51.16%/78.89%.
-Slots retain ownership until completion transmission into the CDC, so these
-are not measurements of eight outstanding AXI bursts. DDR AR backpressure was
-zero. The evidence points to downstream transmit backpressure rather than
-insufficient DDR prefetch as the next optimization target. Existing counters
-cannot isolate transmit scheduling, replay/ACK limits or peer credits.
-Counter events overlap, and capture windows include fio startup/flush overhead.
-All captures had zero fault/overflow, exact 7,495,221,248-byte write accounting,
-unchanged SMART error/unsafe-shutdown counts and a healthy idle finish.
-See [write counter evidence](evidence/prefetch_v1/write-profile.json).
-A subsequent [downstream investigation](../experiments/gen3/downstream-investigation.md)
-identified the shared replay engine's normal-ACK drain/refill policy as a strong
-internal candidate through controlled simulation. Subsequent LPR1 physical
-captures, reported above, support that attribution. The retirement policy
-itself remains unchanged.
+Subsequent ten-second write counter captures on the corrected eight-slot image measured
+294.43 MB/s at QD1 and 454.16 MB/s at QD8. Bridge-to-TX-CDC stalls occupied
+22.14%/34.17% of capture cycles, while waiting for the next completed DDR slot occupied
+only 0.35%/0.51%. All eight slots were occupied for 53.53%/82.58%; issuance was blocked
+by full slots for 51.16%/78.89%. Slots retain ownership until completion transmission
+into the CDC, so these are not measurements of eight outstanding AXI bursts. DDR AR
+backpressure was zero. The evidence points to downstream transmit backpressure rather
+than insufficient DDR prefetch as the next optimization target. Existing counters cannot
+isolate transmit scheduling, replay/ACK limits or peer credits. Counter events overlap,
+and capture windows include fio startup/flush overhead. All captures had zero
+fault/overflow, exact 7,495,221,248-byte write accounting, unchanged SMART
+error/unsafe-shutdown counts and a healthy idle finish. See [write counter
+evidence](evidence/prefetch_v1/write-profile.json). A subsequent [downstream
+investigation](../experiments/gen3/downstream-investigation.md) identified the shared
+replay engine's normal-ACK drain/refill policy as a strong internal candidate through
+controlled simulation. Subsequent LPR1 physical captures, reported above, supported that
+attribution while preserving the old retirement policy. The later normal-ACK revision
+changed that policy and is recorded near the top of this document.
 
 Validation passed: 46 repository tests, lint/XPM elaboration, the experimental
 Gen3 regression, fresh packaging and full-shell RTL elaboration for both choices.

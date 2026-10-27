@@ -12,12 +12,16 @@ The frozen release is **Gen1/Gen2 x1**. Current development also offers an
 optional **experimental Gen3 x1** backend. The PHY targets UltraScale+ GTHE4;
 portability to other FPGA families and PCIe compliance are not claimed.
 
-The latest Gen3 build measured **745.36 MB/s read and 567.71 MB/s write** at QD8
-with 1 MiB direct I/O and 30-second runs. It uses 64-bit host RX/TX packet paths,
-eight 64-byte DDR read-prefetch slots, and normal ACK retirement concurrent with
-later original packets. Gen3-disabled packaging retains 32-bit packet paths and
-two slots. The shared RTL has evolved beyond the frozen Gen2 source baseline;
-its latest physical verification is on the Gen3-enabled image.
+The latest Gen3 build measured **745.36 MB/s read and 567.71 MB/s write** at QD8 with 1
+MiB direct I/O and 30-second runs. It uses 64-bit host RX/TX packet paths, eight 64-byte
+DDR read-prefetch slots, and normal ACK retirement concurrent with later original
+packets. Gen3-disabled packaging retains 32-bit packet paths and two slots. The shared
+RTL has evolved beyond the frozen Gen2 source baseline; both the Gen3-enabled and
+default Gen2 ACK-retirement images now have short physical I/O/CRC tests. Current Gen2
+QD8 read/write is 428.30/260.21 MB/s, essentially unchanged from the historical Gen2
+baseline. These measurements predate the unified version 1.1 catalog package, which has
+passed customization and synthesis checks for both selections but has not yet been
+routed or tested on the board.
 
 See the [performance improvement history](docs/performance-history.md) for the
 measured progression, [configuration](docs/ip-guide.md#optional-gen3-packaging)
@@ -84,13 +88,15 @@ make hardware-audit HARDWARE_OUTPUT=build/zcu104_v1 AUDIT_OUTPUT=build/audit_v1
 ```
 
 Outputs must be fresh. `make ip` creates a local IP repository with VLNV
-`soft-pcie.org:user:soft_pcie_root:1.0` (a local identifier, not a service URL).
-The example instantiates that packaged IP. The frozen source provenance is checked
-separately from generated build hashes. `make release-check` is a strict check
-of the frozen Gen1/Gen2 baseline and is expected to reject this development tree's
-shared RTL changes. Its historical manifests are preserved; do not regenerate
-them to label experimental Gen3 as a qualified release. See [IP integration](ip/soft_pcie_root/README.md)
-and [ZCU104 setup](examples/zcu104/README.md). These commands do not program a board.
+`soft-pcie.org:user:soft_pcie_root:1.1` (a local identifier, not a service URL). The
+example instantiates that packaged IP. Its **Enable experimental Gen3** checkbox selects
+the backend at customization time (default off). The frozen source provenance is checked
+separately from generated build hashes. `make release-check` is a strict check of the
+frozen Gen1/Gen2 baseline and is expected to reject this development tree's shared RTL
+changes. Its historical manifests are preserved; do not regenerate them to label
+experimental Gen3 as a qualified release. See [IP
+integration](ip/soft_pcie_root/README.md) and [ZCU104 setup](examples/zcu104/README.md).
+These commands do not program a board.
 
 ## Scope and limitations
 

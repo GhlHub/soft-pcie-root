@@ -1,0 +1,171 @@
+{
+  "date": "2026-10-26",
+  "status": "physically_verified",
+  "scope": "Current default Gen2 configuration with shared normal ACK retirement; short I/O/CRC and 30-second benchmarks only",
+  "bitstream": "build/ack_gen2_board_v1/system.bit",
+  "bitstream_sha256": "511537474d0be0239f13a2327c32417b3de59b5e0d527153da981bca55c32475",
+  "sources": {
+    "ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv": "788508fc86701142209bbfa38170fe722c8e704be6f9b6df2f1d53de9f6bcdd9",
+    "ip/soft_pcie_root/rtl/host/pcie_cmd_cdc.sv": "ecc3425a9aec42e8a09dbbb8d34f1840ae2af1d845466fd2bf9e8ddb7029dae5",
+    "ip/soft_pcie_root/rtl/host/pcie_cmd_fifo.sv": "17970452ce464bdaa7709bccd5f83d9d6f519bdc6b1ae33ca0a2e64282752de4",
+    "ip/soft_pcie_root/rtl/host/pcie_cmd_mux.sv": "5c0e4f648e98530d2e2e9045ee658dd6d1fa5eeb0531a4c59da47b4d8f29c5fd",
+    "ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv": "c7a032517607816834d287c61d323262b955bf4bc155c6df71d7fd895b91e3f8",
+    "ip/soft_pcie_root/rtl/host/pcie_host_axi.sv": "c0bc897f9302e224715f9e85e2e42aae34d843435c878e6bdeacf71d284916ba",
+    "ip/soft_pcie_root/rtl/host/pcie_rx_pack.sv": "cfabc7e51d292a676a67a664d6f1aa390b5bffd3965ac4122c1ddb2c4e5d28bc",
+    "ip/soft_pcie_root/rtl/host/pcie_tx_unpack.sv": "42026391b7c4876033e87674c49822a5b9d2a057631d9538591ee606f4ba63fc",
+    "ip/soft_pcie_root/rtl/management/pcie_root_csr.sv": "184a6a490b4f3bad71618a33f6aa093a99e06cdf6ee23774e74245c6eef9470e",
+    "ip/soft_pcie_root/rtl/management/soft_pcie_root.sv": "d5c997ec4aa640917ad365014b490af49bf65bee6f8abdcdf295e072a8e345b5",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ack_capture.sv": "5011fa6bbcb3ccf3907f8e02d03afdb2edfb64ebe66a48319b61cd02f503572b",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_crc.sv": "8ab1505319e965a672deee34eee30ef448f2f626fb22a3eabd060dc44d00b9e5",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv": "d2d85117263298325c0d35d94bb2acd0b3113c2ba85f55aedbb54ba689055476",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv": "d62a68a57a4969eafd02ef00028b35f39112954a094f36e31dfdc9be7b3123da",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_link.sv": "0f61fe2a5b1b50c9ef934f6c7793cc69dfba7292f19051ee526a3cfef265c849",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ltssm.sv": "a82d433a6fa2b7e65c0b0a2b173b93e46589f26611f2f1c8b27bf6ad08fd8755",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_packet_rx.sv": "674c56e3e745b2dd0ce6cc625b2197b06659ee9c07caa5bac8a7778e34c5ba1b",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_packet_tx.sv": "d3c23f729de917bec88fabc832bce8f5905bccb59d71d5e69dd05d732432facf",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_rate_control.sv": "49a3ded5e28fb33292831481982d8daa3299baf910097434003c454a2ee92a7c",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_replay.sv": "d7d443899dad00e14c649909ad3d2b081c2d578f94478d6642136de1177b415a",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv": "3cc2c166e70487ee11d2e3a6ba5db15aa3b0d3c17fc0061f0d7c8519ee03c9c0",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv": "de7dfbc1ea32b766c3c47c579aed71826ce2d4147385b5a0f6f9971ffebc4914",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_training.sv": "a05ba482e5671c328728f30dd3e76834094471927becd10f4687855782665439",
+    "ip/soft_pcie_root/create_gt.tcl": "c5cbf21a7fc9b5f65e4394c5abf659051f1656dd360849df3f2b7303f6e0e73a",
+    "ip/soft_pcie_root/package.tcl": "989ec35d33b6fb8f518929a70ee429105ecab407e9a6c0adda2aae01a7c2ef5f",
+    "examples/zcu104/audit.tcl": "85fd05cd679a269a9206b804e9613d25777a0c611463fb69b3121c8f0c310988",
+    "examples/zcu104/build.tcl": "213843fccf1172d9dc22df8c36eb47a6638b0c6e459c00bc1e1eb7791f1206cc",
+    "examples/zcu104/check_structure.tcl": "c5ec91cd4ff783aedaeddc4eb3554ad4073b8f0d165ccb51b187db8088ecd6da",
+    "examples/zcu104/constraints/zcu104_cdc.tcl": "f3fb0227a184f37f6bce6c5603c416622c5f3fbe2cb0de1c0c33e74e36b7ca87",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2",
+    "scripts/host_sources.py": "5caa3109922173ed2bc5a5a3fde5a2a3ec2547a7104aeb2b5db89a41207e8eeb"
+  },
+  "sources_match_before_packaging_and_after_route": true,
+  "configuration": {
+    "link": "Gen2 x1",
+    "host_packet_bits": 32,
+    "read_prefetch_slots": 2,
+    "read_prefetch_bytes": 128,
+    "axi_bits": 64,
+    "axi_clock_MHz": 125,
+    "axi_outstanding_reads": 2,
+    "axi_outstanding_writes": 2,
+    "normal_ack_retirement": "concurrent with later original packets",
+    "replay_entries": 8,
+    "formatter_banks": 2
+  },
+  "implementation": {
+    "reopened_audit": "pass",
+    "slack": {
+      "wns_ns": 0.068,
+      "whs_ns": 0.013,
+      "wpws_ns": 0.543
+    },
+    "LUT": 9214,
+    "FF": 8185,
+    "control_sets": 447,
+    "RAMB18": 3,
+    "RAMB36": 0,
+    "GTH": 1,
+    "hard_pcie": 0,
+    "unwaived_critical_cdc": 0,
+    "existing_reset_waiver_endpoints": 15
+  },
+  "hardware": {
+    "board": "ZCU104",
+    "adapter": "OP047 Rev D SSD1",
+    "ssd": "Samsung 990 EVO 1 TB"
+  },
+  "boot_attempts": 1,
+  "fio": {
+    "version": "fio-3.38",
+    "direct": true,
+    "ioengine": "libaio",
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "runtime_seconds": 30,
+    "queue_depths": [
+      1,
+      8
+    ],
+    "read_range_GiB": [
+      0,
+      4
+    ],
+    "write_range_GiB": [
+      8,
+      12
+    ]
+  },
+  "performance": {
+    "read1": {
+      "MB_s": 380.455232,
+      "io_bytes": 11414798336,
+      "runtime_ms": 30003
+    },
+    "read8": {
+      "MB_s": 428.302428,
+      "io_bytes": 12857638912,
+      "runtime_ms": 30020
+    },
+    "write1": {
+      "MB_s": 200.838735,
+      "io_bytes": 6026166272,
+      "runtime_ms": 30005
+    },
+    "write8": {
+      "MB_s": 260.206072,
+      "io_bytes": 7813988352,
+      "runtime_ms": 30030
+    }
+  },
+  "jobs_passed": [
+    "oldcrc",
+    "read1",
+    "read8",
+    "write1",
+    "write8",
+    "verify",
+    "verify_sector",
+    "postflush"
+  ],
+  "crc": {
+    "existing_256MiB": "pass",
+    "fresh_256MiB": "pass",
+    "fresh_sector_offset_32MiB": "pass",
+    "post_flush": "pass"
+  },
+  "namespace_flush": "pass",
+  "written_bytes": 14142144512,
+  "exact_block_sector_accounting": true,
+  "smart": {
+    "before": {
+      "temperature": 309,
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "after": {
+      "temperature": 316,
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    }
+  },
+  "final_dma_status": 12,
+  "final_root_status": 83,
+  "final_rate_status": 9,
+  "final_nvme_state": "live",
+  "final_inflight": [
+    0,
+    0
+  ],
+  "sd_boot_files_changed": false,
+  "limitations": [
+    "Historical single-run comparisons, not interleaved statistical results.",
+    "No Gen1 retest, cold-cycle, endurance, full Recovery or compliance qualification.",
+    "Separate CRC regions verified; timed write region not CRC readback verified.",
+    "Gen2 default uses 32-bit/two-slot host configuration, unlike the 64-bit/eight-slot Gen3 image.",
+    "This does not establish an ACK-only causal throughput improvement."
+  ]
+}

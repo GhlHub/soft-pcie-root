@@ -18,13 +18,23 @@ From the repository root with Vivado 2026.1 available, use fresh output names:
 ```sh
 vivado -mode batch -source ip/soft_pcie_root/package.tcl \
   -log build/gen3_package_next.log -journal build/gen3_package_next.jou \
-  -tclargs build/gen3_package_next 1
+  -tclargs build/gen3_package_next
 vivado -mode batch -source experiments/gen3/build_host.tcl \
   -log build/gen3_board_next.log -journal build/gen3_board_next.jou \
   -tclargs build/gen3_board_next build/gen3_package_next/core
 python3 experiments/gen3/host_sources.py check build/gen3_package_next/sources.json
 python3 experiments/gen3/host_sources.py check build/gen3_board_next/sources.json
 ```
+
+The unified package provides one `soft_pcie_root:1.1` catalog entry. In a manual block
+design, double-click it and select **Enable experimental Gen3**; the experimental board
+recipe sets `CONFIG.ENABLE_GEN3=true` explicitly. The default board recipe sets it
+false. The optional packaging argument `1` sets the initial checkbox value only. Earlier
+sections below describing separate native host packages refer to historical builds. The
+unified 1.1 package has passed customization and synthesis/CDC checks for both
+selections; the physical measurements above predate it. Its own full route and board
+verification remain pending. Use the packaged block-design cell for AXI automation; see
+the [standalone wrapper limitation](../../docs/ip-guide.md#optional-gen3-packaging).
 
 Freeze RTL/scripts/constraints throughout the build. These commands build only;
 they do not program a board. Do not replace PL while Linux owns the host.

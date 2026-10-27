@@ -1,0 +1,7 @@
+Historical generation prompt; superseded by linkedin-ack-retirement-gen2-gen3.png.
+Statements about latest measurements below apply only to the time of generation.
+
+Built-in image generation edit of linkedin-performance-gen2-gen3.png.
+Latest measured Gen2 values remain from the earlier RX64 build; current ACK-retirement RTL has only Gen3 hardware measurements.
+
+Edit this LinkedIn graphic preserving its visual design, exact performance numbers, layout, colors and all other text. Change only the middle card heading from 'LATEST MEASURED GEN2' to 'LATEST GEN2 RESULTS'. Change its bottom caption from 'Earlier RX64 build' to 'Full qualification pending'. Replace the small sentence 'Historical measurements; latest Gen2 result is from the earlier RX64 build.' with 'Latest available measurements • Historical build comparison'. Keep all numbers unchanged: previous Gen2 read428.3/write259.7, latest measured Gen2 read428.7/write260.1, Gen3 read745.4/write567.7 MB/s. Preserve the prominent 'Gen3 pending further stabilization' banner exactly. Do not imply that current ACK-retirement RTL was measured at Gen2. Maintain crisp, legible typography.

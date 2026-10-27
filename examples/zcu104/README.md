@@ -59,11 +59,16 @@ no PCIe hard macro may appear. Output includes system.bit, system.xsa, reports
 and sources.json. The full example's resource count includes management/DDR/CDC,
 not just the protocol engine.
 
-For optional Gen3 packaging and its separate board recipe, see the
-[integration guide](../../docs/ip-guide.md#optional-gen3-packaging) and
-[experimental build instructions](../../experiments/gen3/README.md#current-design-and-reproduction).
-The default commands above still select Gen1/Gen2. Latest shared RTL changes
-have Gen3 physical evidence, not a new default-Gen2 hardware qualification.
+For optional Gen3 packaging and its separate board recipe, see the [integration
+guide](../../docs/ip-guide.md#optional-gen3-packaging) and [experimental build
+instructions](../../experiments/gen3/README.md#current-design-and-reproduction). The
+default commands above still select Gen1/Gen2. Both recipes instantiate
+`soft_pcie_root:1.1`; their `CONFIG.ENABLE_GEN3` value selects the backend. Manual GUI
+customization uses **Enable experimental Gen3**. The shared CDC entry point follows the
+elaborated backend automatically. Earlier separate Gen2/Gen3 packages have short
+physical I/O/CRC evidence. The unified 1.1 package has passed customization and
+synthesis/CDC checks for both selections, but still requires its own full route, audit
+and board verification. Broader qualification remains incomplete.
 
 ## Linux and first boot
 

@@ -1,10 +1,10 @@
 # Release boundary and further investigation
 
-The frozen release is Gen1/Gen2 x1. Current development adds optional experimental
-Gen3 x1 and changes shared host/replay RTL. Current Gen3 physical results do not
-qualify a newly rebuilt default Gen2 image or imply support for other hardware.
-See [performance history](performance-history.md) for completed improvements and
-[verification](verification.md) for evidence and remaining limits.
+The frozen release is Gen1/Gen2 x1. Current development adds optional experimental Gen3
+x1 and changes shared host/replay RTL. Separate current Gen3 and default Gen2 builds
+passed short physical I/O/CRC tests; they do not imply broader qualification or support
+for other hardware. See [performance history](performance-history.md) for completed
+improvements and [verification](verification.md) for evidence and remaining limits.
 
 ## Completed development steps
 
@@ -15,6 +15,8 @@ See [performance history](performance-history.md) for completed improvements and
 - Link-domain counters separating peer-credit, replay and formatter stalls.
 - Normal ACK retirement concurrent with later original packets, retaining
   exceptional-response drain barriers and immutable packet identities.
+- One version 1.1 Vivado catalog entry with a default-off experimental Gen3
+  checkbox; customization and synthesis/CDC checks passed for both selections.
 
 The latest 30-second QD8 measurements are 745.36 MB/s read and 567.71 MB/s write.
 The five-second link profile recorded no peer-credit or normal-ACK blocking, but
@@ -23,11 +25,15 @@ These events overlap. More DDR slots are not yet justified by these measurements
 
 ## Remaining work
 
+- Route, audit and physically verify both selections of the unified 1.1 package.
+- Resolve the standalone wrapper's stale read-outstanding annotation; use the
+  packaged block-design cell for AXI automation in the meantime.
+
 - Distinguish replay-window/peer ACK latency from PCS boundary, cadence and DLLP
   arbitration limits before changing capacity or scheduling.
 - Improve timing margin: current Gen3 setup slack is only +0.004 ns.
 - Resolve intermittent startup and complete full Recovery/equalization behavior.
-- Rebuild and physically verify the default Gen2 configuration after shared RTL changes.
+- Extend the new default Gen2 ACK-retirement hardware test to Gen1 and cold cycles.
 - Add repeated/interleaved benchmarks, longer runs, cold cycles and broader endpoint coverage.
 - Qualify OP063 with a reviewed FRU/VADJ policy and board bring-up.
 - Investigate wider links or other FPGA families only with matching PHY,

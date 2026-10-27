@@ -24,22 +24,55 @@ flowchart LR
 
 ### Optional Gen3 packaging
 
-Choose the backend when creating a fresh local IP package:
+Vivado now has one catalog definition, `soft-pcie.org:user:soft_pcie_root:1.1`, with an
+**Enable experimental Gen3** checkbox. It defaults off. Generate a fresh local
+repository once, containing both locally generated PHY backends:
 
 ```sh
-# Default: Gen1/Gen2 only, 32-bit host packet paths, two read slots.
-vivado -mode batch -source ip/soft_pcie_root/package.tcl -tclargs build/package_next 0
-# Experimental Gen3, 64-bit host packet paths, eight read slots.
-vivado -mode batch -source ip/soft_pcie_root/package.tcl -tclargs build/gen3_package_next 1
+vivado -mode batch -source ip/soft_pcie_root/package.tcl -tclargs build/package_next
 ```
 
-`ENABLE_GEN3` is the optional second Tcl argument (default `0`), a packaging-time
-choice, not a live register. The experimental choice retains its distinct
-`soft-pcie.org:experimental:gen3_soft_pcie_root:0.1` VLNV and uses the experimental
-board recipe. The default retains `soft-pcie.org:user:soft_pcie_root:1.0`.
-Both reuse the host bridge, packet CDC, validation and ownership logic. Gen3
-packaging generates its AMD PHY locally and includes the experimental link
-backend; it does not promote Gen3 into the qualified Gen1/Gen2 release.
+In Vivado, add `build/package_next/core` under **Project Settings → IP → Repository**,
+then use **Add IP → Soft PCIe Root Port (optional experimental Gen3)**. Double-click the
+block, open **Configuration**, and select **Enable experimental Gen3** as needed. Apply
+the customization and regenerate output products before synthesis/implementation. This
+is not a runtime register.
+
+The equivalent block-design Tcl is:
+
+```tcl
+create_bd_cell -type ip -vlnv soft-pcie.org:user:soft_pcie_root:1.1 pcie
+set_property CONFIG.ENABLE_GEN3 true [get_bd_cells pcie]
+```
+
+Setting it to `false` selects Gen1/Gen2. The checkbox propagates to the HDL
+`ENABLE_GEN3` parameter, selects exactly one PHY/link branch, and derives the host
+packet width, prefetch depth and AXI read-outstanding metadata together. Both choices
+reuse the host bridge, packet CDC, validation and replay ownership. Use the packaged
+**Add IP** block-design cell for AXI automation. Vivado 2026.1 updates its
+outstanding-read metadata correctly when the checkbox changes. The standalone
+`create_ip` HDL wrapper retains the default two-read interface annotation even when
+`ENABLE_GEN3=1`; its hardware still elaborates eight slots. Do not import that
+standalone wrapper as a module reference for AXI automation. DDR AXI and external ports
+remain unchanged. Generated native GT helpers have separate names to avoid collisions
+with legacy GT helpers; native constraints are generated from the checkbox during
+output-product generation and scoped to the customized IP. The disabled configuration
+emits no native constraints.
+
+The optional second packaging argument `0` or `1` now sets only the initial checkbox
+value; it no longer creates separate catalog identities. The historical
+`experiments/gen3/package_host.tcl` entry point delegates to the unified package with
+its initial checkbox on. Version 1.0 Gen2 and experimental 0.1 packages are historical
+artifacts; create a fresh 1.1 package rather than editing their XML. Remove the old
+experimental repository from the project's IP repository list to avoid retaining its
+separate legacy catalog entry.
+
+Use the shared ZCU104 CDC entry point, `examples/zcu104/constraints/zcu104_cdc.tcl`; it
+dispatches to the reviewed constraint set for the elaborated backend. The two board
+build recipes explicitly select false/true on the same catalog core. Gen3 remains
+experimental and needs further stabilization. Prior physical results refer to their
+exact pre-unification images; this packaging change needs its own full route and board
+verification.
 
 | Configuration | Host RX/TX packet width | Read prefetch | AXI outstanding reads/writes |
 | --- | --- | --- | --- |
@@ -47,12 +80,13 @@ backend; it does not promote Gen3 into the qualified Gen1/Gen2 release.
 | Gen3 enabled | 64/64 bits at 125 MHz | 8 x 64 B = 512 B | 8 / 2 |
 
 `M_DDR` remains AXI4 64-bit at 125 MHz in both configurations. Packet streams use
-valid/ready plus packet-end and final-single-DWORD signals; they are internal
-streams, not newly exposed AXI4-Stream ports. Gen3 uses a 64-bit whole-packet TX
-CDC and converts to 32-bit DWORDs in the 250 MHz link domain. The link serializer
-and replay interfaces retain their existing width. Fallback to Gen1/Gen2 retains
-the compiled host width and buffering. Four packet CDC slots still hold up to
-64 DWORDs each, and packet credits/replay capacity do not change.
+valid/ready plus packet-end and final-single-DWORD signals; they are internal streams,
+not newly exposed AXI4-Stream ports. Gen3 uses a 64-bit whole-packet TX CDC and converts
+to 32-bit DWORDs in the 250 MHz link domain. The link serializer and replay interfaces
+retain their existing width. The selected host width and buffering stay fixed throughout
+operation; the checkbox does not imply that the experimental native backend supports
+runtime Gen2 fallback. Four packet CDC slots still hold up to 64 DWORDs each, and packet
+credits/replay capacity do not change.
 
 In wide mode, AR issuance and completion transmission have independent ownership.
 Once all chunks of one validated SSD read have been issued, parsing can admit the
@@ -65,30 +99,30 @@ A failing read stops new issuance, emits CA for the failing slot when possible,
 and drains all accepted bursts. Link loss drains held AR and accepted owners.
 New control resets are synchronous; packet/payload RAM is unreset.
 
-The 512-byte default is an estimate, not a measured performance guarantee. At
-1 GB/s, the previous approximately 258 ns burst residence requires about 258 B
-(five 64-byte slots). Including roughly 88 ns to hand off a completion raises
-the estimate to six slots; eight provides margin. This relies on overlapping
-DDR reads and adequate sustained DDR bandwidth. The bridge parameter supports
-2/4/8/16 slots for experiments; packaged dimensions are fixed together with
-interface metadata and board audits. The newest configuration has passed simulation, packaging, RTL elaboration
-and isolated synthesis. The Gen3-enabled configuration also passed fresh full
-synthesis, routing and reopened audits. After fixing an initial-link drain bug,
-it also passed temporary NVMe I/O/CRC and performance tests. Gen3 link startup
-remains intermittent. The latest normal-ACK image booted on its first attempt;
-that does not resolve earlier failures. See [verification](verification.md#optional-gen3-and-ddr-prefetch-development).
+The 512-byte default is an estimate, not a measured performance guarantee. At 1 GB/s,
+the previous approximately 258 ns burst residence requires about 258 B (five 64-byte
+slots). Including roughly 88 ns to hand off a completion raises the estimate to six
+slots; eight provides margin. This relies on overlapping DDR reads and adequate
+sustained DDR bandwidth. The bridge parameter supports 2/4/8/16 slots for experiments;
+packaged dimensions are fixed together with interface metadata and board audits. The
+earlier separate Gen3 package passed full synthesis, routing and reopened audits. After
+fixing an initial-link drain bug, that image also passed temporary NVMe I/O/CRC and
+performance tests. These results predate the unified 1.1 catalog; its validation
+currently stops at customization and synthesis/CDC checks for both selections. Gen3 link
+startup remains intermittent. The latest normal-ACK image booted on its first attempt;
+that does not resolve earlier failures. See
+[verification](verification.md#optional-gen3-and-ddr-prefetch-development).
 
 ### Normal ACK retirement
 
-The shared replay engine now retires acknowledged sent entries while later
-originals are being copied or staged. Active slot/sequence identities stay
-latched; cumulative retirement preserves the next staged/unsent identities.
-NAK/replay transitions retain drain barriers, and unsent/future ACKs release
-nothing. The same-edge last-old-ACK/new-wire-completion case starts a fresh
-timeout epoch. Packet RAM stays unreset. Current physical tests cover the
-Gen3-enabled configuration; Gen2 has regression simulation coverage for this
-change. See [performance history](performance-history.md) and
-[verification](verification.md).
+The shared replay engine now retires acknowledged sent entries while later originals are
+being copied or staged. Active slot/sequence identities stay latched; cumulative
+retirement preserves the next staged/unsent identities. NAK/replay transitions retain
+drain barriers, and unsent/future ACKs release nothing. The same-edge
+last-old-ACK/new-wire-completion case starts a fresh timeout epoch. Packet RAM stays
+unreset. Current physical tests cover both the Gen3-enabled and default Gen2
+configurations, with separate builds and short I/O/CRC benchmarks. See [performance
+history](performance-history.md) and [verification](verification.md).
 
 ### Earlier receive-width development change
 

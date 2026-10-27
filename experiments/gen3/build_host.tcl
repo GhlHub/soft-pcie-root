@@ -19,7 +19,8 @@ set_property -dict [list CONFIG.PSU__USE__M_AXI_GP0 {1} CONFIG.PSU__USE__M_AXI_G
  CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} CONFIG.PSU__FPGA_PL0_ENABLE {1} \
  CONFIG.PSU__USE__S_AXI_GP0 {0} CONFIG.PSU__USE__S_AXI_GP1 {0} CONFIG.PSU__USE__S_AXI_GP2 {1} CONFIG.PSU__SAXIGP2__DATA_WIDTH {128} CONFIG.PSU__USE__S_AXI_GP3 {0} \
  CONFIG.PSU__USE__S_AXI_GP4 {0} CONFIG.PSU__USE__S_AXI_GP5 {0} CONFIG.PSU__USE__S_AXI_GP6 {0}] [get_bd_cells ps]
-create_bd_cell -type ip -vlnv soft-pcie.org:experimental:gen3_soft_pcie_root:0.1 pcie
+create_bd_cell -type ip -vlnv soft-pcie.org:user:soft_pcie_root:1.1 pcie
+set_property CONFIG.ENABLE_GEN3 true [get_bd_cells pcie]
 # Keep the board's stock 100 MHz PL0 initialization; derive management50.
 create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz management_clock
 set_property -dict [list CONFIG.PRIM_IN_FREQ {100} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50} CONFIG.CLKOUT2_USED {true} CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {125} CONFIG.RESET_TYPE {ACTIVE_LOW}] [get_bd_cells management_clock]
@@ -62,9 +63,9 @@ set bd [get_files system.bd]
 make_wrapper -files $bd -top
 add_files [file join [file dirname $bd] hdl system_wrapper.v]
 read_xdc [file join $root examples zcu104 constraints zcu104_fmc.xdc]
-add_files -fileset constrs_1 [file join $root experiments gen3 host_constraints.tcl]
-set_property FILE_TYPE XDC [get_files host_constraints.tcl]
-set_property PROCESSING_ORDER LATE [get_files host_constraints.tcl]
+add_files -fileset constrs_1 [file join $root examples zcu104 constraints zcu104_cdc.tcl]
+set_property FILE_TYPE TCL [get_files zcu104_cdc.tcl]
+set_property PROCESSING_ORDER LATE [get_files zcu104_cdc.tcl]
 set_property top system_wrapper [current_fileset]
 generate_target all $bd
 launch_runs synth_1 -jobs 8

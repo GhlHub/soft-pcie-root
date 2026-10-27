@@ -7,11 +7,14 @@ wider transmit transfers with eight-slot DDR prefetch and concurrent normal ACK
 retirement produced the later write improvements. These are measured single-drive
 results, not projected speeds for other topologies.
 
-The frozen release remains Gen1/Gen2 x1. The current source tree also contains
-optional experimental Gen3 and changes to shared host/replay logic. Current Gen3
-hardware tests do not requalify a newly built default Gen2 configuration. The
-historical Gen2 bitstream remains the SD boot default; the latest Gen3 image was
-tested through temporary programming.
+The frozen release remains Gen1/Gen2 x1. The current source tree also contains optional
+experimental Gen3 and changes to shared host/replay logic. The current default Gen2
+ACK-retirement configuration has now also passed its own fresh build, audit and physical
+I/O/CRC tests. The historical Gen2 bitstream remains the SD boot default; the latest
+Gen3 image was tested through temporary programming. All benchmark rows predate the
+unified 1.1 catalog/checkbox packaging. That package has passed customization and
+synthesis/CDC checks for both selections, but has no new routed or physical performance
+result; see [catalog validation](verification.md#unified-catalog-development).
 
 ## Comparable physical benchmarks
 
@@ -32,16 +35,18 @@ small differences should not be treated as statistically established changes.
 | 64-bit RX packet path [6] | Gen2 x1 | 384.26 | 428.68 | 200.17 | 260.14 |
 | 64-bit RX packet path [6] | Gen3 x1 | 612.22 | 741.81 | 200.43 | 260.30 |
 | 64-bit RX/TX and eight-slot read prefetch [7] | Gen3 x1 | 611.16 | 742.25 | 297.12 | 454.74 |
+| **Normal ACK retirement, current [9]** | **Gen2 x1** | **380.46** | **428.30** | **200.84** | **260.21** |
 | **Normal ACK retirement, current [8]** | **Gen3 x1** | **599.84** | **745.36** | **339.54** | **567.71** |
 
-Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json),
-[2 — repackaged example](evidence/repackaged_v1/completion.json),
-[3 — payload banking](evidence/ddr_banked_v1/completion.json),
-[4 — initial Gen3](../experiments/gen3/evidence/performance-comparison.json),
-[5 — transmit window](../experiments/gen3/evidence/tx-window.json),
-[6 — RX64](evidence/rx64_v1/completion.json),
-[7 — eight-slot prefetch](evidence/prefetch_v1/completion.json),
-[8 — current 30-second measurements](evidence/prefetch_v1/ack-retirement-performance.json).
+Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json), [2
+— repackaged example](evidence/repackaged_v1/completion.json), [3 — payload
+banking](evidence/ddr_banked_v1/completion.json), [4 — initial
+Gen3](../experiments/gen3/evidence/performance-comparison.json), [5 — transmit
+window](../experiments/gen3/evidence/tx-window.json), [6 —
+RX64](evidence/rx64_v1/completion.json), [7 — eight-slot
+prefetch](evidence/prefetch_v1/completion.json), [8 — current Gen3
+measurements](evidence/prefetch_v1/ack-retirement-performance.json), [9 — current Gen2
+measurements](evidence/prefetch_v1/ack-retirement-gen2.json).
 
 ## What each change accomplished
 
@@ -109,6 +114,21 @@ QD8 writes improved 24.84% over the eight-slot build. Read differences were
 −1.85% and +0.42%; repeated trials would be needed to establish a systematic
 read effect. See the [ownership analysis](../experiments/gen3/downstream-investigation.md#normal-ack-retirement-implementation).
 
+### Gen2 measurement with the same ACK retirement logic
+
+A fresh build of the current default Gen2 package measured QD1/QD8 reads of
+380.46/428.30 MB/s and writes of 200.84/260.21 MB/s. This is essentially the same
+throughput as the originally shared packaged Gen2 baseline (QD8 read/write 428.33/259.73
+MB/s). Normal ACK retirement did not materially improve measured throughput in this
+configuration. Unlike Gen3, the default Gen2 package retains 32-bit host packet paths
+and two 64-byte prefetch slots. The comparison is between the packaged configurations,
+not an isolated link-rate experiment.
+
+All eight benchmark/CRC jobs passed with exact 14,142,144,512-byte write accounting,
+unchanged SMART error/unsafe-shutdown counts and an idle healthy finish. The new Gen2
+image is temporarily running; SD boot files are unchanged. [Gen2
+evidence](evidence/prefetch_v1/ack-retirement-gen2.json).
+
 ## Diagnostic runs and remaining constraints
 
 These shorter runs explain the write path; they are separate from the
@@ -133,12 +153,12 @@ The next investigation is to distinguish replay-window/peer ACK latency from
 PCS service, block boundaries and DLLP arbitration. The data does not yet prove
 that a deeper window or more DDR prefetch is the best next change.
 
-## Current build and verification scope
+## Gen3 build and verification scope
 
-Current image: `build/ack_retire_board_v1/system.bit`, SHA256
-`7ff1c4483da56fb98ae83a53204fe9c9bf8713a779b2316a6463ba0fb19c0860`.
-Its source hashes and independent implementation audit are recorded in
-[ACK retirement evidence](evidence/prefetch_v1/ack-retirement.json).
+Gen3 image: `build/ack_retire_board_v1/system.bit`, SHA256
+`7ff1c4483da56fb98ae83a53204fe9c9bf8713a779b2316a6463ba0fb19c0860`. Its source hashes
+and independent implementation audit are recorded in [ACK retirement
+evidence](evidence/prefetch_v1/ack-retirement.json).
 
 | Complete ZCU104 example | Current value |
 | --- | ---: |

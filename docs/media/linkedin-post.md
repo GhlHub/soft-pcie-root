@@ -1,5 +1,7 @@
 # LinkedIn draft for the historical Gen2 release
 
+For the later Gen2/Gen3 comparison, use the [current asset notes](README.md).
+
 Suggested image: [marketing graphic](linkedin-marketing-v2.png).
 
 PCIe, built in logic.

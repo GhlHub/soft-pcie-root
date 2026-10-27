@@ -40,7 +40,7 @@ set src [get_cells -hier -regexp {.*rx_crossing/m_gray_q_reg\[[0-9]+\]}]
 set dst [get_cells -hier -regexp {.*rx_crossing/s_read_meta_q_reg\[[0-9]+\]}]
 set_max_delay -datapath_only 4.000 -from $src -to $dst
 set_bus_skew 4.000 -from $src -to $dst
-set ram [get_cells -hier -regexp {.*rx_crossing/(data_q_reg|length_q_reg).*} -filter {REF_NAME =~ RAMD* || REF_NAME =~ RAMS*}]
+set ram [get_cells -hier -regexp {.*rx_crossing/(data_q_reg|length_q_reg).*} -filter {REF_NAME =~ RAMD.* || REF_NAME =~ RAMS.*}]
 set capture [get_cells -hier -regexp {.*rx_crossing/(prefetch_data_q_reg|read_length_q_reg)\[[0-9]+\]}]
 set_max_delay -datapath_only 8.000 -from $ram -to $capture
 set_bus_skew 8.000 -from $ram -to $capture
@@ -53,7 +53,7 @@ set src [get_cells -hier -regexp {.*tx_crossing/m_gray_q_reg\[[0-9]+\]}]
 set dst [get_cells -hier -regexp {.*tx_crossing/s_read_meta_q_reg\[[0-9]+\]}]
 set_max_delay -datapath_only 4.000 -from $src -to $dst
 set_bus_skew 4.000 -from $src -to $dst
-set ram [get_cells -hier -regexp {.*tx_crossing/(data_q_reg|length_q_reg).*} -filter {REF_NAME =~ RAMD* || REF_NAME =~ RAMS*}]
+set ram [get_cells -hier -regexp {.*tx_crossing/(data_q_reg|length_q_reg).*} -filter {REF_NAME =~ RAMD.* || REF_NAME =~ RAMS.*}]
 set capture [get_cells -hier -regexp {.*tx_crossing/(prefetch_data_q_reg|read_length_q_reg)\[[0-9]+\]}]
 set_max_delay -datapath_only 8.000 -from $ram -to $capture
 set_bus_skew 8.000 -from $ram -to $capture

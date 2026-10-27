@@ -6,6 +6,7 @@ R=Path(__file__).resolve().parents[1]
 def hashes():
  paths=sorted((R/'ip').rglob('*.sv'))+sorted((R/'ip').rglob('*.tcl'))
  paths+=sorted((R/'examples/zcu104').rglob('*.tcl'))+sorted((R/'examples/zcu104').rglob('*.xdc'))
+ paths += sorted(p for p in (R/'experiments/gen3').iterdir() if p.suffix in ('.sv', '.tcl', '.py') and not p.name.startswith('test_'))
  paths+=[R/'scripts/host_sources.py']
  return {str(p.relative_to(R)):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 if __name__=='__main__':

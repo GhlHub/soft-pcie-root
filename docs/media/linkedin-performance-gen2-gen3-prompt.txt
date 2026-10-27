@@ -1,0 +1,51 @@
+Historical generation prompt; superseded by linkedin-ack-retirement-gen2-gen3.png.
+Statements about latest measurements below apply only to the time of generation.
+
+Generated with the built-in image generation tool.
+Asset: linkedin-performance-gen2-gen3.png
+Measurements: docs/performance-history.md, 30-second QD8 runs.
+Gen2 latest measured is the earlier RX64 image, not the current shared RTL rebuilt for Gen2.
+
+Use case: ads-marketing.
+Create a polished landscape 16:9 LinkedIn technology progress graphic for the open-source project soft-pcie-root. Premium editorial design, excellent mobile readability, large crisp typography, dark graphite/navy background, cyan highlights for Gen2, warm amber highlights for experimental Gen3. A subtle conceptual FPGA circuit board and single M.2 SSD illustration in the background; performance comparison occupies most of the image. This is a new companion to an earlier dark cyan FPGA launch graphic, not an exact hardware photograph.
+Headline: "Soft PCIe. Faster in logic."
+Subheading: "Measured Linux + NVMe performance"
+Three spacious equal-width comparison cards with read/write metrics, aligned and highly legible. EXACT card text:
+LEFT:
+"PREVIOUSLY SHARED"
+"Gen2 x1"
+"428.3 MB/s"
+"READ"
+"259.7 MB/s"
+"WRITE"
+"Packaged baseline"
+MIDDLE:
+"LATEST MEASURED GEN2"
+"Gen2 x1"
+"428.7 MB/s"
+"READ"
+"260.1 MB/s"
+"WRITE"
+"Earlier RX64 build"
+RIGHT:
+"CURRENT EXPERIMENTAL"
+"Gen3 x1"
+"745.4 MB/s"
+"READ"
+"567.7 MB/s"
+"WRITE"
+"ACK retirement optimized"
+
+Directly below the cards, a prominent readable amber banner with EXACT text:
+"Gen3 pending further stabilization"
+This is a substantive status label, not tiny fine print.
+One small clear context line:
+"ZCU104 • Samsung 990 EVO • 1 MiB sequential • QD8 • direct I/O • 30 s"
+Another legible scope line:
+"Historical measurements; latest Gen2 result is from the earlier RX64 build."
+Footer:
+"No hard PCIe block. No vendor PCIe controller IP."
+"soft-pcie-root"
+"github.com/GhlHub/soft-pcie-root"
+
+All numbers must be rendered exactly, no invented percentages or additional performance values. No claim of compliance, production readiness, current Gen2 retesting, RAID, extra lanes, or Gen3 stability. No vendor logos. Keep generous margins and strong whitespace, restrained illustration, typography dominant. Give the Gen3 status banner strong visual prominence. Read and write must remain clearly associated with their respective values. All text should be spelled correctly.

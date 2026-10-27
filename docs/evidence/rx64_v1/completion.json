@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "status": "physically_verified",
+  "scope": "Temporary RX64 Gen2 and experimental Gen3 ZCU104 NVMe I/O, CRC and performance verification",
+  "hardware": {
+    "board": "ZCU104",
+    "adapter": "OP047 Rev D, SSD1",
+    "ssd": "Samsung 990 EVO 1 TB"
+  },
+  "fio_settings": {
+    "version": "fio-3.38",
+    "direct": true,
+    "ioengine": "libaio",
+    "jobs": 1,
+    "block_size_bytes": 1048576,
+    "queue_depths": [
+      1,
+      8
+    ],
+    "runtime_seconds": 30,
+    "read_range_GiB": [
+      0,
+      4
+    ],
+    "write_range_GiB": [
+      8,
+      12
+    ],
+    "write_refill_buffers": true,
+    "write_randseed": 19047,
+    "write_end_fsync": true
+  },
+  "builds": {
+    "gen2": {
+      "link": "Gen2 x1",
+      "bitstream_sha256": "bf114eb40f563ec2a133da920ce244be11b9c91092b46c8409a46d0a62c46660",
+      "source_manifest_sha256": "ab69ce5d836773f44c8208fedc3ddd74894409bd4b327714abaf197d7dcb8661",
+      "benchmark_boots_passed": 1,
+      "failed_boots_this_test": 0,
+      "fio_jobs_passed": 8,
+      "performance": {
+        "read_qd1": {
+          "rx64_MB_s": 384.264677,
+          "prior_rx32_MB_s": 380.795157,
+          "change_percent": 0.9111250330318565
+        },
+        "read_qd8": {
+          "rx64_MB_s": 428.68028,
+          "prior_rx32_MB_s": 428.645349,
+          "change_percent": 0.008149161091197676
+        },
+        "write_qd1": {
+          "rx64_MB_s": 200.174748,
+          "prior_rx32_MB_s": 200.244641,
+          "change_percent": -0.03490380549060479
+        },
+        "write_qd8": {
+          "rx64_MB_s": 260.136237,
+          "prior_rx32_MB_s": 259.16757,
+          "change_percent": 0.3737608837401929
+        }
+      },
+      "crc": {
+        "existing_256MiB_at_16GiB": "pass",
+        "fresh_256MiB_at_16GiB": "pass",
+        "sector_offset_32MiB_at_20GiB_plus_512_bytes": "pass",
+        "postflush_256MiB_read": "pass"
+      },
+      "namespace_flush": "pass",
+      "written_bytes": 14120124416,
+      "sector_accounting": "exact",
+      "inflight": [
+        0,
+        0
+      ],
+      "smart": {
+        "critical_warning": {
+          "before": 0,
+          "after": 0
+        },
+        "media_errors": {
+          "before": 0,
+          "after": 0
+        },
+        "num_err_log_entries": {
+          "before": 0,
+          "after": 0
+        },
+        "unsafe_shutdowns": {
+          "before": 26,
+          "after": 26
+        }
+      },
+      "raw_summary_sha256": "e87f799e83c00356d8cc68f974da47692bd2194d93b47f7adb930cbddc919edf"
+    },
+    "gen3": {
+      "link": "Gen3 x1",
+      "bitstream_sha256": "ed86c3263bb46c958c1fd924051664f8f6eed73888295071122c1a4ca35fea88",
+      "source_manifest_sha256": "bf441302a8ed86a12c39ee6f82243965c623e5f4d79b7f4df3bc200537fcca68",
+      "benchmark_boots_passed": 1,
+      "failed_boots_this_test": 0,
+      "fio_jobs_passed": 8,
+      "performance": {
+        "read_qd1": {
+          "rx64_MB_s": 612.222711,
+          "prior_rx32_MB_s": 389.450115,
+          "change_percent": 57.201830842956625
+        },
+        "read_qd8": {
+          "rx64_MB_s": 741.805239,
+          "prior_rx32_MB_s": 433.815222,
+          "change_percent": 70.99566851990271
+        },
+        "write_qd1": {
+          "rx64_MB_s": 200.426055,
+          "prior_rx32_MB_s": 200.06324,
+          "change_percent": 0.18135015708031776
+        },
+        "write_qd8": {
+          "rx64_MB_s": 260.302157,
+          "prior_rx32_MB_s": 260.485413,
+          "change_percent": -0.07035173213325585
+        }
+      },
+      "crc": {
+        "existing_256MiB_at_16GiB": "pass",
+        "fresh_256MiB_at_16GiB": "pass",
+        "sector_offset_32MiB_at_20GiB_plus_512_bytes": "pass",
+        "postflush_256MiB_read": "pass"
+      },
+      "namespace_flush": "pass",
+      "written_bytes": 14132707328,
+      "sector_accounting": "exact",
+      "inflight": [
+        0,
+        0
+      ],
+      "smart": {
+        "critical_warning": {
+          "before": 0,
+          "after": 0
+        },
+        "media_errors": {
+          "before": 0,
+          "after": 0
+        },
+        "num_err_log_entries": {
+          "before": 0,
+          "after": 0
+        },
+        "unsafe_shutdowns": {
+          "before": 26,
+          "after": 26
+        }
+      },
+      "raw_summary_sha256": "a508ffeb94c0684ecfb6720e99fb43765c8dfdd239ce39f632a71e74c836256d"
+    }
+  },
+  "gen3_read_profile": {
+    "runtime_seconds": 10,
+    "fio_MB_s": 738.748029,
+    "overflow": 0,
+    "fault_cycles": 0,
+    "written_bytes": 0,
+    "before_status": [
+      12
+    ],
+    "after_status": [
+      12
+    ],
+    "cycle_percent": {
+      "read_active": 2.2847050048658426,
+      "slot_empty_wait": 1.3034630267664737,
+      "slot_ready": 0.061861921720714114,
+      "tx_stall": 0.0,
+      "tx_dwords": 0.8801748779723233,
+      "ar_stall": 0.0,
+      "r_wait": 0.9902732233273132,
+      "r_first_wait": 0.9902732233273132,
+      "slots_full": 0.9433722059104216,
+      "issue_slots_full": 2.0927031810134704e-05,
+      "rx_empty": 9.325182239055762,
+      "rx_copy": 80.15605918509276,
+      "check_fence": 3.7031152933579015,
+      "read_requests": 0.039205178406331434,
+      "drain": 0.039205178406331434,
+      "queued_blocked": 7.851385944999206,
+      "rx_backpressure": 3.248050293073848,
+      "writer_busy": 84.52692090302112,
+      "write_outstanding": 92.76753748354535,
+      "check": 8.1948483925793,
+      "msi": 0.0010852820246829416
+    },
+    "note": "Counts overlap and include fio startup/teardown. rx_copy measures 64-bit consumer cycles, not DWORDs."
+  },
+  "deployment": {
+    "temporary_jtag": true,
+    "sd_boot_files_changed": false,
+    "final_running_image": "RX64 Gen2",
+    "final_bitstream_sha256": "bf114eb40f563ec2a133da920ce244be11b9c91092b46c8409a46d0a62c46660",
+    "final_crc_read_bytes": 268435456,
+    "final_crc": "pass",
+    "final_crc_MB_s": 403.662339,
+    "inflight": [
+      0,
+      0
+    ]
+  },
+  "limitations": [
+    "One benchmark boot per image, plus final RX64 Gen2 CRC boot; no cold-cycle or long-duration qualification",
+    "Gen3 pre-existing intermittent startup remains unresolved despite success on this attempt",
+    "No new full live Recovery/fallback, equalization phases 2/3 or electrical compliance qualification",
+    "Historical before/after performance comparisons, not statistically established interleaved trials",
+    "SD still boots the previous image; no persistent deployment performed"
+  ]
+}

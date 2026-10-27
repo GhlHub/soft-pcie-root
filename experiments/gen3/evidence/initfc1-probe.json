@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "scope": "Bounded InitFC1 diagnostic; no completed local Data Link initialization or Gen3 NVMe path",
+  "build": "gen3_initfc1_board_v1",
+  "bitstream_sha256": "e5209454fdd9af7f3c1b1e142c3701d5b8908ee09a7af2b32a7c2e67ec32083c",
+  "source_sha256": {
+    "experiments/gen3/gen3_eq_board.sv": "a4e4e66409b55c800dd6466cd2d6850c7136c504a2f12914ec4be8b9eae7da5d",
+    "experiments/gen3/gen3_eq_bringup.sv": "d868310bf5ac1d086993d65805d2ce972d38deaf6c2d1c4c986469edb94606a9",
+    "experiments/gen3/gen3_legacy_training.sv": "ef205424334b6007af067618944b027108bc2c9f52c2e03b5fc27d33530d6864",
+    "experiments/gen3/gen3_startup_ltssm.sv": "5d6f282a9d8aeb4e904837ea3e4fc65a45c8dc8293bc0c9a3ae85cdf6c86976f",
+    "experiments/gen3/gen3_training_tx.sv": "ae7de58369109d3e7c6b2b36f475082b292f08a303425867de53578999f52204",
+    "experiments/gen3/gen3_training_rx.sv": "649bb8c92f43cc4944935299507d8fef7be973ddc812f6e58c495877042b7926",
+    "experiments/gen3/gen3_recovery_tx.sv": "65db80d83e9aaa9e55ac63ca850312ac9d3badf012818f4e312e30a95105eb50",
+    "experiments/gen3/gen3_native_rx.sv": "c177ca55140f61f74391a1a60389b30e3f6e1330d2f8ac8cc51fe45158798ca1",
+    "experiments/gen3/gen3_data_rx.sv": "4e1a216cda51fd69f4fac822796e29e0d5ed5eba9593a9f0662918ab64b4b300",
+    "experiments/gen3/gen3_stream_rx.sv": "e84c5963eed6a5afe4c12907e7930786998d5bf831bb9eb6fea04d66b5d1fd44",
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "5711aab344980de58455793f4320754491d5bde9a420e952161487879fb3bc5e",
+    "experiments/gen3/gen3_packet_gate.sv": "bbf110e523fb9f5f6751f7e54002a8aa752fafca4c3f3adf58ef2e34873fba88",
+    "experiments/gen3/gen3_eq_phase1.sv": "db6e15bd291c754efe0c79fd0de63782fb5045bb4cf209785c701a185cbd7dba",
+    "experiments/gen3/gen3_clock_watch.sv": "a9298c590ec20052ca44a643df40daa75e9d0cb2831e91f3b6250af3b16c9d1a",
+    "experiments/gen3/build_eq_board.tcl": "a4901372153cb14c13e517346ddbc1b9e668e5a3578866b70f25121b8db247b2",
+    "experiments/gen3/eq_board_constraints.tcl": "e07e79f4566ecaeff616ed2f040e0eb35ee9fba43f822e009de2bc1f1b14d1e0",
+    "experiments/gen3/audit_ila_config_cdc.tcl": "030420b863fd77342cca3a9536124c1637b64ac82d21785e9f1e2f47a4bdca00",
+    "experiments/gen3/eq_board_sources.py": "8d7e43e0339c559b070608abee695c6382ab38e4cebfcffe68d5884cd5649ffe",
+    "experiments/gen3/instrument_eq_phy.py": "93fc36fee372d27ca7f875a307c35df70405dc46b7b0ecce7f3d050f8e7a5369",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2"
+  },
+  "supplemental_sha256": {
+    "experiments/gen3/analyze_tx_capture.py": "bb41c05193c5eb68bb6780182ff819b48db264a78c2e4f26b71a51800167a598",
+    "experiments/gen3/check_recovery_tx.py": "5162ff209e92c15993798dc84e175b0b37b03fe2b7615b995d8ac05e3549962c",
+    "experiments/gen3/test_recovery_tx.sv": "fe6a8ec1cf472d7eaea004f1b956e1b903abc9783f00049b99adc8c738aeb7c4",
+    "experiments/gen3/check_all.py": "a9139c31c7c234a0787de3ebc23e15f63faff771794deca305bd1828cbb64f37",
+    "experiments/gen3/test_recovery_bringup.sv": "c226390f51b7ab47d7e713ad2d4a9bb589a4e8535ba5f3d912438542d5a9da5b"
+  },
+  "simulation": {
+    "full_regression": "pass",
+    "initfc1_stop_phases": [
+      -1,
+      0,
+      1,
+      63,
+      64
+    ],
+    "independent_crc_and_wire_checks": "pass",
+    "pinned_dllp_oracle": {
+      "repository": "https://github.com/alexforencich/cocotbext-pcie",
+      "commit": "4befa5eb60f12bc7e1050509defbb9afc33a15a9",
+      "file": "cocotbext/pcie/core/dllp.py",
+      "sha256": "ede08367c704c98250f2bb8f0212c20ab6dad851f124f0ce68a5792e9eab08d5",
+      "license": "MIT",
+      "purpose": "Optional independent DLLP encoding/CRC simulation oracle; not synthesized or vendored"
+    },
+    "capture_decoder_negative_control": "corrupted DLLP rejected (packet mismatch and SKP parity error)"
+  },
+  "local_credits": {
+    "PH": 1,
+    "PD": 8,
+    "NPH": 1,
+    "NPD": 1,
+    "CPLH": "infinite (zero encoded), zero requests issued",
+    "CPLD": "infinite (zero encoded), zero requests issued",
+    "backing": "16 slots of 64 DWORDs; queue held throughout trial; drained only after TX stopped; packet RAM unreset"
+  },
+  "peer_credits": {
+    "PH": 127,
+    "PD": 512,
+    "NPH": 127,
+    "NPD": 60,
+    "CPLH": "infinite",
+    "CPLD": "infinite"
+  },
+  "local_transmission": {
+    "initfc1_packets": [
+      {
+        "sample": 2095,
+        "packet": "40004008eaee"
+      },
+      {
+        "sample": 3119,
+        "packet": "50004001a84f"
+      },
+      {
+        "sample": 4147,
+        "packet": "60000000d892"
+      },
+      {
+        "sample": 5174,
+        "packet": "40004008eaee"
+      },
+      {
+        "sample": 6198,
+        "packet": "50004001a84f"
+      },
+      {
+        "sample": 7222,
+        "packet": "60000000d892"
+      }
+    ],
+    "samples": 8192,
+    "acquired": true,
+    "blocks": {
+      "blocks_before_acquisition": 24,
+      "eieos": 15,
+      "ts1": 440,
+      "skp": 5,
+      "ts2": 25,
+      "sds": 1,
+      "data": 1506,
+      "initfc1": 6
+    },
+    "nonzero_data_dwords": {
+      "0040acf0": 2,
+      "eeea0840": 2,
+      "0090801f": 4,
+      "0050acf0": 2,
+      "4fa80140": 2,
+      "0060acf0": 2,
+      "92d80000": 2
+    },
+    "valid_cycle_gaps": {
+      "1": 7939,
+      "2": 126
+    },
+    "last_ts2_sample": 2050,
+    "sds_sample": 2054,
+    "first_data_block_end": 2058,
+    "last_data_block_end": 8189,
+    "final_local_state_cycles": 6100,
+    "errors": []
+  },
+  "trials": [
+    {
+      "name": "transition",
+      "result": "completed local L0 observation",
+      "local_failure": 0,
+      "observation_cycles": 1250000,
+      "rx_valid_cycles": 1250148,
+      "accepted_rx_words": 1230915,
+      "decoded_words": 1227448,
+      "data_blocks": 306863,
+      "framed_dllps": 611182,
+      "dllp_crc_errors": 0,
+      "validated_dllp_counter": 65535,
+      "validated_counter_saturated": true,
+      "receive_error_counter": 2,
+      "capture_packets": {
+        "401fc200ba71": 503,
+        "501fc03cafd4": 503,
+        "60000000d892": 503,
+        "c01fc200c00e": 478,
+        "d01fc03cd5ab": 477,
+        "e0000000a2ed": 477
+      }
+    },
+    {
+      "name": "stop",
+      "result": "completed local L0 observation",
+      "local_failure": 0,
+      "observation_cycles": 1250000,
+      "rx_valid_cycles": 1250154,
+      "accepted_rx_words": 1230920,
+      "decoded_words": 1227449,
+      "data_blocks": 306863,
+      "framed_dllps": 611183,
+      "dllp_crc_errors": 0,
+      "validated_dllp_counter": 65535,
+      "validated_counter_saturated": true,
+      "receive_error_counter": 2,
+      "capture_packets": {
+        "e0000000a2ed": 681,
+        "c01fc200c00e": 680,
+        "d01fc03cd5ab": 680
+      }
+    },
+    {
+      "name": "sparse0",
+      "result": "completed local L0 observation",
+      "local_failure": 0,
+      "observation_cycles": 1250000,
+      "rx_valid_cycles": 1250152,
+      "accepted_rx_words": 1230919,
+      "decoded_words": 1227452,
+      "data_blocks": 306864,
+      "framed_dllps": 611189,
+      "dllp_crc_errors": 0,
+      "validated_dllp_counter": 65535,
+      "validated_counter_saturated": true,
+      "receive_error_counter": 2,
+      "capture_packets": {
+        "401fc200ba71": 503,
+        "501fc03cafd4": 503,
+        "60000000d892": 503,
+        "c01fc200c00e": 862,
+        "d01fc03cd5ab": 861,
+        "e0000000a2ed": 861
+      }
+    },
+    {
+      "name": "sparse1",
+      "result": "completed local L0 observation",
+      "local_failure": 0,
+      "observation_cycles": 1250000,
+      "rx_valid_cycles": 1250153,
+      "accepted_rx_words": 1230920,
+      "decoded_words": 1227448,
+      "data_blocks": 306863,
+      "framed_dllps": 611182,
+      "dllp_crc_errors": 0,
+      "validated_dllp_counter": 65535,
+      "validated_counter_saturated": true,
+      "receive_error_counter": 2,
+      "capture_packets": {
+        "401fc200ba71": 502,
+        "501fc03cafd4": 502,
+        "60000000d892": 502,
+        "c01fc200c00e": 863,
+        "d01fc03cd5ab": 862,
+        "e0000000a2ed": 862
+      }
+    }
+  ],
+  "additional_attempts": {
+    "gen1_startup_timeouts": 2
+  },
+  "physical_result": "SSD sent CRC-valid InitFC1 and then InitFC2; InitFC1 probe elicited response absent in earlier idle-only trials",
+  "limitations": [
+    "No local InitFC2, ACK/NAK, UpdateFC, replay or TLP transmission",
+    "TX trace observes the fabric-to-PHY interface, not serialized electrical signals",
+    "Sparse traces filled after about 4092 DLLPs; they do not span the full five milliseconds",
+    "Full-window counters and the stop trace provide later-window evidence",
+    "Two pre-monitor receive errors occurred in each successful trial; no failure 11 or DLLP CRC error during the monitored window"
+  ],
+  "timing_ns": {
+    "gen3_setup": 0.002,
+    "gen3_hold": 0.014,
+    "gen1_setup": 0.223,
+    "gen1_hold": 0.014,
+    "pulse_width": 0.543
+  },
+  "resources": {
+    "lut": 7835,
+    "ff": 9599,
+    "ramb36": 100,
+    "ramb18": 0,
+    "uram": 0,
+    "dsp": 0,
+    "gth": 1,
+    "packet_gate_lutram": 648
+  },
+  "audits": {
+    "critical_cdc": 0,
+    "cdc_waivers_applied": 0,
+    "drc_errors_or_critical_warnings": 0,
+    "bus_skew": "pass",
+    "source_manifest": "match"
+  },
+  "restoration": {
+    "status": "qualified Gen2 Linux restored and verified",
+    "linux": "6.6.70",
+    "enumeration": "Gen2x1",
+    "direct_read_bytes": 16777216,
+    "direct_read_MBps": 213,
+    "inflight": [
+      0,
+      0
+    ],
+    "sd_boot_files_changed": false
+  }
+}

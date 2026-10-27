@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "scope": "Bounded Gen3 Data Link initialization and real SSD configuration read; no DMA in this image",
+  "build": "gen3_datalink_board_v2",
+  "bitstream_sha256": "490e877c2f91c0eed39231d2113236b8577807203a8aca3297747cff946f400f",
+  "source_sha256": {
+    "experiments/gen3/gen3_eq_board.sv": "72485f3431f9b8fd89d700e32f75ca32e63d68d1024d5c58740f4e746f33d7c4",
+    "experiments/gen3/gen3_eq_bringup.sv": "031f412a4263c046eadf7fa973e4dc6c4b969829591cbe17081441a0444608cc",
+    "experiments/gen3/gen3_legacy_training.sv": "ef205424334b6007af067618944b027108bc2c9f52c2e03b5fc27d33530d6864",
+    "experiments/gen3/gen3_startup_ltssm.sv": "5d6f282a9d8aeb4e904837ea3e4fc65a45c8dc8293bc0c9a3ae85cdf6c86976f",
+    "experiments/gen3/gen3_training_tx.sv": "ae7de58369109d3e7c6b2b36f475082b292f08a303425867de53578999f52204",
+    "experiments/gen3/gen3_training_rx.sv": "649bb8c92f43cc4944935299507d8fef7be973ddc812f6e58c495877042b7926",
+    "experiments/gen3/gen3_recovery_tx.sv": "e7feac93722fdd67db8d92737bdf823f3775f688c2906ed42b11ce63fec3606a",
+    "experiments/gen3/gen3_dllp_source.sv": "f8a0e4a75a7eddbb2c23c46882e2de251c48b09b5c8c62bfc68306a74dea7c46",
+    "experiments/gen3/gen3_link_layer.sv": "1be8742a1a7c434ff05e2f6cef1e92623c7ef6f0c95063b0f780d673dff067ea",
+    "experiments/gen3/gen3_replay_tx.sv": "04c02356164588cd048c05d540373cfd6c298c2c25a32dca15c53e88b617a741",
+    "experiments/gen3/gen3_stp.sv": "2894f38bfbf61e31fc795ee3d35f6010bbe6373e08746f78857cf9f57409d69e",
+    "experiments/gen3/gen3_native_rx.sv": "c177ca55140f61f74391a1a60389b30e3f6e1330d2f8ac8cc51fe45158798ca1",
+    "experiments/gen3/gen3_data_rx.sv": "4e1a216cda51fd69f4fac822796e29e0d5ed5eba9593a9f0662918ab64b4b300",
+    "experiments/gen3/gen3_stream_rx.sv": "e84c5963eed6a5afe4c12907e7930786998d5bf831bb9eb6fea04d66b5d1fd44",
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "5711aab344980de58455793f4320754491d5bde9a420e952161487879fb3bc5e",
+    "experiments/gen3/gen3_packet_gate.sv": "bbf110e523fb9f5f6751f7e54002a8aa752fafca4c3f3adf58ef2e34873fba88",
+    "experiments/gen3/gen3_eq_phase1.sv": "db6e15bd291c754efe0c79fd0de63782fb5045bb4cf209785c701a185cbd7dba",
+    "experiments/gen3/gen3_clock_watch.sv": "a9298c590ec20052ca44a643df40daa75e9d0cb2831e91f3b6250af3b16c9d1a",
+    "experiments/gen3/build_eq_board.tcl": "9e5dc292d4b4e9f88c613503204b70cf1098785d2b2b633ce81aa2dfd6d69513",
+    "experiments/gen3/eq_board_constraints.tcl": "e07e79f4566ecaeff616ed2f040e0eb35ee9fba43f822e009de2bc1f1b14d1e0",
+    "experiments/gen3/audit_ila_config_cdc.tcl": "030420b863fd77342cca3a9536124c1637b64ac82d21785e9f1e2f47a4bdca00",
+    "experiments/gen3/eq_board_sources.py": "9f8b092f3239a29e4cbe35410164d03316ce414f7cc9dee05bfa26e2b1df0915",
+    "experiments/gen3/instrument_eq_phy.py": "93fc36fee372d27ca7f875a307c35df70405dc46b7b0ecce7f3d050f8e7a5369",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv": "d2d85117263298325c0d35d94bb2acd0b3113c2ba85f55aedbb54ba689055476",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv": "3cc2c166e70487ee11d2e3a6ba5db15aa3b0d3c17fc0061f0d7c8519ee03c9c0",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2"
+  },
+  "finalization_sha256": "7e880daaab90f26d6303a1b9cc434bac0514766c74fa86fd678b6ec0110e7236",
+  "simulation": {
+    "experimental_regression": "pass",
+    "native_link": "normal and injected LCRC corruption pass",
+    "replay": "timeout, NAK, delayed ACK, ACK during retry, ownership pause and future ACK quarantine pass",
+    "qualified_host_tests": "11 pass; XPM test required VIVADO_BIN tool path"
+  },
+  "hardware": {
+    "successful_trials": 3,
+    "gen1_startup_timeouts": 0,
+    "config_result": "a80d144d",
+    "config_status": 0,
+    "pending_replay_at_end": false,
+    "observation_cycles": 1250000,
+    "rx_completion": [
+      {
+        "sequence": 0,
+        "frame": "6f8020004a00000100000004000000004d140da8c9d55e22",
+        "payload": 2819429453,
+        "lcrc": "pass"
+      }
+    ],
+    "tx_packets": [
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "40010020f897"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "500080103cfd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "60000000d892"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "c001002082e8"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "d00080104682"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "e0000000a2ed"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "c001002082e8"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "d00080104682"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "e0000000a2ed"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "800100203fd7"
+      },
+      {
+        "kind": "TLP",
+        "sequence": 0,
+        "bytes": "5f006000040000010000000f010000004fa62aff"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "90008010fbbd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "a00000001fd2"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "00000000b362"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "800100203fd7"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "90008010fbbd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "a00000001fd2"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "800100203fd7"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "90008010fbbd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "a00000001fd2"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "800100203fd7"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "90008010fbbd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "a00000001fd2"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "800100203fd7"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "90008010fbbd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "a00000001fd2"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "800100203fd7"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "90008010fbbd"
+      },
+      {
+        "kind": "DLLP",
+        "bytes": "a00000001fd2"
+      }
+    ],
+    "tx_decoder_errors": [],
+    "framed_dllps": [
+      360,
+      360,
+      357
+    ],
+    "dllp_crc_errors": [
+      0,
+      0,
+      0
+    ]
+  },
+  "timing_ns": {
+    "gen3_setup": 0.013,
+    "gen3_hold": 0.01,
+    "gen1_setup": 0.166,
+    "gen1_hold": 0.01,
+    "pulse_width": 0.543
+  },
+  "resources": {
+    "lut": 8565,
+    "ff": 10137,
+    "ramb36": 100
+  },
+  "audits": {
+    "critical_cdc": 0,
+    "waivers_applied": 0,
+    "drc_errors_or_critical_warnings": 0,
+    "bus_skew": "pass"
+  },
+  "limitations": [
+    "Native fabric trace, not electrical compliance measurement",
+    "One outstanding outbound TLP; confirmation requires peer ACK",
+    "Replay exhaustion quarantines ownership; full live Recovery/fallback not implemented",
+    "NVMe/DDR operation not tested by this diagnostic"
+  ],
+  "restoration": {
+    "qualified_gen2_linux": "verified",
+    "direct_read_bytes": 16777216,
+    "read_MBps": 213,
+    "inflight": [
+      0,
+      0
+    ],
+    "sd_boot_files_changed": false
+  }
+}

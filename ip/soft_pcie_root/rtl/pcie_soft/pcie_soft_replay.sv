@@ -1,9 +1,10 @@
 // Experimental packet-level transmit/replay store. This is not a PCIe port.
 // Input/output contain TLP DWORDs only; seq/LCRC/framing live outside this store.
 // ACK/NAK events MUST already have passed DLLP CRC/type validation. Sequence is
-// the last good received TLP for both ACK and NAK. Responses wait at packet
-// drain boundaries so an ACK cannot release RAM still being streamed. Two
-// original packets may be copied ahead; replay packets remain serialized.
+// the last good received TLP for both ACK and NAK. Normal ACKs retire only
+// the already-sent prefix, concurrently with copying later originals. NAKs
+// and replay responses retain the drain barrier. Two originals may be copied
+// ahead; replay packets remain serialized.
 module pcie_soft_replay #(
     parameter integer DEPTH = 8,
     parameter integer MAX_DWORDS = 64,
@@ -47,7 +48,8 @@ module pcie_soft_replay #(
     output reg         response_error_o,
     output reg         overflow_o,
     output reg         replay_event_o,
-    output reg         timeout_event_o
+    output reg         timeout_event_o,
+    output wire [7:0] profile_events_o
 );
     localparam integer SLOT_W = $clog2(DEPTH);
     localparam integer WORD_W = $clog2(MAX_DWORDS);
@@ -118,7 +120,22 @@ module pcie_soft_replay #(
     assign m_replay_o = tx_replay_q;
     assign wire_replay_o = tx_replay_q;
     assign wire_sequence_o = tx_replay_q ? tx_sequence_q : head_sequence_q + 12'(sent_q);
-    assign response_ready_o = !resetting && !recovery_req_o && tx_state_q == TX_IDLE && inflight_q == 0;
+    // Normal ownership is ordered: sent prefix, staged originals, active copy,
+    // then unsent entries. A valid normal ACK touches only the sent prefix.
+    // tx_slot_q/tx_sequence_q are immutable during a copy; advancing head by R
+    // and reducing sent by R preserves head+sent (oldest staged identity) and
+    // head+sent+inflight (next unsent slot), including simultaneous wire-done.
+    // Replay may reread the sent prefix, so its responses still require drain.
+    wire normal_ack_path=!response_nak_i&&!replaying_q&&!tx_replay_q&&!nak_pending_q;
+    wire response_allows_start=!response_valid_i||(normal_ack_path&&response_good);
+    assign response_ready_o = !resetting && !recovery_req_o &&
+        (normal_ack_path || (tx_state_q == TX_IDLE && inflight_q == 0));
+    // Passive observations only; never feed ownership or admission.
+    assign profile_events_o={replaying_q,timeout_event_o,
+        response_fire && response_nak_i,response_fire && !response_nak_i,
+        response_valid_i && tx_state_q==TX_IDLE && !response_allows_start,
+        response_valid_i && !response_ready_o && inflight_q!=0,
+        response_valid_i && !response_ready_o && tx_state_q!=TX_IDLE,response_valid_i};
     assign pending_o = count_q;
     assign sent_o = sent_q;
     assign replaying_o = replaying_q;
@@ -140,8 +157,8 @@ module pcie_soft_replay #(
     end
 
     // Packet RAM/data registers remain unreset. Only validity and fetch
-    // ownership reset. ACK retirement remains blocked until all copied packets
-    // reach final wire-done; no replay/normal identity transition while in flight.
+    // ownership reset. Normal ACKs never address the active-copy/staged suffix.
+    // Replay/normal identity transitions still require all copied packets drained.
     always @(posedge clk) begin
         if (resetting) begin
             prefetch_valid_q <= 0; output_valid_q <= 0;
@@ -254,6 +271,10 @@ module pcie_soft_replay #(
                 timer_running_q <= 0;
             end else if(phy_hold_i || recovery_req_o) begin
                 // Hold the timer and pending expiry throughout PHY retraining.
+            end else if(retire_count!=0 && remaining_sent==0 && tx_wire_done_i && !tx_replay_q) begin
+                // All older sent packets retired as a new original completed.
+                // Its timeout starts now, not at the age of the older ACK.
+                timer_q<=0;timer_running_q<=1;timeout_pending_q<=0;
             end else if(retire_count!=0) begin
                 timer_q <= 32'(response_age_i) >= REPLAY_TIMEOUT_CYCLES ? TIMER_W'(REPLAY_TIMEOUT_CYCLES-1):TIMER_W'(response_age_i);
                 timer_running_q <= 1;
@@ -298,7 +319,7 @@ module pcie_soft_replay #(
             case (tx_state_q)
                 TX_IDLE: begin
                     if (enable_i && tx_allow_i && !phy_hold_i && !recovery_req_o &&
-                        !response_valid_i && !request_replay) begin
+                        response_allows_start && !request_replay) begin
                         if (replaying_q && replay_left_q != 0 && inflight_q == 0) begin
                             tx_slot_q <= replay_slot_q;
                             tx_sequence_q <= sequences[replay_slot_q];

@@ -36,7 +36,7 @@ module tb_tx_overlap;
    dq<=wd;
    if(err||ov||rec||sov||(tev&&!permit_timeout))$fatal(1,"Unexpected error");
    if(sent>pending||replay_store.inflight_q>2)$fatal(1,"Ownership bounds");
-   if(ar && replay_store.inflight_q!=0)$fatal(1,"ACK before wire drain");
+   if(ar && an && replay_store.inflight_q!=0)$fatal(1,"NAK before wire drain");
    if(mv&&mr&&busy)overlap=overlap+1;
    if(dv&&dr)dllps=dllps+1;
    for(integer lane=0;lane<2;lane=lane+1)begin

@@ -243,7 +243,11 @@ module tb_replay;
         if(out_word!=3||dut.fetch_word_q!=5||!dut.prefetch_valid_q)$fatal(1,"Mid-packet elastic stall");
         @(negedge clk);allow_ready=1;
         wait(m_valid&&m_last);@(negedge clk);allow_ready=0;cycles(8);
-        if(out_word!=W-1||sent!=0||pending!=1||rsp_ready)$fatal(1,"Final-beat ownership");
+        if(out_word!=W-1||sent!=0||pending!=1)$fatal(1,"Final-beat ownership");
+        // The response channel may now accept normal ACKs during a copy, but
+        // this packet is unsent and must remain owned even under a bad ACK.
+        errors_before=error_count;response(0,0);
+        if(pending!=1||sent!=0||error_count!=errors_before+1)$fatal(1,"ACK freed stalled unsent packet");
         @(negedge clk);allow_ready=1;wait_packets(1);response(0,0);
         // Link reset invalidates both occupied stages; old RAM remains but
         // cannot emerge as a stale packet after restart.

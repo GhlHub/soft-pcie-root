@@ -22,6 +22,106 @@ flowchart LR
 
 ## Protocol and buffering
 
+### Optional Gen3 packaging
+
+Choose the backend when creating a fresh local IP package:
+
+```sh
+# Default: Gen1/Gen2 only, 32-bit host packet paths, two read slots.
+vivado -mode batch -source ip/soft_pcie_root/package.tcl -tclargs build/package_next 0
+# Experimental Gen3, 64-bit host packet paths, eight read slots.
+vivado -mode batch -source ip/soft_pcie_root/package.tcl -tclargs build/gen3_package_next 1
+```
+
+`ENABLE_GEN3` is the optional second Tcl argument (default `0`), a packaging-time
+choice, not a live register. The experimental choice retains its distinct
+`soft-pcie.org:experimental:gen3_soft_pcie_root:0.1` VLNV and uses the experimental
+board recipe. The default retains `soft-pcie.org:user:soft_pcie_root:1.0`.
+Both reuse the host bridge, packet CDC, validation and ownership logic. Gen3
+packaging generates its AMD PHY locally and includes the experimental link
+backend; it does not promote Gen3 into the qualified Gen1/Gen2 release.
+
+| Configuration | Host RX/TX packet width | Read prefetch | AXI outstanding reads/writes |
+| --- | --- | --- | --- |
+| Gen3 disabled | 32/32 bits at 125 MHz | 2 x 64 B = 128 B | 2 / 2 |
+| Gen3 enabled | 64/64 bits at 125 MHz | 8 x 64 B = 512 B | 8 / 2 |
+
+`M_DDR` remains AXI4 64-bit at 125 MHz in both configurations. Packet streams use
+valid/ready plus packet-end and final-single-DWORD signals; they are internal
+streams, not newly exposed AXI4-Stream ports. Gen3 uses a 64-bit whole-packet TX
+CDC and converts to 32-bit DWORDs in the 250 MHz link domain. The link serializer
+and replay interfaces retain their existing width. Fallback to Gen1/Gen2 retains
+the compiled host width and buffering. Four packet CDC slots still hold up to
+64 DWORDs each, and packet credits/replay capacity do not change.
+
+In wide mode, AR issuance and completion transmission have independent ownership.
+Once all chunks of one validated SSD read have been issued, parsing can admit the
+next read before the earlier completions finish. Each reserved completion slot
+retains requester, tag, byte count, lower address, payload and error status.
+Responses use one ordered AXI ID and completions remain in request/chunk order.
+Writes, MSI, unsupported requests and zero-byte flushes wait for the earlier read
+window to drain. Reads still fence all prior B responses and held write offers.
+A failing read stops new issuance, emits CA for the failing slot when possible,
+and drains all accepted bursts. Link loss drains held AR and accepted owners.
+New control resets are synchronous; packet/payload RAM is unreset.
+
+The 512-byte default is an estimate, not a measured performance guarantee. At
+1 GB/s, the previous approximately 258 ns burst residence requires about 258 B
+(five 64-byte slots). Including roughly 88 ns to hand off a completion raises
+the estimate to six slots; eight provides margin. This relies on overlapping
+DDR reads and adequate sustained DDR bandwidth. The bridge parameter supports
+2/4/8/16 slots for experiments; packaged dimensions are fixed together with
+interface metadata and board audits. The newest configuration has passed simulation, packaging, RTL elaboration
+and isolated synthesis. The Gen3-enabled configuration also passed fresh full
+synthesis, routing and reopened audits. After fixing an initial-link drain bug,
+it also passed temporary NVMe I/O/CRC and performance tests. Gen3 link startup
+remains intermittent. The latest normal-ACK image booted on its first attempt;
+that does not resolve earlier failures. See [verification](verification.md#optional-gen3-and-ddr-prefetch-development).
+
+### Normal ACK retirement
+
+The shared replay engine now retires acknowledged sent entries while later
+originals are being copied or staged. Active slot/sequence identities stay
+latched; cumulative retirement preserves the next staged/unsent identities.
+NAK/replay transitions retain drain barriers, and unsent/future ACKs release
+nothing. The same-edge last-old-ACK/new-wire-completion case starts a fresh
+timeout epoch. Packet RAM stays unreset. Current physical tests cover the
+Gen3-enabled configuration; Gen2 has regression simulation coverage for this
+change. See [performance history](performance-history.md) and
+[verification](verification.md).
+
+### Earlier receive-width development change
+
+The earlier RX64-only development host shell packed pairs of link-side DWORDs into a 64-bit receive
+path at 125 MHz. A final-single-DWORD flag travels with each pair through the
+whole-packet CDC. Its four packet slots still hold up to 64 DWORDs each; pairing
+does not increase advertised credits or permit early publication of a packet.
+The pending request queue and payload preparation also consume two DWORDs per
+cycle. Three-DWORD headers, odd payload lengths, byte enables and address offset
+four retain their original meaning. The DDR bridge can still be instantiated
+with `RX_DWORDS=1`; that earlier host shell selected `RX_DWORDS=2`.
+
+The packer's control reset is synchronous and uses the existing global reset
+release chain. Link pauses retain partial pairs. Packet RAM remains unreset;
+whole-packet validation, bank ownership transfer, accepted-AXI drain and the
+all-B-before-MSI fence are unchanged. AXI remains 64-bit at 125 MHz, converted to
+128-bit PS HP0; that earlier completion/transmit path remained 32-bit.
+
+This raises the receive interface's raw capacity from 500 MB/s to 1 GB/s.
+It does not guarantee that throughput through the full PCIe/DDR system doubles.
+The historical release measurements predate this change.
+Simulation and synthesis scope is recorded in
+[development evidence](evidence/rx64_v1/development.json). The isolated BRAM and
+resource check is reproducible with `vivado -mode batch -source
+scripts/synth_rx64.tcl -tclargs build/rx64_synth_next` from the repository root.
+Subsequent full Gen2 and Gen3 builds passed routing and reopened audits; see
+[implementation evidence](evidence/rx64_v1/implementation.json). Temporary
+physical tests passed I/O and CRC checks on both images, with Gen3 QD8 reads
+at 741.81 MB/s; see [physical evidence](evidence/rx64_v1/completion.json).
+This does not add cold-cycle, endurance, full Recovery or compliance qualification.
+
+### Qualified protocol and ownership baseline
+
 The link trains at Gen1 and supports switching to Gen2, single lane only. Fabric
 logic implements framing, scrambling, CRC, flow control, ACK/NAK/replay, training
 and the direct-endpoint requester. It is a root-port implementation with a limited
@@ -33,21 +133,21 @@ are disabled by the driver. Packet validation completes before DDR effects.
 
 Two 256-byte serializer banks overlap collection/LCRC with wire transmission.
 Two original packets can be copied ahead, but sent ownership advances only at
-final wire completion. ACK/replay transitions wait for drain; replay stays
-serialized. CPU command completion uses the wire packet's identity. The replay
+final wire completion. In the historical baseline, ACK/replay transitions waited for drain; replay
+remains serialized. Current normal-ACK behavior is described above. CPU command completion uses the wire packet's identity. The replay
 store retains 8 x 64 DWORD (2 KiB); shared link RX storage is 4 KiB. Advertised posted
 credits are 4 headers/32 data units (512 bytes), nonposted 2 headers/16 data units.
 These capacities are conservative and relatively small.
 
 Four validated pending request slots hold 4 x 36 DWORD (576 bytes), behind one active
-ordered request. The DDR bridge has two outstanding same-ID AXI bursts and two
+ordered request. The historical default DDR bridge has two outstanding same-ID AXI read bursts and two
 64-byte completion slots. Write preparation and execution use alternating payload
 RAM banks: validation transfers bank ownership without copying the payload.
 Each bank holds up to 17 aligned 64-bit beats (including a partial edge beat),
 with 32 beat positions reserved for simple addressing. The writer retains its
 bank through the final W handshake; B-response ownership persists separately.
-Control resets are synchronous and payload RAM is unreset. It does not concurrently
-execute multiple endpoint read tags. CPU BAR/config operations remain single-tag.
+Control resets are synchronous and payload RAM is unreset. That baseline does not concurrently
+execute multiple endpoint read tags; optional Gen3 read overlap is described above. CPU BAR/config operations remain single-tag.
 
 ## AXI, memory and ordering
 
@@ -56,7 +156,9 @@ root requester/completer ID 00:00.0. All assigned BARs fit a 16 MiB aperture. Th
 release retains the verified address constants; changing the base map requires
 coordinated RTL, driver and device-tree changes.
 
-`M_DDR` is 64-bit/125 MHz AXI4 with two outstanding reads/writes, max 8-beat bursts.
+`M_DDR` is 64-bit/125 MHz AXI4. The baseline has two outstanding reads/writes;
+the optional Gen3 package has eight reads and two writes. Read bursts are at
+most eight beats; an offset-four MPS128 write can require 17 beats.
 The example converts it to 128-bit PS HP0. DMA is noncoherent; Linux PCI DMA APIs
 perform cache maintenance. Do not add `dma-coherent` or unrelated SMMU bindings.
 The lower 2 GiB range guard is not an IOMMU or a security boundary. There is no

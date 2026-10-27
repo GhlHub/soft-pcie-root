@@ -1,0 +1,82 @@
+{
+  "scope": "Development only: optional Gen3 packaging, wide host packet paths and overlapping DDR read prefetch",
+  "date": "2026-10-26",
+  "tool": "Vivado 2026.1",
+  "part": "xczu7ev-ffvc1156-2-e",
+  "physical_validation": false,
+  "full_synthesis_and_route": false,
+  "board_or_media_writes": false,
+  "qualified_release_manifests_changed": false,
+  "tests": {
+    "repository_pytest": 46,
+    "lint_and_xpm_elaboration": "pass",
+    "experimental_gen3_regression": "pass",
+    "both_packages_and_shell_elaboration": "pass",
+    "read_slot_depths_tested": [
+      2,
+      4,
+      8,
+      16
+    ]
+  },
+  "bridge_ooc": {
+    "gen3_disabled": {
+      "packet_bits": 32,
+      "read_slots": 2,
+      "total_luts": 1192,
+      "lutram": 254,
+      "ffs": 494
+    },
+    "gen3_enabled": {
+      "packet_bits": 64,
+      "read_slots": 8,
+      "prefetch_bytes": 512,
+      "total_luts": 1736,
+      "lutram": 430,
+      "ffs": 539
+    }
+  },
+  "packet_cdc_ooc": {
+    "gen3_disabled_each": {
+      "RAMB18": 1,
+      "RAMB36": 0
+    },
+    "gen3_enabled_each": {
+      "RAMB18": 0,
+      "RAMB36": 1
+    }
+  },
+  "source_sha256": {
+    "ip/soft_pcie_root/package.tcl": "989ec35d33b6fb8f518929a70ee429105ecab407e9a6c0adda2aae01a7c2ef5f",
+    "ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv": "cedee3afbc2337a2b9b34338231e2e472529b38dd5b987f9f8f5c3eb4f04f764",
+    "ip/soft_pcie_root/rtl/host/pcie_host_axi.sv": "c0bc897f9302e224715f9e85e2e42aae34d843435c878e6bdeacf71d284916ba",
+    "ip/soft_pcie_root/rtl/host/pcie_rx_pack.sv": "cfabc7e51d292a676a67a664d6f1aa390b5bffd3965ac4122c1ddb2c4e5d28bc",
+    "ip/soft_pcie_root/rtl/host/pcie_tx_unpack.sv": "42026391b7c4876033e87674c49822a5b9d2a057631d9538591ee606f4ba63fc",
+    "ip/soft_pcie_root/rtl/management/soft_pcie_root.sv": "d5c997ec4aa640917ad365014b490af49bf65bee6f8abdcdf295e072a8e345b5",
+    "experiments/gen3/host_sources.py": "39a0b221154b89fd4f3fb6caddd184121dfea460ecdedc8b7eb7e1b76397f8dd",
+    "experiments/gen3/package_host.tcl": "b5bedec6fe7c1b49be645569a87985ffe59eb80109789e6163360caf1c204e87",
+    "experiments/gen3/build_host.tcl": "b78242bfcc75eec117ba5a569a87b3d9a49c203582b7c66f43907cfec64d2c2f",
+    "experiments/gen3/check_host_structure.tcl": "31ee3fa7e2a434f58eb92703d61440d52a24f75efec4147eef0a9043c058c5a2",
+    "examples/zcu104/check_structure.tcl": "c5ec91cd4ff783aedaeddc4eb3554ad4073b8f0d165ccb51b187db8088ecd6da",
+    "scripts/synth_prefetch.tcl": "85135d51b5b490ff47f766df55d519124c093fa1c826e98e87506afbc1449d58",
+    "scripts/profile_completion_path.py": "6e82b229bb617262d61a90940dacb3792202b0211769b1891ea57240e2d9d775"
+  },
+  "artifact_sha256": {
+    "build/prefetch_gen2_package_v2/core/component.xml": "2a9ea6308fcbe6cc0ecd8759eee5637bc6a4a151ace687473959e4bda42ff80b",
+    "build/prefetch_gen3_package_v2/core/component.xml": "86daae8ada9268d8d881abc9e9b075eb091e6ec41bbab502d474c85a043b5b14",
+    "build/prefetch_gen3_package_v2/sources.json": "d58a379185d53742e01828800def761163e35078201911c87490b3aa41a3f9ca",
+    "build/prefetch_synth_v2/gen2_bridge-utilization.rpt": "447fe199117ccb71b53165d9fbb9facd93a346de28559343fc885ab4b8e9516e",
+    "build/prefetch_synth_v2/gen2_rx-utilization.rpt": "6dde463319f1f6ae356e4fb6d549c916092815e20f925ff3b530d3d46aea5011",
+    "build/prefetch_synth_v2/gen2_tx-utilization.rpt": "01847f14342c958a8d4ee4655f47c55f0cf9c9d4fdb2fc86e39a7fb0951220b9",
+    "build/prefetch_synth_v2/gen3_bridge-utilization.rpt": "b5da32afb1236af1e092994ec4733413bbe1ce244b8a755ee318beaa6a494929",
+    "build/prefetch_synth_v2/gen3_rx-utilization.rpt": "0d4189aeb21774f0fb6afa382e646f94421c4121d4d0de07c33e54ffff1a81f4",
+    "build/prefetch_synth_v2/gen3_tx-utilization.rpt": "900325ebbf96f15ad0b3eacd0eea3a1278e36ed390dfdf05ad3197f9ac985b9e"
+  },
+  "limitations": [
+    "No routed timing or full-design utilization for this revision",
+    "No hardware throughput, CRC or recovery qualification for this revision",
+    "Gen3 retains the previously documented experimental bring-up and Recovery limitations",
+    "Packet streams remain internal valid/ready framing; DDR interface remains AXI4 64-bit at 125 MHz",
+    "PRF2 does not provide exact payload-byte or greater-than-two-owner residence integrals"
+  ]
+}

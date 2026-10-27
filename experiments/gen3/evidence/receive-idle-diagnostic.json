@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "scope": "Temporary passive receive diagnostic; no Gen3 Data Link/NVMe qualification",
+  "build": "gen3_rx_diag_board_v3",
+  "bitstream_sha256": "20f2eedf7b25440f0f9b299cbbd63ca65e2b3e81dc32b871d3b5940e4cbd01bc",
+  "source_sha256": {
+    "experiments/gen3/gen3_eq_board.sv": "44e4200ee67d4d2110ea65b801be6d89aa6bd4ba49f7bb4cee5f115b057b5623",
+    "experiments/gen3/gen3_eq_bringup.sv": "f599c28de7c48ef6dd348dfa5cd49b04ce55da0b4cb2c0ac0d9692222e1242cd",
+    "experiments/gen3/gen3_legacy_training.sv": "ef205424334b6007af067618944b027108bc2c9f52c2e03b5fc27d33530d6864",
+    "experiments/gen3/gen3_startup_ltssm.sv": "5d6f282a9d8aeb4e904837ea3e4fc65a45c8dc8293bc0c9a3ae85cdf6c86976f",
+    "experiments/gen3/gen3_training_tx.sv": "ae7de58369109d3e7c6b2b36f475082b292f08a303425867de53578999f52204",
+    "experiments/gen3/gen3_training_rx.sv": "649bb8c92f43cc4944935299507d8fef7be973ddc812f6e58c495877042b7926",
+    "experiments/gen3/gen3_recovery_tx.sv": "510531ee203b827f5c45c4534fa829b429b605c9b9e47e9c3e98246950897f75",
+    "experiments/gen3/gen3_native_rx.sv": "c177ca55140f61f74391a1a60389b30e3f6e1330d2f8ac8cc51fe45158798ca1",
+    "experiments/gen3/gen3_data_rx.sv": "4e1a216cda51fd69f4fac822796e29e0d5ed5eba9593a9f0662918ab64b4b300",
+    "experiments/gen3/gen3_stream_rx.sv": "e84c5963eed6a5afe4c12907e7930786998d5bf831bb9eb6fea04d66b5d1fd44",
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "5711aab344980de58455793f4320754491d5bde9a420e952161487879fb3bc5e",
+    "experiments/gen3/gen3_packet_gate.sv": "bbf110e523fb9f5f6751f7e54002a8aa752fafca4c3f3adf58ef2e34873fba88",
+    "experiments/gen3/gen3_eq_phase1.sv": "db6e15bd291c754efe0c79fd0de63782fb5045bb4cf209785c701a185cbd7dba",
+    "experiments/gen3/gen3_clock_watch.sv": "a9298c590ec20052ca44a643df40daa75e9d0cb2831e91f3b6250af3b16c9d1a",
+    "experiments/gen3/build_eq_board.tcl": "5ff1488ffb3285b4c1c6bf03ea0af79fc499c77ac05057fac2b7b43d5cf311bb",
+    "experiments/gen3/eq_board_constraints.tcl": "e07e79f4566ecaeff616ed2f040e0eb35ee9fba43f822e009de2bc1f1b14d1e0",
+    "experiments/gen3/eq_board_sources.py": "b0a9e88549d15032e2559b4d7b8c9ad479601b8465d5b01879858574dd8f72e3",
+    "experiments/gen3/instrument_eq_phy.py": "93fc36fee372d27ca7f875a307c35df70405dc46b7b0ecce7f3d050f8e7a5369",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2"
+  },
+  "timing_ns": {
+    "gen3_setup": 0.0,
+    "gen3_hold": 0.011,
+    "gen1_setup": 0.18,
+    "gen1_hold": 0.011,
+    "pulse_width": 0.543
+  },
+  "resources": {
+    "lut": 7481,
+    "ff": 10752,
+    "ramb36": 71,
+    "ramb18": 1,
+    "uram": 0,
+    "dsp": 0,
+    "gth": 1
+  },
+  "critical_cdc": 0,
+  "regression": "Full experimental suite passed; before/after transmit arithmetic traces identical",
+  "initial_transition_trial": {
+    "preset": 4,
+    "ts2_count": 35,
+    "local_l0": true,
+    "failure": 0,
+    "trace_samples": 8192,
+    "pretrigger_samples": 1024,
+    "decoded_idle_dwords": 6997,
+    "decoded_eds_dwords": 5,
+    "terminal_counters": {
+      "rxvalid_cycles": 250152,
+      "rxdatavalid_cycles": 246304,
+      "accepted_words": 246304,
+      "decoded_dwords": 245493,
+      "data_blocks": 61374,
+      "framed_dllps": 0,
+      "dllp_crc_failures": 0
+    }
+  },
+  "qualified_nonidle_trials": [
+    {
+      "preset": 4,
+      "ts2_count": 33,
+      "local_l0": true,
+      "failure": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "validated_dllps": 0,
+      "qualified_samples": 168,
+      "nonzero_decoded_values": {
+        "0090801f": 168
+      },
+      "first_sample_rxvalid_cycles": 400,
+      "terminal_counters": {
+        "rxvalid_cycles": 250148,
+        "rxdatavalid_cycles": 246299,
+        "accepted_words": 246299,
+        "decoded_dwords": 245492,
+        "data_blocks": 61374,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      }
+    },
+    {
+      "preset": 4,
+      "ts2_count": 35,
+      "local_l0": true,
+      "failure": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "validated_dllps": 0,
+      "qualified_samples": 167,
+      "nonzero_decoded_values": {
+        "0090801f": 167
+      },
+      "first_sample_rxvalid_cycles": 1131,
+      "terminal_counters": {
+        "rxvalid_cycles": 250153,
+        "rxdatavalid_cycles": 246305,
+        "accepted_words": 246305,
+        "decoded_dwords": 245498,
+        "data_blocks": 61375,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      }
+    },
+    {
+      "preset": 4,
+      "ts2_count": 33,
+      "local_l0": true,
+      "failure": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "validated_dllps": 0,
+      "qualified_samples": 168,
+      "nonzero_decoded_values": {
+        "0090801f": 168
+      },
+      "first_sample_rxvalid_cycles": 522,
+      "terminal_counters": {
+        "rxvalid_cycles": 250148,
+        "rxdatavalid_cycles": 246299,
+        "accepted_words": 246299,
+        "decoded_dwords": 245492,
+        "data_blocks": 61374,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      }
+    }
+  ],
+  "interpretation": [
+    "Native PHY data-valid and accepted-word counts match. Receiver forwarded data throughout the observation.",
+    "Qualified captures span the trial and contain only EDS among nonzero decoded data words; no packet tokens, framed DLLPs or CRC failures.",
+    "Peer may remain in Recovery.Idle waiting for our transmit stream. One millisecond is shorter than its specified two-millisecond timeout; peer state is not directly observed.",
+    "Missing local InitFC prevents Data Link completion but does not by itself explain absent peer InitFC."
+  ],
+  "limits": [
+    "No TX-side ILA capture, sustained Gen3 link, Data Link initialization or NVMe I/O.",
+    "Gen3 setup slack rounds to zero; this is a tightly timed diagnostic build.",
+    "Filtered captures retain nonzero valid decoded DWORDs, not every raw PHY cycle."
+  ],
+  "restoration": {
+    "qualified_gen2_restored": true,
+    "sd_boot_files_changed": false,
+    "linux_version": "6.6.70",
+    "nvme_enumerated": true,
+    "direct_read_bytes": 16777216,
+    "direct_read_passed": true,
+    "inflight_after": [
+      0,
+      0
+    ]
+  }
+}

@@ -8,10 +8,22 @@ handles the SSD; this is not an FPGA NVMe command engine.
 
 ![Transceiver-based soft PCIe, verified with Linux and NVMe](docs/media/linkedin-soft-pcie.png)
 
-This is an experimental **Gen1/Gen2 x1** release and a deliberate stopping point.
-Gen3+, wider links and faster implementations are subjects for future investigation.
-The current PHY integration targets UltraScale+ GTHE4; portability to other FPGA
-families is not claimed.
+The frozen release is **Gen1/Gen2 x1**. Current development also offers an
+optional **experimental Gen3 x1** backend. The PHY targets UltraScale+ GTHE4;
+portability to other FPGA families and PCIe compliance are not claimed.
+
+The latest Gen3 build measured **745.36 MB/s read and 567.71 MB/s write** at QD8
+with 1 MiB direct I/O and 30-second runs. It uses 64-bit host RX/TX packet paths,
+eight 64-byte DDR read-prefetch slots, and normal ACK retirement concurrent with
+later original packets. Gen3-disabled packaging retains 32-bit packet paths and
+two slots. The shared RTL has evolved beyond the frozen Gen2 source baseline;
+its latest physical verification is on the Gen3-enabled image.
+
+See the [performance improvement history](docs/performance-history.md) for the
+measured progression, [configuration](docs/ip-guide.md#optional-gen3-packaging)
+and [verification](docs/verification.md) for exact scope. Gen3 startup remains
+intermittent, setup margin is only +0.004 ns, and full Recovery remains incomplete.
+The historical Gen2 SD default is unchanged.
 
 ## Verified example
 
@@ -29,7 +41,7 @@ families is not claimed.
 These measurements describe the complete ZCU104 example at the `txdouble_v1`
 hardware baseline, not standalone-core utilization or guaranteed drive speeds.
 See [validation and exact scope](docs/verification.md).
-The current banked-payload revision uses **10,864 LUTs / 9,294 FFs** and passed
+The historical banked-payload revision uses **10,864 LUTs / 9,294 FFs** and passed
 physical Gen2 x1 I/O/CRC tests, with QD8 read/write **428.65 / 259.17 MB/s**.
 The deployed Linux image now uses a persistent ext4 SD root.
 The packaged example was also deployed and verified: QD8 read/write **428.33 / 259.73 MB/s**, within 0.13% of that baseline; all integrity checks passed.
@@ -66,7 +78,6 @@ no generated AMD IP is committed here.
 python3 -m venv .venv
 .venv/bin/pip install -r requirements-dev.txt
 make test lint
-make release-check
 make ip IP_OUTPUT=build/ip_v1
 make hardware OUTPUT=build/zcu104_v1 IP_REPO=build/ip_v1/core
 make hardware-audit HARDWARE_OUTPUT=build/zcu104_v1 AUDIT_OUTPUT=build/audit_v1
@@ -75,16 +86,19 @@ make hardware-audit HARDWARE_OUTPUT=build/zcu104_v1 AUDIT_OUTPUT=build/audit_v1
 Outputs must be fresh. `make ip` creates a local IP repository with VLNV
 `soft-pcie.org:user:soft_pcie_root:1.0` (a local identifier, not a service URL).
 The example instantiates that packaged IP. The frozen source provenance is checked
-separately from generated build hashes. See [IP integration](ip/soft_pcie_root/README.md)
+separately from generated build hashes. `make release-check` is a strict check
+of the frozen Gen1/Gen2 baseline and is expected to reject this development tree's
+shared RTL changes. Its historical manifests are preserved; do not regenerate
+them to label experimental Gen3 as a qualified release. See [IP integration](ip/soft_pcie_root/README.md)
 and [ZCU104 setup](examples/zcu104/README.md). These commands do not program a board.
 
 ## Scope and limitations
 
 One direct endpoint, function 0 only; up to 16 MiB of endpoint BAR space; noncoherent
 DMA to lower 2 GiB DDR in the example; 32 MSI/MSI-X vectors. The DDR master is 64-bit
-AXI at 125 MHz with two outstanding bursts; the ZCU104 interconnect converts to
-128-bit PS HP0. Read completion storage is 128 bytes; buffering remains a future
-performance research area.
+AXI at 125 MHz; the ZCU104 interconnect converts to 128-bit PS HP0. Default
+Gen1/Gen2 packaging has two read and two write owners, with 128 bytes of read
+prefetch. Experimental Gen3 has eight read and two write owners, with 512 bytes.
 
 No PCIe compliance certification, switch topology, Type 1 routing, multifunction,
 INTx, hotplug, ASPM/AER or safe live PL replacement. Accepted AXI requests must

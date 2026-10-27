@@ -1,6 +1,6 @@
 // Core-clock AXI-Lite BAR window and host control. No clock crossing here.
 // 0x0000000..0x0000fff: control; 0x1000000..0x1ffffff: PCI BAR PIO.
-module pcie_host_axi #(parameter integer TIMEOUT_CYCLES=62500000)(
+module pcie_host_axi #(parameter integer TIMEOUT_CYCLES=62500000, PACKET_DWORDS=1, READ_PREFETCH_SLOTS=2)(
  input wire clk,rst_n,link_active_i,
  input wire [24:0] s_axi_awaddr,input wire s_axi_awvalid,output wire s_axi_awready,
  input wire [31:0] s_axi_wdata,input wire [3:0] s_axi_wstrb,
@@ -111,8 +111,9 @@ module pcie_host_axi #(parameter integer TIMEOUT_CYCLES=62500000)(
        25'h24:s_axi_rdata<=mask_q;
        25'h80:s_axi_rdata<={31'b0,perf_enable_q};
        25'h84:s_axi_rdata<=perf_overflow_q;
-       25'h88:s_axi_rdata<=32'h50524631; // PRF1
+       25'h88:s_axi_rdata<=PACKET_DWORDS==2?32'h50524632:32'h50524631; // PRF2/PRF1
        25'h8c:s_axi_rdata<=125000000;
+       25'h90:s_axi_rdata<={16'b0,8'(READ_PREFETCH_SLOTS),8'(PACKET_DWORDS)};
        default:if(araddr_q>=25'h100&&araddr_q<25'h180)
         s_axi_rdata<=perf_count_q[araddr_q[6:2]];
        else s_axi_rresp<=2;

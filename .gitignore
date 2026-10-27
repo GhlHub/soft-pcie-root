@@ -14,3 +14,6 @@ __pycache__/
 .*.cmd
 Module.symvers
 modules.order
+
+# Local desktop metadata
+.DS_Store

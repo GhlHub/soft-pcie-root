@@ -21,3 +21,11 @@ def test_completion_profile_units():
     assert result['completion_payload_MB_s'] == 16
     assert result['cycle_percent']['slot_empty_wait'] == 10
     assert result['tx_stall_cycles_per_completion'] == 10
+
+    # The same occupancy counters cannot represent owners 3..8, and wide
+    # header/payload-sharing beats cannot be multiplied by eight for bytes.
+    wide = module.summarize(counts, 125000000, packet_dwords=2, read_slots=8)
+    for name in ('mean_axi_burst_residence_ns', 'mean_completion_payload_bytes',
+                 'mean_read_request_payload_bytes', 'completion_payload_MB_s'):
+        assert wide[name] is None
+    assert wide['cycle_percent']['slot_empty_wait'] == 10

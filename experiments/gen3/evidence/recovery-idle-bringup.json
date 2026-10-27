@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "scope": "Temporary JTAG physical-layer Recovery/logical-idle diagnostic; no usable Gen3 Data Link or NVMe path",
+  "build": "gen3_recovery_board_v6",
+  "bitstream_sha256": "d890db457306000449e4c98efb9096bbba1dbd46f83dd9ba28010b45222120a6",
+  "source_sha256": {
+    "experiments/gen3/gen3_eq_board.sv": "44e4200ee67d4d2110ea65b801be6d89aa6bd4ba49f7bb4cee5f115b057b5623",
+    "experiments/gen3/gen3_eq_bringup.sv": "9f656ff92aa3abe69ac723a5233b4b47d06dde41702ee21335b75e7fd6e450b7",
+    "experiments/gen3/gen3_legacy_training.sv": "ef205424334b6007af067618944b027108bc2c9f52c2e03b5fc27d33530d6864",
+    "experiments/gen3/gen3_startup_ltssm.sv": "5d6f282a9d8aeb4e904837ea3e4fc65a45c8dc8293bc0c9a3ae85cdf6c86976f",
+    "experiments/gen3/gen3_training_tx.sv": "ae7de58369109d3e7c6b2b36f475082b292f08a303425867de53578999f52204",
+    "experiments/gen3/gen3_training_rx.sv": "649bb8c92f43cc4944935299507d8fef7be973ddc812f6e58c495877042b7926",
+    "experiments/gen3/gen3_recovery_tx.sv": "d21b95b92213a27babac858a74a1bb958b4cf40df8bfd0291a67c4be3df8232b",
+    "experiments/gen3/gen3_native_rx.sv": "c177ca55140f61f74391a1a60389b30e3f6e1330d2f8ac8cc51fe45158798ca1",
+    "experiments/gen3/gen3_data_rx.sv": "cba5510b9c6fca09d43101f1d95bceb629397e7f30085a8417890cecd878f1e6",
+    "experiments/gen3/gen3_stream_rx.sv": "e84c5963eed6a5afe4c12907e7930786998d5bf831bb9eb6fea04d66b5d1fd44",
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "5711aab344980de58455793f4320754491d5bde9a420e952161487879fb3bc5e",
+    "experiments/gen3/gen3_packet_gate.sv": "bbf110e523fb9f5f6751f7e54002a8aa752fafca4c3f3adf58ef2e34873fba88",
+    "experiments/gen3/gen3_eq_phase1.sv": "db6e15bd291c754efe0c79fd0de63782fb5045bb4cf209785c701a185cbd7dba",
+    "experiments/gen3/gen3_clock_watch.sv": "a9298c590ec20052ca44a643df40daa75e9d0cb2831e91f3b6250af3b16c9d1a",
+    "experiments/gen3/build_eq_board.tcl": "606e390433f583f067d37e7c0bc3131a9c8f43d5f5294a23cf6118147b1759fe",
+    "experiments/gen3/eq_board_constraints.tcl": "e07e79f4566ecaeff616ed2f040e0eb35ee9fba43f822e009de2bc1f1b14d1e0",
+    "experiments/gen3/eq_board_sources.py": "b0a9e88549d15032e2559b4d7b8c9ad479601b8465d5b01879858574dd8f72e3",
+    "experiments/gen3/instrument_eq_phy.py": "93fc36fee372d27ca7f875a307c35df70405dc46b7b0ecce7f3d050f8e7a5369",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2"
+  },
+  "timing_ns": {
+    "gen3_setup": 0.041,
+    "gen3_hold": 0.012,
+    "gen1_setup": 0.61,
+    "gen1_hold": 0.012,
+    "pulse_width": 0.543
+  },
+  "utilization": {
+    "luts": 5253,
+    "flip_flops": 6230,
+    "lutram_luts": 110,
+    "srl_luts": 8,
+    "bram": 0,
+    "uram": 0,
+    "dsp": 0,
+    "gth": 1,
+    "pcie_controller_hard_blocks": 0
+  },
+  "cdc": {
+    "critical": 0,
+    "cdc3_info": 46,
+    "cdc6_warning": 1,
+    "cdc9_info": 5,
+    "cdc15_warning": 254
+  },
+  "simulations": {
+    "full_experimental_suite": "passed",
+    "buffered_framing_cases": 208,
+    "native_rx_cases": 24,
+    "recovery_integration_cases": 4,
+    "packet_gate_modes": [
+      "byte input",
+      "DWORD input"
+    ]
+  },
+  "physical_trials": [
+    {
+      "trial": "initial",
+      "preset": 4,
+      "state": 14,
+      "rate": 2,
+      "phase1_success": true,
+      "failure": 0,
+      "recovery_idle": true,
+      "logical_idle_l0": true,
+      "valid_ts2_count": 33,
+      "receive_error_pulses": 2,
+      "valid_dllp_count": 0,
+      "pclk_edges": 640,
+      "clock_ready": true,
+      "watchdog_fault": false
+    },
+    {
+      "trial": "repeat-1",
+      "preset": 4,
+      "state": 14,
+      "rate": 2,
+      "phase1_success": true,
+      "failure": 0,
+      "recovery_idle": true,
+      "logical_idle_l0": true,
+      "valid_ts2_count": 35,
+      "receive_error_pulses": 2,
+      "valid_dllp_count": 0,
+      "pclk_edges": 640,
+      "clock_ready": true,
+      "watchdog_fault": false
+    },
+    {
+      "trial": "repeat-2",
+      "preset": 4,
+      "state": 14,
+      "rate": 2,
+      "phase1_success": true,
+      "failure": 0,
+      "recovery_idle": true,
+      "logical_idle_l0": true,
+      "valid_ts2_count": 33,
+      "receive_error_pulses": 2,
+      "valid_dllp_count": 0,
+      "pclk_edges": 640,
+      "clock_ready": true,
+      "watchdog_fault": false
+    },
+    {
+      "trial": "repeat-3",
+      "preset": 4,
+      "state": 14,
+      "rate": 2,
+      "phase1_success": true,
+      "failure": 0,
+      "recovery_idle": true,
+      "logical_idle_l0": true,
+      "valid_ts2_count": 34,
+      "receive_error_pulses": 2,
+      "valid_dllp_count": 0,
+      "pclk_edges": 640,
+      "clock_ready": true,
+      "watchdog_fault": false
+    },
+    {
+      "trial": "repeat-4",
+      "preset": 4,
+      "state": 14,
+      "rate": 2,
+      "phase1_success": true,
+      "failure": 0,
+      "recovery_idle": true,
+      "logical_idle_l0": true,
+      "valid_ts2_count": 35,
+      "receive_error_pulses": 2,
+      "valid_dllp_count": 0,
+      "pclk_edges": 640,
+      "clock_ready": true,
+      "watchdog_fault": false
+    }
+  ],
+  "limitations": [
+    "Phases 2/3 deliberately skipped; P4 only in this trial batch.",
+    "Logical-idle L0 entry recorded; observation timer is one millisecond, not long-term link qualification.",
+    "Two receive-error pulses occurred before the monitored RcvrCfg/Idle/L0 states in each trial; those states would terminate with failure 11 on a receive error.",
+    "No validated DLLPs captured; transmit DLLP/flow-control initialization is absent.",
+    "No Gen3 TLP, replay, Linux DMA or NVMe I/O qualification; diagnostic consumes receive outputs without host effects.",
+    "Receive packet ownership tested in simulation; unused payload storage may be optimized out of the isolated hardware diagnostic."
+  ],
+  "deployment": {
+    "sd_boot_files_changed": false,
+    "qualified_gen2_restored": true,
+    "linux_nvme_read_verified": true,
+    "read_only_verification_bytes": 16777216
+  }
+}

@@ -69,3 +69,76 @@ def test_ddr_banked_stalls(tmp_path):
     r=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
     assert r.returncode==0,r.stdout+r.stderr
     assert 'PASS PIPELINE:' in r.stdout
+
+
+def test_rx64_cdc(tmp_path):
+ exe=tmp_path/'rx64-cdc.vvp'
+ subprocess.run(['iverilog','-g2012','-s','tb_rx64_cdc','-o',exe,
+   R/'ip/soft_pcie_root/rtl/host/pcie_rx_pack.sv',
+   R/'ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv',
+   R/'tests/host/tb_rx64_cdc.sv'],check=True)
+ run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+ assert run.returncode==0,run.stdout+run.stderr
+ assert 'PASS RX64 CDC:' in run.stdout
+
+
+def test_rx64_ddr_ownership(tmp_path):
+ exe=tmp_path/'rx64-ddr.vvp'
+ subprocess.run(['iverilog','-g2012','-s','tb_ddr_bridge',
+   '-Ptb_ddr_bridge.RX_DWORDS=2','-o',exe,
+   R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',R/'tests/host/tb_ddr_bridge.sv'],check=True)
+ run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+ assert run.returncode==0,run.stdout+run.stderr
+ assert 'PASS DDR:' in run.stdout
+
+
+def test_rx64_ddr_lanes_and_rate(tmp_path):
+ for four in (0,1):
+  for align in (0,1):
+   for words in (1,2,3,31,32):
+    for stalls in (0,1):
+     exe=tmp_path/f'rx64-{four}-{align}-{words}-{stalls}.vvp'
+     subprocess.run(['iverilog','-g2012','-s','tb_ddr_pipeline',
+       '-Ptb_ddr_pipeline.RX_DWORDS=2',
+       f'-Ptb_ddr_pipeline.FOUR={four}',f'-Ptb_ddr_pipeline.ALIGN={align}',
+       f'-Ptb_ddr_pipeline.WORDS={words}',f'-Ptb_ddr_pipeline.STALLS={stalls}',
+       f'-Ptb_ddr_pipeline.MAX_SERVICE_CYCLES={100 if stalls else 21}',
+       '-o',exe,R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',
+       R/'tests/host/tb_ddr_pipeline.sv'],check=True)
+     run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+     assert run.returncode==0,run.stdout+run.stderr
+     assert 'PASS PIPELINE:' in run.stdout
+
+
+def test_wide_prefetch_ownership(tmp_path):
+ for slots in (2, 4, 8, 16):
+  exe=tmp_path/f'wide-prefetch-{slots}.vvp'
+  subprocess.run(['iverilog','-g2012','-s','tb_ddr_bridge',
+    '-Ptb_ddr_bridge.RX_DWORDS=2','-Ptb_ddr_bridge.TX_DWORDS=2',
+    f'-Ptb_ddr_bridge.READ_SLOTS={slots}','-Ptb_ddr_bridge.PIPELINED_READS=1',
+    '-o',exe,R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',
+    R/'ip/soft_pcie_root/rtl/host/pcie_tx_unpack.sv',R/'tests/host/tb_ddr_bridge.sv'],check=True)
+  run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+  assert run.returncode==0,run.stdout+run.stderr
+  assert 'PASS DDR:' in run.stdout
+
+
+def test_tx64_cdc(tmp_path):
+ exe=tmp_path/'tx64-cdc.vvp'
+ subprocess.run(['iverilog','-g2012','-s','tb_tx64_cdc','-o',exe,
+   R/'ip/soft_pcie_root/rtl/host/pcie_tx_unpack.sv',
+   R/'ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv',
+   R/'tests/host/tb_tx64_cdc.sv'],check=True)
+ run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+ assert run.returncode==0,run.stdout+run.stderr
+ assert 'PASS TX64 CDC:' in run.stdout
+
+
+def test_wide_profile_registers(tmp_path):
+ exe=tmp_path/'profile-wide.vvp'
+ subprocess.run(['iverilog','-g2012','-s','tb_host_axi',
+   '-Ptb_host_axi.PACKET_DWORDS=2','-Ptb_host_axi.READ_PREFETCH_SLOTS=8','-o',exe,
+   R/'ip/soft_pcie_root/rtl/host/pcie_host_axi.sv',R/'tests/host/tb_host_axi.sv'],check=True)
+ run=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
+ assert run.returncode==0,run.stdout+run.stderr
+ assert 'PASS HOST:' in run.stdout

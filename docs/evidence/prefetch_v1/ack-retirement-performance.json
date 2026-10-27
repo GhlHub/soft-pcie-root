@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-26",
+  "scope": "Current normal ACK retirement image, matched 30-second physical Gen3 x1 read/write benchmarks",
+  "bitstream": "build/ack_retire_board_v1/system.bit",
+  "bitstream_sha256": "7ff1c4483da56fb98ae83a53204fe9c9bf8713a779b2316a6463ba0fb19c0860",
+  "live_profile_magic": "0x4c505232",
+  "hardware": {
+    "board": "ZCU104",
+    "ssd": "Samsung 990 EVO 1 TB",
+    "link": "Gen3 x1"
+  },
+  "fio": {
+    "version": "fio-3.38",
+    "direct": true,
+    "ioengine": "libaio",
+    "block_bytes": 1048576,
+    "jobs": 1,
+    "runtime_seconds": 30,
+    "queue_depths": [
+      1,
+      8
+    ],
+    "read_range_GiB": [
+      0,
+      4
+    ],
+    "write_range_GiB": [
+      8,
+      12
+    ]
+  },
+  "performance": {
+    "read1": {
+      "MB_s": 599.835382,
+      "runtime_ms": 30001,
+      "io_bytes": 17995661312,
+      "previous_30s_MB_s": 611.16,
+      "change_percent": -1.8529710714051961
+    },
+    "read8": {
+      "MB_s": 745.358988,
+      "runtime_ms": 30010,
+      "io_bytes": 22368223232,
+      "previous_30s_MB_s": 742.25,
+      "change_percent": 0.41885995284607347
+    },
+    "write1": {
+      "MB_s": 339.541225,
+      "runtime_ms": 30002,
+      "io_bytes": 10186915840,
+      "previous_30s_MB_s": 297.12,
+      "change_percent": 14.277472065158857
+    },
+    "write8": {
+      "MB_s": 567.713733,
+      "runtime_ms": 30014,
+      "io_bytes": 17039360000,
+      "previous_30s_MB_s": 454.74,
+      "change_percent": 24.84358820424859
+    }
+  },
+  "jobs_passed": [
+    "oldcrc",
+    "read1",
+    "read8",
+    "write1",
+    "write8",
+    "verify",
+    "verify_sector",
+    "postflush"
+  ],
+  "crc": {
+    "existing_256MiB": "pass",
+    "fresh_256MiB": "pass",
+    "fresh_sector_offset_32MiB": "pass",
+    "post_flush": "pass"
+  },
+  "written_bytes": 27528265728,
+  "exact_block_sector_accounting": true,
+  "smart": {
+    "before": {
+      "temperature": 311,
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "after": {
+      "temperature": 318,
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    }
+  },
+  "final_dma_status": 12,
+  "final_inflight": [
+    0,
+    0
+  ],
+  "sd_boot_files_changed": false,
+  "limits": [
+    "Single run per workload, historical comparison; not interleaved statistical or endurance qualification.",
+    "Separate CRC regions verified; timed write region not CRC readback verified.",
+    "Profiling counters remain stopped to avoid overflow across 30-second runs."
+  ]
+}

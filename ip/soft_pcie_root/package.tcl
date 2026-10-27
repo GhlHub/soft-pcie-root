@@ -1,5 +1,16 @@
 # Build a self-contained local Vivado IP repository. No board access.
-if {[llength $argv] != 1} {error "Supply a fresh output directory"}
+# ENABLE_GEN3 is a packaging-time choice, default off. The experimental
+# backend is kept in a separate VLNV so it cannot replace a qualified core.
+if {[llength $argv] < 1 || [llength $argv] > 2} {error "Supply fresh output directory and optional ENABLE_GEN3 (0 or 1)"}
+set enable_gen3 0
+if {[llength $argv] == 2} {set enable_gen3 [lindex $argv 1]}
+if {$enable_gen3 ni {0 1}} {error "ENABLE_GEN3 must be 0 or 1"}
+if {$enable_gen3} {
+ set argv [list [lindex $argv 0]]
+ set argc 1
+ source [file join [file dirname [info script]] ../../experiments/gen3/package_host.tcl]
+ return
+}
 set root [file normalize [file join [file dirname [info script]] ../..]]
 set output [file normalize [lindex $argv 0]]
 if {[file exists $output]} {error "Output exists; use a fresh directory"}

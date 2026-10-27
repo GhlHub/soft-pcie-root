@@ -3,7 +3,7 @@
 `soft_pcie_root` is the public top module. It combines the transceiver-facing
 root port, management mailbox, CPU BAR access, noncoherent DDR bridge and MSI
 integration. The top was extracted from the verified ZCU104 shell by changing
-its module identifier only. The current DDR payload-banking optimization departs
+its module identifier only. Subsequent payload banking, packet-width, prefetch and normal-ACK changes depart
 from that baseline; see [verification status](../../docs/verification.md) for the
 source provenance and physical qualification of each revision.
 
@@ -17,7 +17,11 @@ The packaged configuration fixes management 50 MHz, host 125 MHz, reference 100 
 and one UltraScale+ GTH channel. Its supplied GT configuration selects X0Y15
 on XCZU7EV, matching ZCU104. Other lane/device mappings need regenerated GT
 configuration and reviewed constraints. This release does not expose unverified
-GUI parameters for lane count, Gen3 or arbitrary AXI clocks.
+GUI parameters for lane count or arbitrary AXI clocks. A packaging-time Gen3
+selector creates a separate experimental VLNV; see
+[optional Gen3 packaging](../../docs/ip-guide.md#optional-gen3-packaging).
+Physical measurements by revision are in the
+[performance history](../../docs/performance-history.md).
 
 | Interface | Direction | Contract |
 | --- | --- | --- |

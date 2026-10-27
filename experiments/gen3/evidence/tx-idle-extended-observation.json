@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "scope": "Native TX trace and five-millisecond passive Gen3 observation; no usable Data Link or NVMe path",
+  "build": "gen3_tx_observe_board_v9",
+  "bitstream_sha256": "9d0d36f687f0b06654a1b91a6fbf2974f74c6c2c00507b8d145caf72c18960f3",
+  "source_sha256": {
+    "experiments/gen3/gen3_eq_board.sv": "4e5d5fbbd1ee4c26a45af63dcff36566ffb6884a57fd1ef994621e97cfa07dd3",
+    "experiments/gen3/gen3_eq_bringup.sv": "e73a2fe7b75024f04d4ccc2eba844e5b8247d3dbdb59e1b0e5cb5dba480de7db",
+    "experiments/gen3/gen3_legacy_training.sv": "ef205424334b6007af067618944b027108bc2c9f52c2e03b5fc27d33530d6864",
+    "experiments/gen3/gen3_startup_ltssm.sv": "5d6f282a9d8aeb4e904837ea3e4fc65a45c8dc8293bc0c9a3ae85cdf6c86976f",
+    "experiments/gen3/gen3_training_tx.sv": "ae7de58369109d3e7c6b2b36f475082b292f08a303425867de53578999f52204",
+    "experiments/gen3/gen3_training_rx.sv": "649bb8c92f43cc4944935299507d8fef7be973ddc812f6e58c495877042b7926",
+    "experiments/gen3/gen3_recovery_tx.sv": "a9eb481228c1d896ec13c26cceb205a355e50aaef79826b76cb843ef9b26b024",
+    "experiments/gen3/gen3_native_rx.sv": "c177ca55140f61f74391a1a60389b30e3f6e1330d2f8ac8cc51fe45158798ca1",
+    "experiments/gen3/gen3_data_rx.sv": "4e1a216cda51fd69f4fac822796e29e0d5ed5eba9593a9f0662918ab64b4b300",
+    "experiments/gen3/gen3_stream_rx.sv": "e84c5963eed6a5afe4c12907e7930786998d5bf831bb9eb6fea04d66b5d1fd44",
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "5711aab344980de58455793f4320754491d5bde9a420e952161487879fb3bc5e",
+    "experiments/gen3/gen3_packet_gate.sv": "bbf110e523fb9f5f6751f7e54002a8aa752fafca4c3f3adf58ef2e34873fba88",
+    "experiments/gen3/gen3_eq_phase1.sv": "db6e15bd291c754efe0c79fd0de63782fb5045bb4cf209785c701a185cbd7dba",
+    "experiments/gen3/gen3_clock_watch.sv": "a9298c590ec20052ca44a643df40daa75e9d0cb2831e91f3b6250af3b16c9d1a",
+    "experiments/gen3/build_eq_board.tcl": "a4b0f13da18e17a89f3e72b4b1daf173424f1c7ba55a18c6a634a4e37a5bcf30",
+    "experiments/gen3/eq_board_constraints.tcl": "e07e79f4566ecaeff616ed2f040e0eb35ee9fba43f822e009de2bc1f1b14d1e0",
+    "experiments/gen3/eq_board_sources.py": "b0a9e88549d15032e2559b4d7b8c9ad479601b8465d5b01879858574dd8f72e3",
+    "experiments/gen3/instrument_eq_phy.py": "93fc36fee372d27ca7f875a307c35df70405dc46b7b0ecce7f3d050f8e7a5369",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2"
+  },
+  "supplemental_sha256": {
+    "experiments/gen3/audit_ila_config_cdc.tcl": "030420b863fd77342cca3a9536124c1637b64ac82d21785e9f1e2f47a4bdca00",
+    "experiments/gen3/analyze_tx_capture.py": "b7c88b5a9c2c86d5e154f8e54fdd73275fcd8b96ec3c12b9e1898243b4b68cf6"
+  },
+  "finalization_script_sha256": "407df304aaf05b18e7a2f1511841f97a891fb7cfd13db271ec23ee9a5effa033",
+  "timing_ns": {
+    "gen3_setup": 0.0,
+    "gen3_hold": 0.011,
+    "gen1_setup": 0.199,
+    "gen1_hold": 0.011,
+    "pulse_width": 0.543
+  },
+  "resources": {
+    "lut": 6865,
+    "ff": 9456,
+    "ramb36": 93,
+    "ramb18": 0,
+    "uram": 0,
+    "dsp": 0,
+    "gth": 1
+  },
+  "cdc": {
+    "unreviewed_critical": 0,
+    "reviewed_critical": 1,
+    "reviewed_scope": "Exact four-stage generated ILA storage-qualification configuration crossing; configuration held fixed while armed; no PCIe crossing exception"
+  },
+  "regression": "Full experimental suite passed; balanced popcount preserves identical simulated native TX trace",
+  "observation_cycles": 1250000,
+  "pclk_hz": 250000000,
+  "trials": [
+    {
+      "mode": "transition",
+      "attempt": 0,
+      "terminal_state": 15,
+      "failure": 1
+    },
+    {
+      "mode": "transition",
+      "attempt": 1,
+      "terminal_state": 14,
+      "failure": 0,
+      "local_l0": true,
+      "ts2_count": 34,
+      "validated_dllps": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "terminal_counters": {
+        "rxvalid_cycles": 1250152,
+        "rxdatavalid_cycles": 1230919,
+        "accepted_words": 1230919,
+        "decoded_dwords": 1227448,
+        "data_blocks": 306863,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      }
+    },
+    {
+      "mode": "stop",
+      "attempt": 0,
+      "terminal_state": 14,
+      "failure": 0,
+      "local_l0": true,
+      "ts2_count": 35,
+      "validated_dllps": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "terminal_counters": {
+        "rxvalid_cycles": 1250153,
+        "rxdatavalid_cycles": 1230920,
+        "accepted_words": 1230920,
+        "decoded_dwords": 1227449,
+        "data_blocks": 306863,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      }
+    },
+    {
+      "mode": "peer_training",
+      "attempt": 0,
+      "terminal_state": 15,
+      "failure": 1
+    },
+    {
+      "mode": "peer_training",
+      "attempt": 1,
+      "terminal_state": 14,
+      "failure": 0,
+      "local_l0": true,
+      "ts2_count": 34,
+      "validated_dllps": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "terminal_counters": {
+        "rxvalid_cycles": 1250152,
+        "rxdatavalid_cycles": 1230919,
+        "accepted_words": 1230919,
+        "decoded_dwords": 1227452,
+        "data_blocks": 306864,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      },
+      "training_after_local_l0_triggered": false,
+      "capture_status": "WAITING FOR TRIGGER",
+      "raw_capture_valid": false
+    },
+    {
+      "mode": "sparse0",
+      "attempt": 0,
+      "terminal_state": 14,
+      "failure": 0,
+      "local_l0": true,
+      "ts2_count": 35,
+      "validated_dllps": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "terminal_counters": {
+        "rxvalid_cycles": 1250152,
+        "rxdatavalid_cycles": 1230919,
+        "accepted_words": 1230919,
+        "decoded_dwords": 1227448,
+        "data_blocks": 306863,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      },
+      "qualified_nonzero_words": 833,
+      "only_nonzero_dword": "0090801f",
+      "last_l0_cycle": 1249939
+    },
+    {
+      "mode": "sparse1",
+      "attempt": 0,
+      "terminal_state": 14,
+      "failure": 0,
+      "local_l0": true,
+      "ts2_count": 33,
+      "validated_dllps": 0,
+      "receive_error_pulses_before_monitored_states": 2,
+      "terminal_counters": {
+        "rxvalid_cycles": 1250149,
+        "rxdatavalid_cycles": 1230916,
+        "accepted_words": 1230916,
+        "decoded_dwords": 1227449,
+        "data_blocks": 306863,
+        "framed_dllps": 0,
+        "dllp_crc_failures": 0
+      },
+      "qualified_nonzero_words": 833,
+      "only_nonzero_dword": "0090801f",
+      "last_l0_cycle": 1249889
+    }
+  ],
+  "tx_transition_decode": {
+    "samples": 8192,
+    "acquired": true,
+    "blocks": {
+      "blocks_before_acquisition": 22,
+      "eieos": 15,
+      "ts1": 441,
+      "skp": 6,
+      "ts2": 24,
+      "sds": 1,
+      "data": 1506
+    },
+    "nonzero_data_dwords": {
+      "0090801f": 4
+    },
+    "valid_cycle_gaps": {
+      "1": 7939,
+      "2": 126
+    },
+    "last_ts2_sample": 2050,
+    "sds_sample": 2054,
+    "first_data_block_end": 2058,
+    "last_data_block_end": 8188,
+    "final_local_state_cycles": 6095,
+    "errors": []
+  },
+  "stop_capture_max_l0_cycle": 1250000,
+  "conclusions": [
+    "Native TX transition independently decodes TS2, SDS, logical idle, EDS and SKP without framing/scrambler/parity errors in the captured interval.",
+    "No received DLLPs or CRC failures; two complete qualified five-millisecond captures contain only EDS among nonzero decoded data words.",
+    "No peer training event triggered after local L0. No 2 ms Recovery.Idle timeout was observed; the stuck-Recovery.Idle hypothesis is weakened, not definitively excluded.",
+    "Peer internal LTSSM/Data Link state and serialized TX electrical behavior remain unobserved. Missing DLLP cause is not established."
+  ],
+  "next_step": "Bounded transmit InitFC diagnostic with valid receive-credit backing; observe peer response before integrating TLP/replay/host traffic.",
+  "restoration": {
+    "qualified_gen2_restored": true,
+    "sd_boot_files_changed": false,
+    "linux_version": "6.6.70",
+    "nvme_enumerated": true,
+    "direct_read_bytes": 16777216,
+    "direct_read_passed": true,
+    "inflight_after": [
+      0,
+      0
+    ]
+  }
+}

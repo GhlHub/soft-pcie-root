@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-26",
+  "scope": "Matched historical Gen2 versus experimental Gen3 performance test",
+  "baseline": "docs/evidence/ddr_banked_v1/completion.json",
+  "gen3_build": "gen3_host_board_v6",
+  "gen3_bitstream_sha256": "101c0e37a943410bd3f5cda27c496505ad94a38a500be748d1ad060865d2fe60",
+  "settings": {
+    "fio_version": "fio-3.38",
+    "direct": true,
+    "ioengine": "libaio",
+    "jobs": 1,
+    "block_size_bytes": 1048576,
+    "queue_depths": [
+      1,
+      8
+    ],
+    "duration_seconds": 30,
+    "read_range_GiB": [
+      0,
+      4
+    ],
+    "write_range_GiB": [
+      8,
+      12
+    ],
+    "write_refill_buffers": true,
+    "write_randseed": 19047,
+    "write_end_fsync": true
+  },
+  "comparison": {
+    "read_qd1": {
+      "gen2_MB_s": 380.795157,
+      "gen3_MB_s": 389.637853,
+      "change_percent": 2.322166087842348,
+      "gen3_io_bytes": 11689525248,
+      "gen3_runtime_ms": 30001
+    },
+    "read_qd8": {
+      "gen2_MB_s": 428.645349,
+      "gen3_MB_s": 433.815222,
+      "change_percent": 1.2060956714124993,
+      "gen3_io_bytes": 13022265344,
+      "gen3_runtime_ms": 30018
+    },
+    "write_qd1": {
+      "gen2_MB_s": 200.244641,
+      "gen3_MB_s": 106.510469,
+      "change_percent": -46.80982798436039,
+      "gen3_io_bytes": 3196059648,
+      "gen3_runtime_ms": 30007
+    },
+    "write_qd8": {
+      "gen2_MB_s": 259.16757,
+      "gen3_MB_s": 121.383955,
+      "change_percent": -53.16391051550161,
+      "gen3_io_bytes": 3649044480,
+      "gen3_runtime_ms": 30062
+    }
+  },
+  "integrity": {
+    "jobs_passed": 8,
+    "old_256MiB_crc": "pass",
+    "fresh_256MiB_crc": "pass",
+    "sector_offset_32MiB_crc": "pass",
+    "namespace_flush": "pass",
+    "postflush_256MiB_crc": "pass",
+    "written_bytes": 7147094016,
+    "sector_accounting": "exact",
+    "inflight": [
+      0,
+      0
+    ]
+  },
+  "smart": {
+    "critical_warning": {
+      "before": 0,
+      "after": 0
+    },
+    "media_errors": {
+      "before": 0,
+      "after": 0
+    },
+    "num_err_log_entries": {
+      "before": 0,
+      "after": 0
+    },
+    "unsafe_shutdowns": {
+      "before": 26,
+      "after": 26
+    }
+  },
+  "boot_attempts": {
+    "failed_before_nvme": 2,
+    "successful": 1
+  },
+  "limitations": [
+    "Historical baseline rather than repeated interleaved A/B trials",
+    "Small read gains are not statistically established",
+    "Single-outstanding experimental transmitter; no throughput optimization",
+    "Intermittent startup; full Recovery remains unfinished"
+  ],
+  "restoration": {
+    "gen2_linux": "verified",
+    "crc_read_bytes": 268435456,
+    "crc_result": "pass",
+    "inflight": [
+      0,
+      0
+    ]
+  },
+  "sd_boot_files_changed": false
+}

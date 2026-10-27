@@ -1,0 +1,10 @@
+{
+  "cocotbext-pcie": {
+    "repository": "https://github.com/alexforencich/cocotbext-pcie",
+    "commit": "4befa5eb60f12bc7e1050509defbb9afc33a15a9",
+    "file": "cocotbext/pcie/core/dllp.py",
+    "sha256": "ede08367c704c98250f2bb8f0212c20ab6dad851f124f0ce68a5792e9eab08d5",
+    "license": "MIT",
+    "purpose": "Optional independent DLLP encoding/CRC simulation oracle; not synthesized or vendored"
+  }
+}

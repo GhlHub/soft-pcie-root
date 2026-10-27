@@ -1,5 +1,6 @@
 `timescale 1ns/1ps
 module tb_host_axi;
+ parameter PACKET_DWORDS=1,READ_PREFETCH_SLOTS=2;
  reg clk=0;always #4 clk=~clk;
  reg rst=0,active=1;
  reg [24:0] awaddr=0,araddr=0;reg awvalid=0,wvalid=0,bready=0,arvalid=0,rready=0;
@@ -9,7 +10,7 @@ module tb_host_axi;
  reg rv=0;wire rr;reg [31:0] result=0;reg [2:0] status=0;
  reg [31:0] perf=0, frozen_count=0;
  reg msi=0;reg [4:0] vector=0;reg dfault=0;wire enable,irq;
- pcie_host_axi #(.TIMEOUT_CYCLES(40)) dut(.clk(clk),.rst_n(rst),.link_active_i(active),
+ pcie_host_axi #(.TIMEOUT_CYCLES(40),.PACKET_DWORDS(PACKET_DWORDS),.READ_PREFETCH_SLOTS(READ_PREFETCH_SLOTS)) dut(.clk(clk),.rst_n(rst),.link_active_i(active),
  .s_axi_awaddr(awaddr),.s_axi_awvalid(awvalid),.s_axi_awready(awready),
  .s_axi_wdata(wdata),.s_axi_wstrb(wstrb),.s_axi_wvalid(wvalid),.s_axi_wready(wready),
  .s_axi_bresp(bresp),.s_axi_bvalid(bvalid),.s_axi_bready(bready),
@@ -51,7 +52,8 @@ module tb_host_axi;
   @(negedge clk);msi=1;vector=5;@(negedge clk);msi=0;b(0);
   ar(25'h20);r(32'h20,0);aw(25'h28);wd(32'h20,15);b(0);
   // Disabled counters, enable/clear, event capture, freeze and byte strobes.
-  ar('h88);r(32'h50524631,0);ar('h8c);r(125000000,0);
+  ar('h88);r(PACKET_DWORDS==2?32'h50524632:32'h50524631,0);ar('h8c);r(125000000,0);
+  ar('h90);r((READ_PREFETCH_SLOTS<<8)|PACKET_DWORDS,0);
   perf=32'h80000001;repeat(5)@(negedge clk);ar('h100);r(0,0);
   aw('h80);wd(3,1);b(0);
   @(negedge clk);perf=0;repeat(3)@(negedge clk);

@@ -1,0 +1,62 @@
+{
+  "scope": "equalization-only diagnostic; no packet, DMA or NVMe data path",
+  "date": "2026-10-25",
+  "board": "ZCU104",
+  "build": "gen3_eq_board_v4",
+  "bitstream_sha256": "c688935f817830d550df27a09721ee7171e0ee1245106d62e63a26c714b2eb3c",
+  "source_sha256": {
+    "experiments/gen3/gen3_eq_board.sv": "ee82273498a03118a9bcfc2c5988eebf131989e5d25cda47871cc502108624f1",
+    "experiments/gen3/gen3_eq_bringup.sv": "6752b45cebce9274739efbd1c78ad1cd5f33ce2e0ba61cc4bd740fd2dd0fa109",
+    "experiments/gen3/gen3_legacy_training.sv": "ef205424334b6007af067618944b027108bc2c9f52c2e03b5fc27d33530d6864",
+    "experiments/gen3/gen3_startup_ltssm.sv": "5d6f282a9d8aeb4e904837ea3e4fc65a45c8dc8293bc0c9a3ae85cdf6c86976f",
+    "experiments/gen3/gen3_training_tx.sv": "ae7de58369109d3e7c6b2b36f475082b292f08a303425867de53578999f52204",
+    "experiments/gen3/gen3_training_rx.sv": "649bb8c92f43cc4944935299507d8fef7be973ddc812f6e58c495877042b7926",
+    "experiments/gen3/gen3_eq_phase1.sv": "db6e15bd291c754efe0c79fd0de63782fb5045bb4cf209785c701a185cbd7dba",
+    "experiments/gen3/gen3_clock_watch.sv": "a9298c590ec20052ca44a643df40daa75e9d0cb2831e91f3b6250af3b16c9d1a",
+    "experiments/gen3/build_eq_board.tcl": "5fd7c9a4e78d08de38710d9ad1e71e2a62d4f3fd919fa2592f83579044f1a857",
+    "experiments/gen3/eq_board_constraints.tcl": "81e433d94c044b83bc0e0dfba4e22bbe5492fd282e78594f9e2bd380d2774cf7",
+    "experiments/gen3/eq_board_sources.py": "5b85ba6c5e42ebb05f07873f6d09540787d19b9b54b03eac6e19eb7be82d69e6",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_scrambler.sv": "e89100ab60f3a3261b26c72da469020db6205d213c8d147debed75c31695fbde",
+    "examples/zcu104/constraints/zcu104_fmc.xdc": "7b866990a2065562b031fd5bdf18709048aea39c0b9190fb152e149dcc3259d2"
+  },
+  "resources": {
+    "lut": 3487,
+    "ff": 4656,
+    "bram": 0,
+    "uram": 0,
+    "dsp": 0,
+    "gth_channels": 1,
+    "pcie_controller_blocks": 0
+  },
+  "timing_ns": {
+    "gen3_setup": 0.041,
+    "gen3_hold": 0.01,
+    "gen1_setup": 0.541,
+    "gen1_hold": 0.01
+  },
+  "simulation": "full experimental regression passed",
+  "physical_trial": {
+    "preset": 4,
+    "programmed": true,
+    "vio_responded": true,
+    "pclk_observed": false,
+    "snapshot_progress": false,
+    "watchdog_asserted": true,
+    "receiver_detection_demonstrated": false,
+    "equalization_demonstrated": false,
+    "result": "PHY startup failed before training; root cause undetermined"
+  },
+  "sd_modified": false,
+  "recovery": {
+    "qualified_gen2_bitstream_restored": true,
+    "linux_boot_verified": true,
+    "ssh_verified": true,
+    "link": "Gen2 x1",
+    "read_only_direct_bytes": 16777216,
+    "read_only_direct_pass": true,
+    "inflight_after": [
+      0,
+      0
+    ]
+  }
+}

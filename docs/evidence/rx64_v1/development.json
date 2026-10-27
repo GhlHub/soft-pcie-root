@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-26",
+  "status": "simulation_and_ooc_synthesis_only",
+  "change": "64-bit receive path at 125 MHz: link DWORD pairing, whole-packet CDC, pending queue, and payload preparation",
+  "raw_host_receive_bytes_s": 1000000000,
+  "capacity": {
+    "rx_cdc_packets": 4,
+    "max_dwords_per_cdc_packet": 64,
+    "pending_requests": 4,
+    "axi_data_bits": 64,
+    "axi_clock_hz": 125000000,
+    "ps_hp0_data_bits": 128,
+    "completion_slots": 2
+  },
+  "validation": {
+    "repository_tests": {
+      "passed": 43,
+      "note": "42 passed in full run; XPM test initially lacked VIVADO_BIN, then passed with the correct tool path. Host-link test repeated after explicit inactive tail flag connection."
+    },
+    "lint": "pass including RX_DWORDS=1 and 2 and real XPM elaboration",
+    "gen3_component_and_integration_regression": "pass",
+    "vivado_host_rtl_elaboration": {
+      "gen2": "pass",
+      "gen3": "pass",
+      "critical_warnings": 0,
+      "errors": 0,
+      "note": "Elaboration retains vendor unused-port/reset warnings and the existing completion storage register-inference warning."
+    },
+    "out_of_context_synthesis": "pass for bridge, packer and 65-bit packet CDC",
+    "rx_cdc_bram": {
+      "ramb36": 1,
+      "ramb18": 0,
+      "physical_read_width": 72,
+      "physical_write_width": 72
+    },
+    "ideal_memory_service_test": {
+      "payload_bytes": 128,
+      "header_dwords": 3,
+      "address_offset_bytes": 0,
+      "packets": 32,
+      "max_service_cycles": 19,
+      "payload_MB_s": 842.1052631578947,
+      "note": "Ideal-memory bridge simulation only; not a system or SSD throughput prediction."
+    },
+    "lane_sweep_cases": 80,
+    "coverage": [
+      "3-DW and 4-DW headers",
+      "odd and even tails",
+      "payload lengths 1, 2, 3, 31, 32 DWORDs",
+      "address offsets zero and four",
+      "partial byte enables",
+      "pending queue wrap and backpressure",
+      "whole-packet validation and oversize rejection",
+      "CDC stopped clocks and global reset with a partial pair",
+      "stalled AW/W stability",
+      "all-B-before-MSI",
+      "held AR and accepted AXI drain",
+      "read completions and malformed/error cases"
+    ]
+  },
+  "source_sha256": {
+    "ip/soft_pcie_root/rtl/host/pcie_rx_pack.sv": "cfabc7e51d292a676a67a664d6f1aa390b5bffd3965ac4122c1ddb2c4e5d28bc",
+    "ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv": "5f0b09f5e3394f4cf1488673b8deeebcfb8dd0f51290f9cce8807055e2e5817b",
+    "ip/soft_pcie_root/rtl/management/soft_pcie_root.sv": "6d3c1245f0e45ad599b220c17dc0b91aeb7b5d7d8167a7db6a570d1ddc465d43",
+    "examples/zcu104/check_structure.tcl": "957255f2f9739bb593f4a9a00c40b179dec411a6888d2e7885f69f56edd420f7",
+    "experiments/gen3/check_host_structure.tcl": "bf97ed4c13291c858a44da0cbde1c4d26e765757e98ed9cd9d74cfa43204ee99",
+    "tests/host/tb_rx64_cdc.sv": "7be33b4ad9885c3d0ad374b2c1677697e0a14d6439e1d1312adc7b6724c52368",
+    "tests/host/tb_ddr_bridge.sv": "e731265e409a626664d456f0fab29732e544f0a8c0c450a9df9c9af2f262fec5",
+    "tests/host/tb_ddr_pipeline.sv": "664715ae450cc1c421a3a586adef9c28a85eb6c5532f01012db2e17497fe153f",
+    "tests/test_host.py": "60977a6405da97e676228f694ce387d939b6f24ce282e964e574d40ac8b4972e",
+    "scripts/synth_rx64.tcl": "1abd4bd97ac92656c413ece25585b71bac9bcb65688c3eeeccaaaa7b937893af"
+  },
+  "limits": [
+    "No full-board synthesis/place-and-route or timing/CDC audit for this revision",
+    "No physical Gen2/Gen3 measurement of the widened path",
+    "Frozen release hashes and physical qualification remain for the previous RTL; this working tree is not a qualified release",
+    "Gen3 intermittent startup remains unresolved"
+  ],
+  "deployment": {
+    "board_changed": false,
+    "sd_changed": false,
+    "commit_or_push": false
+  }
+}

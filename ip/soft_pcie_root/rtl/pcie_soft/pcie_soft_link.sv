@@ -210,6 +210,7 @@ module pcie_soft_link #(
  {rx_dllp[19:16],rx_dllp[31:24]},acknowledged,{7'b0,replay_sent},captured_valid,captured_ready,captured_nak,captured_seq,captured_age,ack_error);
  wire [31:0] replay_data;wire replay_valid,replay_last,replay_is_replay,replay_ready;
  wire replay_error,replay_overflow,replaying,replay_event,timeout_event;
+ wire [7:0] unused_profile;
  reg wire_done_q;
  wire [11:0] wire_sequence;wire wire_is_replay;
  always @(posedge clk) if(!rst_n) wire_done_q<=0;else wire_done_q<=wire_done;
@@ -221,10 +222,10 @@ module pcie_soft_link #(
  .tx_allow_i(l0),.tx_wire_done_i(wire_done_q),.phy_hold_i(timer_hold),.retrain_done_i(retrain_done),
  .response_valid_i(captured_valid),.response_ready_o(captured_ready),.response_nak_i(captured_nak),.response_sequence_i(captured_seq),.response_age_i(captured_age),
  .pending_o(replay_pending),.sent_o(replay_sent),.replaying_o(replaying),.acknowledged_o(acknowledged),.next_sequence_o(next_sequence),
- .recovery_req_o(replay_retrain),.response_error_o(replay_error),.overflow_o(replay_overflow),.replay_event_o(replay_event),.timeout_event_o(timeout_event));
+ .recovery_req_o(replay_retrain),.response_error_o(replay_error),.overflow_o(replay_overflow),.replay_event_o(replay_event),.timeout_event_o(timeout_event),.profile_events_o(unused_profile));
  pcie_soft_packet_tx transmitter(clk,rst_n&&link_up_o,!l0||skp_active||train_valid,
  replay_data,replay_valid,replay_last,replay_ready,replay_sequence,
  tx_ack_valid_q||fc_dllp_valid,tx_dllp_ready,tx_dllp,serial_symbols,serial_control,wire_done,serializer_idle,wire_busy,serializer_overflow);
  assign error_o=training_failed||request_error||request_fault||ack_error||fc_error||rx_packet_error||replay_error||replay_overflow||serializer_overflow;
- wire unused_debug=^{wire_sequence[11:3],rx_dllp[21:20],rx_dllp[15:14],next_sequence[11:3],decoded_keep,replay_pending,replay_is_replay,replaying,replay_event,timeout_event,serializer_idle};
+ wire unused_debug=^{unused_profile,wire_sequence[11:3],rx_dllp[21:20],rx_dllp[15:14],next_sequence[11:3],decoded_keep,replay_pending,replay_is_replay,replaying,replay_event,timeout_event,serializer_idle};
 endmodule

@@ -11,6 +11,10 @@ lint:
 	verilator --lint-only -Wall --top-module pcie_soft_link $(filter-out ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv,$(wildcard ip/soft_pcie_root/rtl/pcie_soft/*.sv))
 	verilator --lint-only -Wall --top-module pcie_root_csr ip/soft_pcie_root/rtl/management/pcie_root_csr.sv
 	verilator --lint-only -Wall --top-module pcie_ddr_bridge ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv
+	verilator --lint-only -Wall --top-module pcie_ddr_bridge -GRX_DWORDS=2 ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv
+	verilator --lint-only -Wall --top-module pcie_ddr_bridge -GRX_DWORDS=2 -GTX_DWORDS=2 -GREAD_SLOTS=8 -GPIPELINED_READS=1 ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv
+	verilator --lint-only -Wall --top-module pcie_tx_unpack ip/soft_pcie_root/rtl/host/pcie_tx_unpack.sv
+	verilator --lint-only -Wall --top-module pcie_rx_pack ip/soft_pcie_root/rtl/host/pcie_rx_pack.sv
 	verilator --lint-only -Wall --top-module pcie_host_axi ip/soft_pcie_root/rtl/host/pcie_host_axi.sv
 	verilator --lint-only -Wall --top-module pcie_cmd_mux ip/soft_pcie_root/rtl/host/pcie_cmd_mux.sv
 	python3 scripts/test_cmd_xpm.py --elaborate-only

@@ -186,7 +186,7 @@ module tb_host_link #(
  reg awready=0,wready=0,bvalid=0,arready=0,rvalid=0,rlast=0;
  reg [1:0] bresp=0,rresp=0;reg [63:0] rdata=0;
  pcie_ddr_bridge bridge(.clk(clk),.rst_n(rst),.link_active_i(active),.dma_enable_i(1'b1),
- .rx_data_i(ard),.rx_valid_i(arv),.rx_last_i(arl),.rx_ready_o(arr),
+ .rx_last_single_i(1'b0),.rx_data_i(ard),.rx_valid_i(arv),.rx_last_i(arl),.rx_ready_o(arr),
  .tx_data_o(atd),.tx_valid_o(atv),.tx_last_o(atl),.tx_ready_i(atr),.tx_credits_o(atcost),
  .msi_valid_o(msi),.msi_vector_o(vector),.fault_o(fault),.idle_o(idle),
  .m_axi_awaddr(awaddr),.m_axi_awlen(awlen),.m_axi_awsize(awsize),.m_axi_awburst(awburst),.m_axi_awcache(awcache),.m_axi_awprot(awprot),.m_axi_awvalid(awvalid),.m_axi_awready(awready),

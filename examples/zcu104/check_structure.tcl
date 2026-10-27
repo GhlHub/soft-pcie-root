@@ -34,7 +34,7 @@ foreach {fifo width} {rx_crossing 3 tx_crossing 3} {
  } else {
   set packet_ram [get_cells -hier -filter "NAME =~ */$fifo/data_q_reg && REF_NAME =~ RAMB*"]
   if {[llength $packet_ram]!=1} {error "Missing clocked packet RAM $fifo"}
-  set bus_width [expr {$fifo eq "rx_crossing"?36:72}]
+  set bus_width 36
   if {[get_property READ_WIDTH_A $packet_ram]!=$bus_width || [get_property WRITE_WIDTH_B $packet_ram]!=$bus_width ||
       [get_property WRITE_WIDTH_A $packet_ram]!=0 || [get_property READ_WIDTH_B $packet_ram]!=0} {
    error "Wrong simple-dual-port packet RAM geometry $fifo"

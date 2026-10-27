@@ -20,8 +20,9 @@ make soft-profile HARDWARE_OUTPUT=build/zcu104_v1 PROFILE_OUTPUT=build/profile_v
 The baseline SD image omits the PL host node. The optional profile adds a PL-first
 boot script, host DTB, matching bitstream and identities. The script expects its
 files at the SD boot partition root and the existing baseline ext4 rootfs
-PARTUUID 1045a7a0-02. The throughput benchmarks used the same kernel with a RAM rootfs. The deployed
-banked-payload image now boots from the persistent ext4 SD root partition. Review the generated script before manually selecting it in U-Boot;
+PARTUUID 1045a7a0-02. The earliest throughput benchmarks used the same kernel with a RAM rootfs.
+Later tests use the persistent ext4 SD root partition. Review the generated
+script before manually selecting it in U-Boot;
 packaging never writes SD media or programs hardware.
 
 Before binding the host node, load the correct PL bitstream and confirm FMC power.

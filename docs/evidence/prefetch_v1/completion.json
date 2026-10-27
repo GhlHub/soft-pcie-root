@@ -1,0 +1,137 @@
+{
+  "scope": "Temporary ZCU104 Gen3x1 physical I/O, CRC and matched performance tests of startup-corrected eight-read wide-packet configuration",
+  "date": "2026-10-26",
+  "bitstream": "build/prefetch_gen3_board_v2/system.bit",
+  "bitstream_sha256": "523e9eb871adf276bc7c72942bacf3139618b00e6953449dc029bf7ae2720686",
+  "source_manifest_sha256": "da16509a3bb383d06e9d497391083514502df2c5e5f8097a15a50958569449b7",
+  "configuration": {
+    "gen3_enabled": true,
+    "host_rx_bits": 64,
+    "host_tx_bits": 64,
+    "host_clock_hz": 125000000,
+    "ddr_axi_bits": 64,
+    "read_slots": 8,
+    "prefetch_payload_bytes": 512,
+    "write_owners": 2
+  },
+  "link": {
+    "speed_gt_s": 8,
+    "lanes": 1,
+    "mps_bytes": 128,
+    "rcb_bytes": 64
+  },
+  "device_model": "Samsung SSD 990 EVO 1TB",
+  "fio_version": "fio-3.38",
+  "benchmark_parameters": {
+    "ioengine": "libaio",
+    "direct": true,
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "queue_depths": [
+      1,
+      8
+    ],
+    "runtime_seconds_each": 30,
+    "read_range_bytes": [
+      0,
+      4294967296
+    ],
+    "write_scratch_range_bytes": [
+      8589934592,
+      12884901888
+    ]
+  },
+  "performance": {
+    "read1": {
+      "new_bytes_per_second": 611159625,
+      "previous_gen3_bytes_per_second": 612222711,
+      "change_percent": -0.17364367262096003,
+      "io_bytes": 18335399936,
+      "runtime_ms": 30001,
+      "job_error": 0
+    },
+    "read8": {
+      "new_bytes_per_second": 742249249,
+      "previous_gen3_bytes_per_second": 741805239,
+      "change_percent": 0.05985533353720651,
+      "io_bytes": 22274899968,
+      "runtime_ms": 30010,
+      "job_error": 0
+    },
+    "write1": {
+      "new_bytes_per_second": 297121581,
+      "previous_gen3_bytes_per_second": 200426055,
+      "change_percent": 48.24498790838347,
+      "io_bytes": 8913944576,
+      "runtime_ms": 30001,
+      "job_error": 0
+    },
+    "write8": {
+      "new_bytes_per_second": 454739235,
+      "previous_gen3_bytes_per_second": 260302157,
+      "change_percent": 74.69668336248169,
+      "io_bytes": 13650362368,
+      "runtime_ms": 30018,
+      "job_error": 0
+    }
+  },
+  "crc": {
+    "existing_pattern_256MiB": "pass",
+    "fresh_256MiB_at_16GiB": "pass",
+    "fresh_32MiB_at_20GiB_plus_512": "pass",
+    "namespace_flush": "pass",
+    "post_flush_256MiB": "pass"
+  },
+  "all_eight_jobs_passed": true,
+  "written_bytes": 22866296832,
+  "exact_sector_write_accounting": true,
+  "health": {
+    "critical_warning": {
+      "before": 0,
+      "after": 0
+    },
+    "media_errors": {
+      "before": 0,
+      "after": 0
+    },
+    "num_err_log_entries": {
+      "before": 0,
+      "after": 0
+    },
+    "unsafe_shutdowns": {
+      "before": 26,
+      "after": 26
+    },
+    "temperature": {
+      "before": 312,
+      "after": 318
+    }
+  },
+  "final_state": {
+    "nvme": "live",
+    "dma_status": 12,
+    "profile_magic": "PRF2",
+    "packet_dwords": 2,
+    "read_slots": 8,
+    "io_inflight": [
+      0,
+      0
+    ],
+    "new_gen3_image_running": true,
+    "sd_boot_files_changed": false
+  },
+  "bringup_history": {
+    "original_image_nvme_identify_timeouts": 2,
+    "original_failure": "Initial inactive link latched completion drain without accepted ownership; two AXI read bursts returned and zero TX completions were handed off",
+    "fix": "Latch link-loss completion drain only with live read ownership; regression now starts with inactive link",
+    "regression": "46 tests and lint pass; new startup regression reproduces failure with original packaged RTL",
+    "corrected_image_link_training_timeouts": 1,
+    "corrected_image_successful_boot_attempt": 2
+  },
+  "limitations": [
+    "Historical comparison, not interleaved statistical benchmarking",
+    "Gen3 link training remains intermittent",
+    "No cold-cycle, endurance, full Recovery or compliance qualification",
+    "Temporary programming only; SD still boots the earlier image"
+  ]
+}

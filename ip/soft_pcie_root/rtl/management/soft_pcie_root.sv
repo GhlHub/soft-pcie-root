@@ -143,6 +143,10 @@ module soft_pcie_root(
  input wire refclk_p_i,refclk_n_i,rx_p_i,rx_n_i,
  output wire tx_p_o,tx_n_o,perst_a_o,disable_ssd2_power_o
 );
+ // Packaging fixes the backend and these dimensions together. Negotiated
+ // fallback speed does not change packet width or accepted-owner capacity.
+ localparam integer PACKET_DWORDS=1;
+ localparam integer READ_PREFETCH_SLOTS=2;
  wire enable,cv,cr,rv,rr;
  wire linkup_raw,active_raw,error_raw,linkup,active,error;
  wire [4:0] state_raw;
@@ -195,14 +199,14 @@ module soft_pcie_root(
  wire pv,pr,prv,prr,cv_mux,cr_mux,rv_mux,rr_mux;
  wire [2:0] pop;wire [63:0] pa;wire [31:0] pd;wire [3:0] pbe;
  wire [118:0] mux_payload;
- wire [31:0] txdata,rxdata;wire txvalid,txlast,txready,rxvalid,rxlast,rxready;
+ wire [32*PACKET_DWORDS-1:0] txdata,rxdata;wire rxsingle,txsingle;wire txvalid,txlast,txready,rxvalid,rxlast,rxready;
  wire [31:0] perf_events;
  wire [8:0] txcost;wire msi;wire [4:0] vector;wire dma_fault,dma_idle,dma_enable;
  pcie_cmd_mux mux(.clk(core_clk),.rst_n(mailbox_release_q[2]),
  .a_valid_i(cv),.a_ready_o(cr),.a_payload_i({op,address,bdf,data,be}),.a_rsp_valid_o(rv),.a_rsp_ready_i(rr),
  .b_valid_i(pv),.b_ready_o(pr),.b_payload_i({pop,pa,16'b0,pd,pbe}),.b_rsp_valid_o(prv),.b_rsp_ready_i(prr),
  .valid_o(cv_mux),.ready_i(cr_mux),.payload_o(mux_payload),.rsp_valid_i(rv_mux),.rsp_ready_o(rr_mux));
- pcie_host_axi host(.clk(core_clk),.rst_n(mailbox_release_q[2]),.link_active_i(active),
+ pcie_host_axi #(.PACKET_DWORDS(PACKET_DWORDS),.READ_PREFETCH_SLOTS(READ_PREFETCH_SLOTS)) host(.clk(core_clk),.rst_n(mailbox_release_q[2]),.link_active_i(active),
  .s_axi_awaddr(s_mem_awaddr),
  .s_axi_awvalid(s_mem_awvalid),
  .s_axi_awready(s_mem_awready),
@@ -223,9 +227,10 @@ module soft_pcie_root(
  .cmd_valid_o(pv),.cmd_ready_i(pr),.cmd_op_o(pop),.cmd_address_o(pa),.cmd_data_o(pd),.cmd_be_o(pbe),
  .rsp_valid_i(prv),.rsp_ready_o(prr),.rsp_data_i(result),.rsp_status_i(status),
  .perf_events_i(perf_events),.msi_valid_i(msi),.msi_vector_i(vector),.dma_fault_i(dma_fault),.dma_idle_i(dma_idle),.dma_enable_o(dma_enable),.irq_o(irq_o));
- pcie_ddr_bridge ddr(.clk(core_clk),.rst_n(mailbox_release_q[2]),.link_active_i(active),.dma_enable_i(dma_enable),
- .rx_data_i(rxdata),.rx_valid_i(rxvalid),.rx_last_i(rxlast),.rx_ready_o(rxready),
- .tx_data_o(txdata),.tx_valid_o(txvalid),.tx_last_o(txlast),.tx_ready_i(txready),.tx_credits_o(txcost),
+ pcie_ddr_bridge #(.RX_DWORDS(PACKET_DWORDS),.TX_DWORDS(PACKET_DWORDS),
+ .READ_SLOTS(READ_PREFETCH_SLOTS),.PIPELINED_READS(PACKET_DWORDS==2)) ddr(.clk(core_clk),.rst_n(mailbox_release_q[2]),.link_active_i(active),.dma_enable_i(dma_enable),
+ .rx_last_single_i(rxsingle),.rx_data_i(rxdata),.rx_valid_i(rxvalid),.rx_last_i(rxlast),.rx_ready_o(rxready),
+ .tx_last_single_o(txsingle),.tx_data_o(txdata),.tx_valid_o(txvalid),.tx_last_o(txlast),.tx_ready_i(txready),.tx_credits_o(txcost),
  .perf_events_o(perf_events),.msi_valid_o(msi),.msi_vector_o(vector),.fault_o(dma_fault),.idle_o(dma_idle),
  .m_axi_awaddr(m_ddr_awaddr),
  .m_axi_awlen(m_ddr_awlen),
@@ -290,12 +295,32 @@ module soft_pcie_root(
  wire [31:0] root_rxdata;wire root_rxvalid,root_rxlast,root_rxready;
  wire [42:0] root_tx_payload;wire root_txvalid,root_txlast,root_txready;
 
- pcie_cdc_packet #(.WIDTH(32),.WORDS(64),.SLOTS(4)) rx_crossing(
-  link_clk,core_clk,aresetn,root_rxdata,root_rxvalid,root_rxlast,root_rxready,rx_cross_fault,
-  rxdata,rxvalid,rxlast,rxready);
- pcie_cdc_packet #(.WIDTH(43),.WORDS(64),.SLOTS(4)) tx_crossing(
-  core_clk,link_clk,aresetn,{2'd2,txcost,txdata},txvalid,txlast,txready,tx_cross_fault,
-  root_tx_payload,root_txvalid,root_txlast,root_txready);
+ wire [32*PACKET_DWORDS:0] packed_rxdata;
+ wire packed_rxvalid,packed_rxlast,packed_rxready;
+ generate if(PACKET_DWORDS==2)begin: wide_rx
+  pcie_rx_pack rx_pack(.clk(link_clk),.rst_n(link_release_q[2]),
+   .s_data_i(root_rxdata),.s_valid_i(root_rxvalid),.s_last_i(root_rxlast),.s_ready_o(root_rxready),
+   .m_data_o(packed_rxdata),.m_valid_o(packed_rxvalid),.m_last_o(packed_rxlast),.m_ready_i(packed_rxready));
+ end else begin: narrow_rx
+  assign packed_rxdata={1'b0,root_rxdata};
+  assign packed_rxvalid=root_rxvalid;assign packed_rxlast=root_rxlast;assign root_rxready=packed_rxready;
+ end endgenerate
+ pcie_cdc_packet #(.WIDTH(32*PACKET_DWORDS+1),.WORDS(64/PACKET_DWORDS),.SLOTS(4)) rx_crossing(
+  link_clk,core_clk,aresetn,packed_rxdata,packed_rxvalid,packed_rxlast,packed_rxready,rx_cross_fault,
+  {rxsingle,rxdata},rxvalid,rxlast,rxready);
+ wire [32*PACKET_DWORDS+3:0] crossed_tx;
+ wire crossed_valid,crossed_last,crossed_ready;
+ pcie_cdc_packet #(.WIDTH(32*PACKET_DWORDS+4),.WORDS(64/PACKET_DWORDS),.SLOTS(4)) tx_crossing(
+  core_clk,link_clk,aresetn,{txcost[2:0],txsingle,txdata},txvalid,txlast,txready,tx_cross_fault,
+  crossed_tx,crossed_valid,crossed_last,crossed_ready);
+ generate if(PACKET_DWORDS==2)begin: wide_tx
+  pcie_tx_unpack tx_unpack(.clk(link_clk),.rst_n(link_release_q[2]),
+   .s_data_i(crossed_tx),.s_valid_i(crossed_valid),.s_last_i(crossed_last),.s_ready_o(crossed_ready),
+   .m_data_o(root_tx_payload),.m_valid_o(root_txvalid),.m_last_o(root_txlast),.m_ready_i(root_txready));
+ end else begin: narrow_tx
+  assign root_tx_payload={2'd2,6'b0,crossed_tx[35:33],crossed_tx[31:0]};
+  assign root_txvalid=crossed_valid;assign root_txlast=crossed_last;assign crossed_ready=root_txready;
+ end endgenerate
  pcie_soft_root_port root_port(
  .freerun_clk_i(aclk),.reset_i(!aresetn),.enable_i(enable),
  .refclk_p_i(refclk_p_i),.refclk_n_i(refclk_n_i),.rx_p_i(rx_p_i),.rx_n_i(rx_n_i),

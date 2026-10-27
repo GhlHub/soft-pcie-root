@@ -1,19 +1,37 @@
-# Deliberate stopping point and future investigation
+# Release boundary and further investigation
 
-This release freezes the two-bank TX design at Gen1/Gen2 x1. It does not promise
-faster implementations or support for other hardware based on parameter edits.
+The frozen release is Gen1/Gen2 x1. Current development adds optional experimental
+Gen3 x1 and changes shared host/replay RTL. Current Gen3 physical results do not
+qualify a newly rebuilt default Gen2 image or imply support for other hardware.
+See [performance history](performance-history.md) for completed improvements and
+[verification](verification.md) for evidence and remaining limits.
 
-Potential investigations, each requiring protocol tests, timing and new hardware
-measurements:
+## Completed development steps
 
-- More completion prefetch slots and overlap across endpoint read requests.
-- Buffer/credit capacity sweeps with occupancy measurements and bounded ownership.
-- Registered byte preparation and BRAM-backed serializer storage for timing margin.
-- Reducing ACK/replay drain overhead without freeing live retry storage.
-- Gen3 or wider links: new PHY, encoding/training/protocol architecture and validation.
-- OP063 adapter qualification and a reviewed FRU/VADJ policy update.
-- Broader endpoint/device coverage, long-duration and cold-cycle qualification.
+- Gen3 data-link/NVMe operation, with the eight-entry replay capacity and two
+  staging banks used by Gen2.
+- 64-bit host receive transfers, removing the main measured Gen3 read bottleneck.
+- 64-bit host transmit transfers and eight-slot DDR read prefetch with request overlap.
+- Link-domain counters separating peer-credit, replay and formatter stalls.
+- Normal ACK retirement concurrent with later original packets, retaining
+  exceptional-response drain barriers and immutable packet identities.
 
-The measured baseline has zero TX backpressure at the host completion interface,
-but approximately 30% of host cycles wait for completion-slot data. That supports
-further DDR-prefetch investigation; it does not prove a particular future speedup.
+The latest 30-second QD8 measurements are 745.36 MB/s read and 567.71 MB/s write.
+The five-second link profile recorded no peer-credit or normal-ACK blocking, but
+replay admission blocked 27.62% of cycles and formatter output blocked 16.13%.
+These events overlap. More DDR slots are not yet justified by these measurements.
+
+## Remaining work
+
+- Distinguish replay-window/peer ACK latency from PCS boundary, cadence and DLLP
+  arbitration limits before changing capacity or scheduling.
+- Improve timing margin: current Gen3 setup slack is only +0.004 ns.
+- Resolve intermittent startup and complete full Recovery/equalization behavior.
+- Rebuild and physically verify the default Gen2 configuration after shared RTL changes.
+- Add repeated/interleaved benchmarks, longer runs, cold cycles and broader endpoint coverage.
+- Qualify OP063 with a reviewed FRU/VADJ policy and board bring-up.
+- Investigate wider links or other FPGA families only with matching PHY,
+  ownership, timing and hardware evidence.
+
+No accepted AXI or replay ownership may be reset away. Packet RAM stays unreset;
+capacity changes require bounded ownership and wrap/error/recovery regressions.

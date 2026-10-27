@@ -2,6 +2,8 @@
 // Ideal-memory service-rate test, not a PCIe/SSD throughput prediction.
 // Independent external AXI scoreboard; usable against the prior bridge too.
 module tb_ddr_pipeline;
+ parameter RX_DWORDS=1;
+ reg pair_half=0;reg [31:0] pair_low;reg rxsingle=0;
  parameter MAX_SERVICE_CYCLES=38;
  parameter ALIGN=0,FOUR=0,STALLS=0,WORDS=32;
  localparam BEATS=(WORDS+ALIGN+1)/2;
@@ -10,13 +12,13 @@ module tb_ddr_pipeline;
  wire wready=STALLS==0 || cycle%5==0;
  reg clk=0;always #4 clk=~clk;
  reg rst=0;
- reg [31:0] rxdata=0;reg rxvalid=0,rxlast=0;wire rxready;
+ reg [32*RX_DWORDS-1:0] rxdata=0;reg rxvalid=0,rxlast=0;wire rxready;
  wire [31:0] awaddr;wire [7:0] awlen,wstrb;wire [63:0] wdata;
  wire awvalid,wvalid,wlast,bready,arvalid,msi,fault,idle;
  wire [4:0] vector;
  reg bvalid=0;
- pcie_ddr_bridge dut(.clk(clk),.rst_n(rst),.link_active_i(1'b1),.dma_enable_i(1'b1),
- .rx_data_i(rxdata),.rx_valid_i(rxvalid),.rx_last_i(rxlast),.rx_ready_o(rxready),
+ pcie_ddr_bridge #(.RX_DWORDS(RX_DWORDS)) dut(.clk(clk),.rst_n(rst),.link_active_i(1'b1),.dma_enable_i(1'b1),
+ .rx_last_single_i(rxsingle),.rx_data_i(rxdata),.rx_valid_i(rxvalid),.rx_last_i(rxlast),.rx_ready_o(rxready),
  .tx_data_o(),.tx_valid_o(),.tx_last_o(),.tx_ready_i(1'b1),.tx_credits_o(),
  .msi_valid_o(msi),.msi_vector_o(vector),.fault_o(fault),.idle_o(idle),
  .m_axi_awaddr(awaddr),.m_axi_awlen(awlen),.m_axi_awsize(),.m_axi_awburst(),.m_axi_awcache(),.m_axi_awprot(),.m_axi_awvalid(awvalid),.m_axi_awready(awready),
@@ -66,9 +68,15 @@ module tb_ddr_pipeline;
    end
   end
  end
- task word(input [31:0] data,input last);
-  @(negedge clk);rxdata=data;rxvalid=1;rxlast=last;
-  do @(posedge clk);while(!rxready);
+ task word(input [31:0] d,input last);
+  if(RX_DWORDS==2&&!pair_half&&!last)begin pair_low=d;pair_half=1;end
+  else begin
+   @(negedge clk);
+   rxdata=RX_DWORDS==2? (pair_half?64'({d,pair_low}):64'(d)):64'(d);
+   rxsingle=RX_DWORDS==2&&!pair_half;pair_half=0;
+   rxvalid=1;rxlast=last;
+   do @(posedge clk);while(!rxready);
+  end
  endtask
  initial begin
   repeat(4)@(negedge clk);rst=1;

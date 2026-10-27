@@ -180,7 +180,14 @@ module gen3_startup_ltssm #(
                 end
             end else begin
                 if(time_tick&&timer_q!=32'hffffffff) timer_q<=timer_q+1'b1;
-                if(ts_bad_i || (ts_valid_i && !qualifies)) good_q<=0;
+                // Configuration.Complete has independent receive and transmit
+                // requirements. Retain eight consecutive qualified TS2s while
+                // finishing our sixteen transmitted TS2s: the peer may already
+                // send idle, which the training codec reports as non-TS data.
+                // State changes clear this qualification; disable/PHY-loss
+                // handling above remains unconditional.
+                if(state_q==COMPLETE && good_q>=8) good_q<=good_q;
+                else if(ts_bad_i || (ts_valid_i && !qualifies)) good_q<=0;
                 else if(qualifies && good_q<16) good_q<=good_q+1'b1;
                 if(qualifies) first_q<=1;
                 if(tx_ts_done_i && tx_ts_kind_i==tx_kind_o &&

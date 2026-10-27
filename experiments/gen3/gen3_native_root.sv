@@ -81,12 +81,23 @@ module gen3_native_root(
     wire reset=!release_sync[2];
     wire [127:0] status,last_ts;
     reg detect_source=0;
+    reg [63:0] startup_history=0;
+    reg [4:0] previous_startup_state=0;
     always @(posedge pclk)begin
-        if(reset)begin detect_source<=0;diagnostic_o<=0;completion_debug_o<=0;end
+        if(reset)begin
+            detect_source<=0;diagnostic_o<=0;completion_debug_o<=0;
+            startup_history<=0;previous_startup_state<=0;
+        end
         else begin
             detect_source<=status[4:0]==0 && status[9:5]<=1;
             diagnostic_o<={8'b0,rate,ready_sync[1],idle_sync[1],detect,idle,phystatus,rx_valid};
-            completion_debug_o<=last_ts;
+            // Passive legacy history, frozen when the outer startup terminates.
+            // Reuse the existing registered diagnostic CDC; no control fanout.
+            if(status[4:0]==0 && status[9:5]!=previous_startup_state)begin
+                startup_history<={startup_history[55:0],powerdown[1],detect,phystatus,status[9:5]};
+                previous_startup_state<=status[9:5];
+            end
+            completion_debug_o<=rate==0?{32'h4c475331,startup_history,status[31:0]}:last_ts;
         end
     end
     assign state_o=status[4:0];

@@ -32,13 +32,18 @@ recipe sets `CONFIG.ENABLE_GEN3=true` explicitly. The default board recipe sets 
 false. The optional packaging argument `1` sets the initial checkbox value only. Earlier
 sections below describing separate native host packages refer to historical builds. The
 unified 1.1 package has passed customization and synthesis/CDC checks for both
-selections; the physical measurements above predate it. Its own full route and board
-verification remain pending. Use the packaged block-design cell for AXI automation; see
+selections; the physical measurements above predate it. Its Gen3-enabled configuration
+has also passed full synthesis, place-and-route, bitstream generation and an independent
+checkpoint audit ([evidence](../../docs/evidence/catalog_gen3_v1/implementation.json)).
+The later [startup correction](startup-stabilization.md) passed ten controlled
+warm-start/read-only NVMe CRC trials on a fresh, audited unified image.
+Use the packaged block-design cell for AXI automation; see
 the [standalone wrapper limitation](../../docs/ip-guide.md#optional-gen3-packaging).
 
 Freeze RTL/scripts/constraints throughout the build. These commands build only;
 they do not program a board. Do not replace PL while Linux owns the host.
-Startup intermittence, full Recovery and narrow timing margins remain open.
+The startup correction still needs cold-cycle and broader qualification. Full
+Recovery remains incomplete and the latest Gen3 setup margin is only +0.002 ns.
 The SD default remains the historical Gen2 image.
 
 The sections below retain earlier investigation stages and test-time restoration

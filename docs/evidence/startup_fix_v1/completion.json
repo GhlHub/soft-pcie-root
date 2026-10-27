@@ -1,0 +1,203 @@
+{
+  "date": "2026-10-26",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "base_commit": "ecf1f44c5dbeda5ab7268a424feb207197d98633",
+  "source_state": "Working tree; exact hardware inputs bound by sources.json",
+  "catalog_vlnv": "soft-pcie.org:user:soft_pcie_root:1.1",
+  "ENABLE_GEN3": true,
+  "change": "Retain eight consecutive qualified Configuration.Complete TS2s while completing local transmit requirement; add passive LGS1 legacy startup diagnostics.",
+  "regressions": {
+    "repository_tests": 74,
+    "passed": 74,
+    "focused_startup_cases": 25,
+    "lint": "PASS",
+    "xpm_elaboration": "PASS",
+    "original_16_TS2_then_idle_case": "FAIL reproduced before fix",
+    "corrected_finite_TS2": {
+      "7": "rejected",
+      "8": "accepted",
+      "16": "accepted",
+      "24": "accepted"
+    },
+    "negative_guards": [
+      "malformed sequence before eight",
+      "lane mismatch",
+      "rate mismatch",
+      "unsupported qualification control",
+      "unsupported control after eight",
+      "PHY loss clears qualification",
+      "synchronous reset clears qualification"
+    ],
+    "environment_note": "Initial XPM test used executable rather than directory for VIVADO_BIN; corrected directory and reran that test successfully."
+  },
+  "implementation": {
+    "result": "PASS",
+    "initial_route_setup_ns": -0.028,
+    "additional_steps": [
+      "phys_opt_design -directive AggressiveExplore",
+      "route_design -directive Explore"
+    ],
+    "optimization_script_sha256": "b176b58e46e652bdf0e581f74ba7c80c96fb3442c80ab0cab8363693ad96b524",
+    "gen3_setup_ns": 0.002,
+    "gen3_hold_ns": 0.011,
+    "gen1_setup_ns": 0.427,
+    "gen1_hold_ns": 0.011,
+    "pulse_width_ns": 0.543,
+    "reopened_audit": "PASS",
+    "unwaived_critical_CDC": 0,
+    "DRC_errors_or_critical_warnings": 0,
+    "routing_errors": 0,
+    "bus_skew": "PASS",
+    "source_manifests": "PASS"
+  },
+  "resources": {
+    "LUT": 11341,
+    "FF": 10411,
+    "control_sets": 536,
+    "RAMB36": 2,
+    "RAMB18": 1,
+    "URAM": 0,
+    "DSP": 0,
+    "GTHE4_CHANNEL": 1,
+    "hard_PCIE": 0
+  },
+  "physical": {
+    "board": "ZCU104",
+    "adapter": "OP047 Rev D SSD1",
+    "ssd_model": "Samsung SSD 990 EVO 1TB",
+    "boot_method": "Clean Linux halt, system warm reset, independently verified pre-kernel stop, JTAG program, resume Linux",
+    "trials": [
+      {
+        "trial": 1,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 2,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 3,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 4,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true,
+        "debugger_resume_retry": true
+      },
+      {
+        "trial": 5,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 6,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 7,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 8,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 9,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      },
+      {
+        "trial": 10,
+        "gen3_x1": true,
+        "crc_bytes": 268435456,
+        "crc_pass": true,
+        "write_bytes": 0,
+        "smart_unchanged": true
+      }
+    ],
+    "successful_link_startups": 10,
+    "failed_link_startups": 0,
+    "crc_verified_bytes": 2684354560,
+    "ssd_write_bytes": 0,
+    "smart_critical_warning": 0,
+    "smart_media_errors": 0,
+    "smart_error_log_entries": 0,
+    "unsafe_shutdowns_before": 26,
+    "unsafe_shutdowns_after": 26,
+    "debugger_interruptions": [
+      {
+        "trial": 4,
+        "issue": "Resume returned Already running; independent inspection found CPU still stopped at kernel entry. Fresh connection resumed it; no new reset/program/link attempt."
+      },
+      {
+        "trial": 5,
+        "issue": "Stop-check connection returned no targets; enumeration wait and repeated stop checks confirmed kernel-entry stop before programming."
+      }
+    ],
+    "final_board_state": "Corrected Gen3 image running; NVMe live and idle",
+    "sd_boot_files_changed": false
+  },
+  "artifacts_sha256": {
+    "system.bit": "ec16b2422dcc219386ee46d197191f14bac5f94ee82bd739c581fe5caa11a051",
+    "system.xsa": "00ad38d614b82704d75a566053cf1e4d2ef35064346f891cb85c897a62a08b98",
+    "routed.dcp": "0973e810c34b089e49919e3229c0e69d1c225dcafaaaa53fc29d8921e1d367d9",
+    "sources.json": "140fbb742109329758a58e08c4d7cd98bb888c0b61e369dc095f612f70fe7b96"
+  },
+  "audit_reports_sha256": {
+    "timing.rpt": "a4d79f6c04c635db295b79a871d16d129bfd598bb421f2655298b931a250b0f7",
+    "gen1_timing.rpt": "3a18ba75709e33b907516d47bb08f86f81a28fe8536d78ff8a42b2b6065d545f",
+    "cdc.rpt": "ef034b8a8827993c63e9cd7dd71615d1c8e79bad14fc629a7aaa27aa8ce43676",
+    "drc.rpt": "b62387b0d082e3c523dbc84042928c403b92ed5f013cfac2985cb8cd80fd4f2c",
+    "route.rpt": "5ebf951483f80e1f895d08f0217298c482dd42a0de2093912d7af74b92210308",
+    "bus_skew.rpt": "1bf5ff0638da62a37767841db2d0040cd83ebc0934fb61ff7e9e5b0f10a90c54",
+    "utilization.rpt": "19c364e0f83b1e76fd9fd10b30a4a93ad46bf1ed96d0ca8c9853be0ac6c641a2",
+    "control_sets.rpt": "b0c87cfcbbe1c1df5f712a11d599defd455faaa20919192e05c76e4b4864b657"
+  },
+  "test_sources_sha256": {
+    "tests/test_gen3_startup.py": "dbb95069549b0c266ddb2b286f818396b7b75b9ff80569341b18f8d7c6dca577",
+    "experiments/gen3/test_eq_bringup.sv": "5c539fbc20a7ab171e6f46b38d1e8ec345f6df3eaffd84557d394c80dbe79c11",
+    "experiments/gen3/test_startup_qualification.sv": "8c6f2718ee4b9a7134299596e7b42f2804b93543ad23ff7df61bb1d21e37ec19"
+  },
+  "limitations": [
+    "Ten controlled warm starts are a bounded sample, not proof all startup failures are eliminated.",
+    "No cold power-cycle, temperature sweep, endurance or compliance qualification.",
+    "Gen3 setup margin is only +0.002 ns.",
+    "Full PCIe Recovery remains incomplete.",
+    "No new write-throughput benchmark; earlier performance figures describe earlier images."
+  ]
+}

@@ -44,6 +44,23 @@ and the single direct endpoint. Status 0 success, 1 UR, 2 CA/other, 3 timeout,
 cancel accepted ownership. Diagnostic multi-bit status is not an atomic control
 interface.
 
+### Experimental Gen1 startup diagnostics
+
+In the startup-corrected Gen3 image, while the native PHY remains at Gen1,
+SRP1 0x40–0x4C reports an `LGS1` diagnostic record instead of the Gen3 training
+capture. Offset 0x40 is 0x4C475331; 0x44/0x48 contain the last eight legacy state
+transitions (newest byte at 0x48 bits 7:0). Each byte has state bits 4:0,
+PHYSTATUS bit 5, receiver-detect bit 6, and powerdown bit 1 copied to bit 7.
+History freezes when the outer startup leaves its legacy state.
+
+Offset 0x4C contains outer state bits 4:0, legacy state bits 9:5, PHY rate bits
+11:10, PHY-ready bit 12, and failure reason bits 22:19. Failure 1 means whole
+legacy-startup timeout; failure 7 means legacy startup rejected training. Legacy
+states 8/9/10 are Configuration.Complete / Configuration.Idle / L0. At Gen3,
+the previous native training/Recovery diagnostic format is retained. These
+registers are passive, non-atomic diagnostic samples; read stable repeated values
+and never use them as a reset or ownership interface.
+
 ## DBR1 offsets (S_MEM+0)
 
 | Offset | Access | Meaning |

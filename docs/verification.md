@@ -7,7 +7,30 @@ The latest results are first. Frozen Gen1/Gen2 provenance manifests remain
 unchanged. `make release-check` intentionally rejects newer shared RTL and RTL
 inventory; passing current development tests does not relabel that baseline.
 
-## Unified catalog development
+## Startup-corrected unified Gen3 image
+
+The Configuration.Complete receive qualification now survives the peer's transition
+to idle while the local transmit requirement finishes. Passive legacy startup history
+was added to the existing diagnostic registers. All 74 repository tests, including
+25 focused startup cases, lint and XPM elaboration passed.
+
+Fresh synthesis and implementation, followed by an additional physical-optimization
+pass, passed an independent reopened audit. Gen3 setup/hold is +0.002/+0.011 ns;
+Gen1 startup is +0.427/+0.011 ns. Resources are 11,341 LUTs, 10,411 FFs, 536 control
+sets, two RAMB36 and one RAMB18. CDC, bus skew, DRC and routing checks passed.
+
+Ten controlled warm starts all negotiated Gen3 x1 and passed 256 MiB read-only NVMe
+CRC verification each: 2.5 GiB total, zero SSD writes, no new SMART errors or unsafe
+shutdowns. Two debugger-control retries occurred before Linux startup; neither
+required another link-training attempt. The board was left running this corrected
+image; SD boot files remain unchanged. No new throughput measurement was made.
+
+See the [correction and test method](../experiments/gen3/startup-stabilization.md) and
+[exact evidence](evidence/startup_fix_v1/completion.json). This bounded test does not
+qualify cold cycling, temperature variation, endurance or compliance. The very narrow
+Gen3 setup margin and incomplete full Recovery remain limitations.
+
+## Initial unified catalog development
 
 The current source now uses one version 1.1 catalog definition with a default-off
 **Enable experimental Gen3** checkbox. This packaging/elaboration change follows the
@@ -22,9 +45,18 @@ out-of-context synthesis of both configurations passed. Each elaborates one GTH 
 selected backend only, with the expected packet RAM width and read-owner capacity.
 Matching PHY clocks and board CDC constraints passed with no critical warnings or
 unwaived critical CDC findings. All 49 repository tests and lint/XPM elaboration passed.
-See [sanitized catalog evidence](evidence/catalog_v1/selection.json). This is not route
-or physical qualification. The integration guide documents the standalone wrapper
+See [sanitized catalog evidence](evidence/catalog_v1/selection.json). The integration guide documents the standalone wrapper
 annotation limitation; use the packaged block-design cell for AXI automation.
+
+The unified Gen3-enabled package subsequently passed full synthesis, place-and-route,
+bitstream generation, and an independent reopened checkpoint audit. Final Gen3 setup/hold
+slack is +0.073/+0.010 ns; Gen1 startup is +0.540/+0.010 ns. Utilization is 11,322 LUTs,
+10,375 FFs, 535 control sets, two RAMB36 and one RAMB18. Timing coverage, bus skew,
+DRC, routing, CDC and source-manifest checks passed. See
+[implementation evidence](evidence/catalog_gen3_v1/implementation.json). This image has
+not been programmed or physically qualified. Its startup RTL is unchanged; a simulated
+Configuration.Complete receive-qualification race remains a candidate explanation for
+intermittent startup, pending hardware confirmation.
 
 ## Current Gen2 ACK retirement measurement
 

@@ -19,14 +19,17 @@ packets. Gen3-disabled packaging retains 32-bit packet paths and two slots. The 
 RTL has evolved beyond the frozen Gen2 source baseline; both the Gen3-enabled and
 default Gen2 ACK-retirement images now have short physical I/O/CRC tests. Current Gen2
 QD8 read/write is 428.30/260.21 MB/s, essentially unchanged from the historical Gen2
-baseline. These measurements predate the unified version 1.1 catalog package, which has
-passed customization and synthesis checks for both selections but has not yet been
-routed or tested on the board.
+baseline. These measurements predate the unified version 1.1 catalog package. Its
+startup-corrected Gen3 configuration has now passed full implementation and ten
+controlled warm-start/NVMe CRC trials; both catalog selections have passed
+customization and synthesis checks.
 
 See the [performance improvement history](docs/performance-history.md) for the
 measured progression, [configuration](docs/ip-guide.md#optional-gen3-packaging)
-and [verification](docs/verification.md) for exact scope. Gen3 startup remains
-intermittent, setup margin is only +0.004 ns, and full Recovery remains incomplete.
+and [verification](docs/verification.md) for exact scope. The
+[startup correction](experiments/gen3/startup-stabilization.md) passed ten of ten
+warm-start trials, but cold-cycle qualification remains open. Gen3 setup margin is
+only +0.002 ns, and full Recovery remains incomplete.
 The historical Gen2 SD default is unchanged.
 
 ## Verified example

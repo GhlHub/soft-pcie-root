@@ -8,7 +8,10 @@ experimental Gen3 and shared RTL changes; see docs/performance-history.md and
 docs/verification.md. Do not rewrite frozen provenance manifests to qualify experimental
 code. Latest physical tests cover both Gen3 and a fresh default Gen2 ACK-retirement
 build; these are short I/O/CRC tests, not full qualification. The later unified 1.1
-catalog/checkbox packaging has not yet been routed or tested on the board.
+catalog/checkbox packaging has now been routed; its startup-corrected Gen3 image
+passed ten controlled warm-start/read-only CRC trials. See
+docs/evidence/startup_fix_v1/completion.json. Gen3 setup margin is +0.002 ns;
+cold-cycle, endurance, full Recovery and compliance qualification remain open.
 
 Reusable sources: ip/soft_pcie_root/rtl; packaging: ip/soft_pcie_root/package.tcl;
 board build/audit/constraints: examples/zcu104; Linux integration: software/.

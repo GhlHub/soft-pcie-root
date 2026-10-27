@@ -71,8 +71,13 @@ Use the shared ZCU104 CDC entry point, `examples/zcu104/constraints/zcu104_cdc.t
 dispatches to the reviewed constraint set for the elaborated backend. The two board
 build recipes explicitly select false/true on the same catalog core. Gen3 remains
 experimental and needs further stabilization. Prior physical results refer to their
-exact pre-unification images; this packaging change needs its own full route and board
-verification.
+exact pre-unification images. The unified Gen3-enabled package has now passed full
+synthesis, place-and-route, and an independent reopened checkpoint audit; see
+[initial implementation evidence](evidence/catalog_gen3_v1/implementation.json).
+The later startup-corrected unified image passed ten controlled warm-start/NVMe CRC
+trials ([evidence](evidence/startup_fix_v1/completion.json)). The recipes defer board CDC constraints
+until packaged IP checkpoints are linked, then apply them to the synthesis audit and
+implementation. Constraint paths resolve from the project file, not the caller's Tcl path.
 
 | Configuration | Host RX/TX packet width | Read prefetch | AXI outstanding reads/writes |
 | --- | --- | --- | --- |
@@ -107,11 +112,11 @@ sustained DDR bandwidth. The bridge parameter supports 2/4/8/16 slots for experi
 packaged dimensions are fixed together with interface metadata and board audits. The
 earlier separate Gen3 package passed full synthesis, routing and reopened audits. After
 fixing an initial-link drain bug, that image also passed temporary NVMe I/O/CRC and
-performance tests. These results predate the unified 1.1 catalog; its validation
-currently stops at customization and synthesis/CDC checks for both selections. Gen3 link
-startup remains intermittent. The latest normal-ACK image booted on its first attempt;
-that does not resolve earlier failures. See
-[verification](verification.md#optional-gen3-and-ddr-prefetch-development).
+performance tests. Those performance results predate the unified 1.1 catalog. Its
+startup-corrected Gen3 image subsequently passed full implementation and ten warm-start
+read-only CRC trials. Cold-cycle qualification and full Recovery remain open, and
+Gen3 setup margin is only +0.002 ns. See
+[verification](verification.md#startup-corrected-unified-gen3-image).
 
 ### Normal ACK retirement
 

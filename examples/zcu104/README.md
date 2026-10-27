@@ -67,8 +67,12 @@ default commands above still select Gen1/Gen2. Both recipes instantiate
 customization uses **Enable experimental Gen3**. The shared CDC entry point follows the
 elaborated backend automatically. Earlier separate Gen2/Gen3 packages have short
 physical I/O/CRC evidence. The unified 1.1 package has passed customization and
-synthesis/CDC checks for both selections, but still requires its own full route, audit
-and board verification. Broader qualification remains incomplete.
+synthesis/CDC checks for both selections. Its Gen3-enabled configuration also passed
+full synthesis, place-and-route and an independent checkpoint audit; see
+[implementation evidence](../../docs/evidence/catalog_gen3_v1/implementation.json).
+The later startup-corrected unified image passed ten controlled warm-start/read-only
+NVMe CRC trials ([evidence](../../docs/evidence/startup_fix_v1/completion.json)).
+Broader qualification remains incomplete; Gen3 setup margin is only +0.002 ns.
 
 ## Linux and first boot
 

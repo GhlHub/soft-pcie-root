@@ -65,12 +65,16 @@ read_xdc [file join $root examples zcu104 constraints zcu104_fmc.xdc]
 add_files -fileset constrs_1 [file join $root examples zcu104 constraints zcu104_cdc.tcl]
 set_property FILE_TYPE TCL [get_files zcu104_cdc.tcl]
 set_property PROCESSING_ORDER LATE [get_files zcu104_cdc.tcl]
+# Packaged BD IPs are black boxes during top synthesis. Apply these constraints
+# after open_run links their checkpoints, and normally during implementation.
+set_property USED_IN_SYNTHESIS false [get_files zcu104_cdc.tcl]
 set_property top system_wrapper [current_fileset]
 generate_target all $bd
 launch_runs synth_1 -jobs 8
 wait_on_run synth_1
 if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "Synthesis failed"}
 open_run synth_1
+source [file join $root examples zcu104 constraints zcu104_cdc.tcl]
 exec python3 [file join $root scripts host_sources.py] check [file join $out sources.json]
 if {[llength [get_cells -hier -quiet -filter {REF_NAME =~ PCIE*}]]} {error "Soft test image contains PCIe hard macro"}
 if {[llength [get_cells -hier -quiet -filter {REF_NAME == GTHE4_CHANNEL}]]!=1} {error "Expected one GTH"}

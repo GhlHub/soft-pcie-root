@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 `timescale 1ns/1ps
 module test_eq_bringup;
-    parameter integer FAULT=0;
+    parameter integer FAULT=0, FINITE_TS2=0;
+    // A finite peer burst must not wait for the DUT to enter Configuration.Idle.
+    // The old state-following peer concealed loss of receive qualification.
+    if(FINITE_TS2!=0)begin
+        defparam dut.startup.CONFIG_CYCLES=2000;
+    end
     reg clk=0;always #2 clk=~clk;
     reg reset=1;
     wire [127:0] status,last_ts;
@@ -14,8 +19,15 @@ module test_eq_bringup;
     wire [1:0] partner_kind_out;
     wire lp=state==0 && legacy_state<4;
     wire np=state==0 && legacy_state<6;
+    integer peer_ts2_count=0;
+    always @(posedge clk)begin
+        if(reset || legacy_state!=8)peer_ts2_count<=0;
+        else if(partner_done && partner_kind_out==2 && peer_ts2_count<FINITE_TS2)
+            peer_ts2_count<=peer_ts2_count+1;
+    end
     wire [1:0] partner_kind=state==0?
-        (legacy_state==9 || legacy_state==10?2'd0:
+        (legacy_state==9 || legacy_state==10 ||
+         (FINITE_TS2!=0 && legacy_state==8 && peer_ts2_count>=FINITE_TS2)?2'd0:
         legacy_state==3 || legacy_state==8?2'd2:2'd1):
         state==1?2'd1:state==2?2'd2:2'd0;
     gen3_legacy_training partner(
@@ -80,11 +92,16 @@ module test_eq_bringup;
         if(eqctrl==1)seen_apply=1;
         if(eqctrl==3)begin if(!seen_apply)$fatal(1,"query before apply");seen_query=1;end
         if(rate==2)begin if(!seen_query)$fatal(1,"rate before preset query");seen_gen3=1;end
-        if(state==15 && (FAULT==0 || FAULT==9 || FAULT==11))$fatal(1,"bringup failed %032x",status);
+        if(state==15 && (FAULT==0 || FAULT==9 || FAULT==11) &&
+           !(FINITE_TS2!=0 && FINITE_TS2<8))$fatal(1,"bringup failed %032x",status);
     end
     initial begin
         repeat(4)@(posedge clk);#1;reset=0;
         wait(state==14 || state==15);#1;
+        if(FINITE_TS2!=0 && FINITE_TS2<8)begin
+            if(state!=15 || status[22:19]!=1)$fatal(1,"insufficient TS2s accepted");
+            $display("PASS: insufficient finite TS2 burst rejected");$finish;
+        end
         if(FAULT!=0 && FAULT!=9 && FAULT!=11)begin
             if(FAULT==10)begin
                 if(state!=15 || status[22:19]!=3)$fatal(1,"missing peer idle was accepted");

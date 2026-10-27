@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-26",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "base_commit": "ecf1f44c5dbeda5ab7268a424feb207197d98633",
+  "source_state": "Working tree with board CDC loading corrections; exact files bound by sources.json",
+  "catalog_vlnv": "soft-pcie.org:user:soft_pcie_root:1.1",
+  "ENABLE_GEN3": true,
+  "flow": "Fresh unified package, ip_repo block-design instantiation, full synthesis/place/route, bitstream/XSA, independent reopened checkpoint audit",
+  "result": "PASS",
+  "hardware_programmed": false,
+  "physical_qualification": false,
+  "timing_ns": {
+    "gen3": {
+      "setup": 0.073,
+      "hold": 0.01,
+      "pulse_width": 0.543
+    },
+    "gen1_startup": {
+      "setup": 0.54,
+      "hold": 0.01,
+      "pulse_width": 0.543
+    }
+  },
+  "resources": {
+    "LUT": 11322,
+    "FF": 10375,
+    "control_sets": 535,
+    "RAMB36": 2,
+    "RAMB18": 1,
+    "URAM": 0,
+    "DSP": 0,
+    "GTHE4_CHANNEL": 1,
+    "hard_PCIE": 0
+  },
+  "structure": {
+    "host_packet_bits": 64,
+    "packet_ram_width": 72,
+    "ddr_axi_bits": 64,
+    "ddr_axi_clock_mhz": 125,
+    "ps_hp0_bits": 128,
+    "outstanding_reads": 8,
+    "outstanding_writes": 2
+  },
+  "checks": {
+    "unwaived_critical_CDC": 0,
+    "DRC_errors_or_critical_warnings": 0,
+    "routing_errors": 0,
+    "bus_skew": "PASS",
+    "gen1_and_gen3_timing": "PASS",
+    "source_hashes": "PASS",
+    "selected_backend_only": "PASS",
+    "timing_coverage": "PASS"
+  },
+  "artifacts_sha256": {
+    "system.bit": "f444f30625d7f0375ce1d522fd1365b4c4112ef5fd6a91db4d1dac6031372690",
+    "system.xsa": "a270ce4d4708fe841a8bf05d40a975c4a473759bd736c82b665479d9b57bf4a9",
+    "routed.dcp": "a592d63e9c265cbac3482460e27a9cb89e132be9398e0fa88b2b5578dc6b0ca5",
+    "sources.json": "34a83dddc3d21acfacc0ca9cb15c3ca1924e57b530f67c7312a9435610d5d9b9"
+  },
+  "audit_report_sha256": {
+    "timing.rpt": "53765ea75bfe2f09be14f17d8f4eee566e3c16d74b4b593964c1337d2f5d05fc",
+    "gen1_timing.rpt": "a9d41d24c420a4efd421f802ddcc22ea229438f41a6a19be2e155c86df6a0c3f",
+    "cdc.rpt": "35577cb0b9f58303f49e7bffd8dcb13026886ba01d51f74c3bbb36b8d4362782",
+    "drc.rpt": "ffcb5fa657ba7ff5047718abdf3a7db96bca3ceff5cd10fd684b41ac839eda43",
+    "bus_skew.rpt": "6b5aa036d721c8fcbfd14b31b409c3608ca2f68b60ff4f40fcfa642a03a8abeb",
+    "route.rpt": "a787a50d0e7cbb09b281b6c8d1faa41ae3290bb15479fd42f25b585c7fcb2e18",
+    "utilization.rpt": "25b06d7f28ddc5201e69efa132a69c41b28bbe6c9caf95a53f380ce11b1444d0",
+    "control_sets.rpt": "228e6421f42ec166ddf33247d7e1b14c41adc2ff1a5b1de1d84ccc2a6f3cb110",
+    "check_timing.rpt": "8a758cbdd24dfb9f47b70b3eac8e6e36296155e2b084f433fe92343625a557c0"
+  },
+  "limitations": [
+    "Startup RTL is unchanged; intermittent startup remains unresolved in hardware.",
+    "Isolated simulation reproduces a Configuration.Complete receive-qualification race; candidate correction is excluded from this build.",
+    "Earlier measured throughput belongs to pre-unification physical images.",
+    "Gen3 remains experimental; no new board, endurance, recovery, or compliance qualification."
+  ],
+  "constraint_flow_corrections": [
+    "Defer board CDC constraints until packaged OOC checkpoints have been linked; explicitly apply them for synthesized audit.",
+    "Resolve nested constraint paths from the registered project file because Vivado constraint loading does not reliably set info script."
+  ]
+}

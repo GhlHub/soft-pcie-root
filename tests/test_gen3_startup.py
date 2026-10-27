@@ -41,3 +41,8 @@ def test_recovery_bringup(tmp_path, datalink):
 @pytest.mark.parametrize('case', range(7))
 def test_receive_qualification_guards(tmp_path, case):
     run_bench(tmp_path, 'test_startup_qualification', CASE=case)
+
+
+@pytest.mark.parametrize('gaps', [0, 1])
+def test_native_ordered_set_validation(tmp_path, gaps):
+    run_bench(tmp_path, 'test_native_ordered_sets', GAPS=gaps)

@@ -12,7 +12,7 @@ The frozen release is **Gen1/Gen2 x1**. Current development also offers an
 optional **experimental Gen3 x1** backend. The PHY targets UltraScale+ GTHE4;
 portability to other FPGA families and PCIe compliance are not claimed.
 
-The latest Gen3 build measured **745.36 MB/s read and 567.71 MB/s write** at QD8 with 1
+The earlier ACK-retirement Gen3 build measured **745.36 MB/s read and 567.71 MB/s write** at QD8 with 1
 MiB direct I/O and 30-second runs. It uses 64-bit host RX/TX packet paths, eight 64-byte
 DDR read-prefetch slots, and normal ACK retirement concurrent with later original
 packets. Gen3-disabled packaging retains 32-bit packet paths and two slots. The shared
@@ -30,6 +30,10 @@ and [verification](docs/verification.md) for exact scope. The
 [startup correction](experiments/gen3/startup-stabilization.md) passed ten of ten
 warm-start trials, but cold-cycle qualification remains open. Gen3 setup margin is
 only +0.002 ns, and full Recovery remains incomplete.
+The subsequent RX timing pipeline image passed full implementation and a controlled
+Gen3 x1 boot with NVMe CRC/performance checks. Routed setup margin improved to
+**+0.073 ns**; QD8 measured **737.09 MB/s read / 565.70 MB/s write**, within 1.11%
+of the earlier measurements. See [current evidence](docs/evidence/rx_pipeline_v1/completion.json).
 The historical Gen2 SD default is unchanged.
 
 ## Verified example

@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-27",
+  "base_commit": "12fb5dd4b12c3c932b012905ee13838822b7079c",
+  "source_state": "Working tree; exact hardware inputs bound by sources.json",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "catalog_vlnv": "soft-pcie.org:user:soft_pcie_root:1.1",
+  "ENABLE_GEN3": true,
+  "changes": [
+    "Fixed 32-bit LFSR transform with one SKP hold/advance selection",
+    "Unscrambled ordered sets bypass descrambler",
+    "Registered input classification adds one cycle of RX latency, one DWORD per cycle retained",
+    "Word-by-word ordered-set and training validation"
+  ],
+  "regressions": {
+    "repository_tests_passed": 76,
+    "startup_and_ordered_set_cases": 27,
+    "native_rx_vectors": 24,
+    "native_link_crc_cases": 2,
+    "native_rx_lint": "PASS"
+  },
+  "implementation": {
+    "fresh_full_synthesis_and_route": "PASS",
+    "extra_postroute_optimization": false,
+    "reopened_audit": "PASS",
+    "gen3_setup_ns": 0.073,
+    "gen3_hold_ns": 0.011,
+    "gen1_setup_ns": 0.63,
+    "gen1_hold_ns": 0.011,
+    "pulse_width_ns": 0.543,
+    "unwaived_critical_CDC": 0,
+    "critical_or_error_DRC": 0,
+    "routing_errors": 0,
+    "bus_skew": "PASS",
+    "timing_coverage": "PASS",
+    "source_manifests": "PASS",
+    "worst_path": "recovery_tx.tx3/lfsr_reg[20] to correction_reg[0]",
+    "previous_startup_image_gen3_setup_ns": 0.002
+  },
+  "resources": {
+    "LUT": 11219,
+    "FF": 10491,
+    "control_sets": 540,
+    "RAMB36": 2,
+    "RAMB18": 1,
+    "URAM": 0,
+    "DSP": 0,
+    "GTHE4_CHANNEL": 1,
+    "hard_PCIE": 0
+  },
+  "physical": {
+    "board": "ZCU104",
+    "adapter": "OP047 Rev D SSD1",
+    "ssd_model": "Samsung SSD 990 EVO 1TB",
+    "link": "Gen3 x1",
+    "startup_attempts": 1,
+    "startup_successes": 1,
+    "boot_method": "Clean Linux halt, system warm reset, independently verified kernel-entry stop, audited bitstream program and resume",
+    "deployment_readonly_crc_bytes": 268435456,
+    "deployment_readonly_crc": "PASS",
+    "performance_jobs_passed": 8,
+    "old_crc_bytes": 268435456,
+    "fresh_crc_bytes": 268435456,
+    "sector_offset_crc_bytes": 33554432,
+    "postflush_crc_bytes": 268435456,
+    "ssd_written_bytes": 27537702912,
+    "write_sector_accounting": "Exact match",
+    "smart_before": {
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "smart_after": {
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "final_state": "New RX pipeline image running, NVMe live and idle",
+    "sd_boot_files_changed": false
+  },
+  "benchmark": {
+    "fio": "3.38",
+    "direct": true,
+    "ioengine": "libaio",
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "queue_depths": [
+      1,
+      8
+    ],
+    "runtime_seconds": 30,
+    "read_range_GiB": [
+      0,
+      4
+    ],
+    "write_range_GiB": [
+      8,
+      12
+    ],
+    "fresh_crc_offset_GiB": 16,
+    "sector_crc_offset_bytes": 21474836992,
+    "results": {
+      "read1": {
+        "MB_s": 595.536364,
+        "previous_ack_retirement_MB_s": 599.835382,
+        "change_percent": -0.716699636101148
+      },
+      "read8": {
+        "MB_s": 737.088377,
+        "previous_ack_retirement_MB_s": 745.358988,
+        "change_percent": -1.1096144452745094
+      },
+      "write1": {
+        "MB_s": 341.825151,
+        "previous_ack_retirement_MB_s": 339.541225,
+        "change_percent": 0.672650574315381
+      },
+      "write8": {
+        "MB_s": 565.70352,
+        "previous_ack_retirement_MB_s": 567.713733,
+        "change_percent": -0.3540891972750648
+      }
+    }
+  },
+  "artifacts_sha256": {
+    "system.bit": "b0792b40688fd175e9df348cee6e7cd1d48d3a942126075aab2b4c5a167252b1",
+    "system.xsa": "87e0ed51560c37468b84d6de150d82c57a1b90e699b3efad3655f520141fb428",
+    "routed.dcp": "e470e8fe6e2b071a72a38eed499b70c4d45a6d33424d150ac9bf71a6164ddad6",
+    "sources.json": "5ca529d3e2d4efeb9dcc9cfe8768d1a24b11ffbc9af64e4675f1c07dfb880ba0"
+  },
+  "audit_reports_sha256": {
+    "timing.rpt": "752e9f0ee314b7293208651385d2bfbd34beda71b8a30e42fa7a0f3e99b2ff67",
+    "pcie_top100.rpt": "6985c2639d621e1c48afe5148c60f363d00cf450d6ce73947658d049b13c1af9",
+    "clocks.rpt": "6020e653a2d6393ce32aa5ecf29894b05290d6d6fd7abf9ea793fa5e0ec1e5ec",
+    "cdc.rpt": "b02302b0cad160f6ea96364b7cf0f2ec096ffac0420501ebb928b053b23a1d25",
+    "bus_skew.rpt": "2a3fb90922929527ecefc9427349765e3dcd753ab80de151595f2860068086f5",
+    "utilization.rpt": "8a13464e0ee6d67e33a7f02fb3a057ff5d30eaec5b6608268acfebed5a4dc6a2",
+    "utilization_hierarchical.rpt": "974f0679a61ed7ba6fe1c80545dae07f666d8f7f127df0c3767ede471fd987b7",
+    "drc.rpt": "a26f27a687ff72baff4a63223c0dd415ed9d56beb8570fa10c3cbd0f70e5ee2e",
+    "route.rpt": "43118e3f0a566283a6b3e15833fb060b62c7e446acef75ea75fe3653c69913d5",
+    "check_timing.rpt": "c06e2b220ee95fa7dcbb55bc6e1bbd130d9d79290da738b1508541a50045b05a",
+    "control_sets.rpt": "bf8e346abcd50a2a59079d00d13f9d9da343072d3c512a9cb783d3f73a3884e8",
+    "gen1_timing.rpt": "7c6317980543b5a202f080fde4fba51b993f71452b591b6e4bb6d9b9bf668337"
+  },
+  "test_sources_sha256": {
+    "tests/test_gen3_startup.py": "eda2aac0d7ca625bb29344ee54f5529031ee4918b103a417af3945072baf0d49",
+    "experiments/gen3/test_native_ordered_sets.sv": "0e45079aef40958c8710a611edd8c39312551eff505d8a8b33c7a8b63e45ac36"
+  },
+  "harness_note": "First benchmark launch stopped at a missing Python helper import before I/O. Uploaded helper and reran all jobs; no FPGA reprogramming or link retry.",
+  "limitations": [
+    "One controlled warm startup for this image; no cold-cycle, temperature, endurance or compliance qualification",
+    "Full PCIe Recovery remains incomplete",
+    "Positive Gen3 setup margin remains narrow",
+    "Historical performance comparison is not an interleaved statistical study"
+  ]
+}

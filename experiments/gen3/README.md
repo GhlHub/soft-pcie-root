@@ -9,7 +9,8 @@ Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 The current Gen3 host uses 64-bit host packet transfers, eight 64-byte DDR read
 prefetch slots, an eight-entry shared replay store, two framing banks and normal
 ACK retirement concurrent with later original packets. Latest 30-second QD8
-throughput is **745.36 MB/s read / 567.71 MB/s write**. See the consolidated
+throughput with the RX pipeline is **737.09 MB/s read / 565.70 MB/s write**.
+The preceding ACK-retirement measurement was 745.36/567.71 MB/s. See the consolidated
 [performance history](../../docs/performance-history.md) and
 [current verification](../../docs/verification.md).
 
@@ -43,8 +44,66 @@ the [standalone wrapper limitation](../../docs/ip-guide.md#optional-gen3-packagi
 Freeze RTL/scripts/constraints throughout the build. These commands build only;
 they do not program a board. Do not replace PL while Linux owns the host.
 The startup correction still needs cold-cycle and broader qualification. Full
-Recovery remains incomplete and the latest Gen3 setup margin is only +0.002 ns.
+Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
+margin; the subsequent RX pipeline image below achieves +0.073 ns.
 The SD default remains the historical Gen2 image.
+
+### Receive timing refactor after the startup-tested image
+
+The development RX now computes its fixed 32-bit LFSR advance independently of
+SKP, selecting hold/advance once. Unscrambled ordered sets bypass descrambling.
+A classification register carries each input DWORD and its metadata together,
+adding one cycle of receive latency while retaining one DWORD per cycle.
+EIEOS/SDS/EIOS and TS1/TS2 checks accumulate across words; the final word still
+requires every previously checked field. Parser EDS/error feedback remains at
+the consumer stage so its timing relative to decoded output is preserved.
+Pipeline valid and control resets are synchronous; packet ownership and RAM
+reset behavior are unchanged.
+
+Vivado 2026.1 isolated synthesis on XCZU7EV-2, with a 4 ns clock, produced:
+
+| RX revision | LUTs | FFs | Estimated internal WNS | Worst-path logic levels |
+| --- | ---: | ---: | ---: | ---: |
+| Startup-tested source (`12fb5dd`) | 563 | 342 | -0.945 ns | 23 |
+| Fixed LFSR transform and raw ordered-set bypass | 580 | 342 | +1.939 ns | 10 |
+| Plus classification pipeline and accumulated validation | 425 | 394 | +1.893 ns | 9 |
+
+These are unplaced synthesis estimates for the isolated receiver, with no I/O
+delay constraints, not full-design routed WNS. The extra pipeline also moves
+input classification into registered logic. Its slightly lower estimated WNS
+than the intermediate version is accompanied by lower LUT use. The earlier
+full-design +0.002 ns result and physical evidence still describe the unchanged
+startup-tested image, not this refactor.
+
+The refactor subsequently passed fresh unified packaging, full synthesis and
+place-and-route, and an independent reopened audit. Routed Gen3 setup/hold is
+**+0.073/+0.011 ns**; Gen1 startup is +0.630/+0.011 ns. The limiting path is now
+the TX recovery formatter's LFSR-to-correction path. Whole-design utilization is
+11,219 LUTs, 10,491 FFs, 540 control sets, two RAMB36 and one RAMB18.
+
+The audited image negotiated Gen3 x1 on its first controlled warm startup and
+passed NVMe CRC and all eight matched performance/integrity jobs. QD1/QD8 reads
+were 595.54/737.09 MB/s and writes 341.83/565.70 MB/s, within 1.11% of the preceding
+ACK-retirement measurements. Exact write accounting and unchanged SMART error
+counters passed. The board runs this image; SD boot files are unchanged.
+This is one startup and short I/O testing, not cold-cycle, endurance or compliance
+qualification. See [implementation and physical evidence](../../docs/evidence/rx_pipeline_v1/completion.json).
+
+Native RX vectors cover framing, SKP, EDS, delivery gaps and retained packets;
+native-link tests cover config/completion, ACK/NAK and CRC corruption. New tests
+check every single-bit mutation of EIEOS/SDS/EIOS and TS1/TS2, including unchecked
+training fields, with and without delivery gaps, plus reset/disable pipeline
+flush. Startup, equalization and Recovery regressions also pass.
+
+Reproduce isolated synthesis and focused regressions with fresh outputs:
+
+```sh
+vivado -mode batch -source experiments/gen3/synth_native_rx.tcl \
+  -tclargs build/native_rx_synth_next
+.venv/bin/python -m pytest -q tests/test_gen3_startup.py
+.venv/bin/python experiments/gen3/check_native_rx.py
+.venv/bin/python experiments/gen3/check_native_link.py
+```
 
 The sections below retain earlier investigation stages and test-time restoration
 states. Their uses of “current” refer to the named stage, not the latest build.

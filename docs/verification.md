@@ -1,5 +1,41 @@
 # Verification and release scope
 
+## RX timing pipeline image
+
+The RX timing refactor passed fresh unified 1.1 Gen3 packaging, full synthesis
+and place-and-route, and an independent reopened-checkpoint audit on 2026-10-27.
+Gen3 setup/hold slack is **+0.073/+0.011 ns**, versus +0.002/+0.011 ns for the
+startup-tested image. Gen1 startup is +0.630/+0.011 ns. The worst path moved from
+RX decoding to the TX recovery formatter's LFSR-to-correction logic. All source
+manifests, structural checks, timing coverage, CDC, DRC, routing and bus-skew
+checks passed. Utilization is 11,219 LUTs, 10,491 FFs, 540 control sets, two RAMB36,
+one RAMB18 and one GTH. All 76 repository tests and focused native RX/link tests
+passed before the frozen build.
+
+The image was programmed after a clean Linux halt and independently checked
+kernel-entry stop. It negotiated Gen3 x1 on its first attempt and passed a
+256 MiB read-only CRC check followed by eight performance/integrity jobs.
+
+| Workload | Previous ACK-retirement MB/s | RX pipeline MB/s | Change |
+| --- | ---: | ---: | ---: |
+| Read QD1 | 599.84 | 595.54 | -0.72% |
+| Read QD8 | 745.36 | 737.09 | -1.11% |
+| Write QD1 | 339.54 | 341.83 | +0.67% |
+| Write QD8 | 567.71 | 565.70 | -0.35% |
+
+Same fio 3.38, direct/libaio, one job, 1 MiB blocks and 30-second runs. Existing
+256 MiB CRC, fresh 256 MiB CRC, sector-offset 32 MiB CRC and post-flush verification
+passed. All 27,537,702,912 written bytes matched block-sector accounting. SMART
+critical warnings, media errors and error-log entries stayed zero; unsafe shutdowns
+stayed at 26. A missing benchmark Python helper stopped the first harness launch
+before I/O; restoring it allowed the complete suite to run without reprogramming.
+
+The board remains healthy and idle on this image. SD boot files are unchanged.
+This comparison is historical, not an interleaved statistical study. One warm
+startup does not extend cold-cycle, endurance or compliance qualification; full
+Recovery remains incomplete. The setup margin is still narrow.
+[Exact source and physical evidence](evidence/rx_pipeline_v1/completion.json).
+
 For a consolidated benchmark table and the reason for each optimization, see
 [performance improvements](performance-history.md). Sections below preserve
 historical build evidence; a reported final board state applies to that test.

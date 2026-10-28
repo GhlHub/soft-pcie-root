@@ -1,0 +1,27 @@
+{
+  "bit_sha256": "c175dfb6d44be4e91a7316e2d801a16cf98230f2a747fecc6c09ac494505e31f",
+  "bit_size": 19311306,
+  "bit_crc32": "1b0d571e",
+  "date": "2026-10-27",
+  "scope": "Latest verified TX transform image made the SD default",
+  "sd_image_path": "/tx-transform-v1/system.bit",
+  "boot_script_sha256": "a5b4e9a040d3518161cba1051afeda1e62940797cc4f943d424c408153943e6d",
+  "boot_command_sha256": "9c07744bf5155aaffb149e6ac155570fc3b7c12daf192cb231ad40c9e8730193",
+  "sd_readback": "PASS after remount and again after reboot",
+  "bootloader_files_changed": false,
+  "qspi_flash_written": false,
+  "flash_update_reason": "Existing bootloader uses SD boot.scr to load the FPGA before Linux; no bootloader or kernel change required",
+  "warm_boot": "PASS without JTAG or console input; restarted Linux verified over SSH",
+  "uart_capture": "Only telnet negotiation received; listener stopped after independent SSH boot verification; no UART CRC observation claimed",
+  "observed_link": "Gen3 x1",
+  "root_filesystem": "Persistent read/write SD ext4",
+  "readonly_crc_bytes": 268435456,
+  "readonly_crc": "PASS",
+  "ssd_write_bytes": 0,
+  "smart_unchanged": true,
+  "final_state": "NVMe live and idle; SD boot partition unmounted",
+  "limitations": [
+    "Warm reboot only; no cold power-cycle test",
+    "Gen3 remains experimental; full Recovery and compliance unqualified"
+  ]
+}

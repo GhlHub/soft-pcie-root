@@ -1,5 +1,54 @@
 # Verification and release scope
 
+## TX LFSR transform image
+
+The TX transform passed fresh unified Gen3 packaging, full synthesis/PNR and an
+independent reopened audit on 2026-10-27. Gen3 setup/hold is **+0.090/+0.012 ns**;
+Gen1 startup is +0.699/+0.012 ns. The TX formatter's worst slack improved from
++0.073 to +0.184 ns; the overall limiting path is now buffered RX packet-parser
+read-pointer logic. Resources are 11,175 LUTs, 10,444 FFs, 538 control sets, two
+RAMB36, one RAMB18 and one GTH. Source manifests, timing coverage, CDC, DRC,
+bus-skew, routing and structure checks passed. No extra postroute optimization
+was required. All 82 repository tests and the focused TX/native-link tests passed.
+
+After clean halt and an independently checked kernel-entry stop, the programmed
+image negotiated Gen3 x1 on its first attempt and passed a 256 MiB read-only CRC
+check. All eight matched performance/integrity jobs subsequently passed:
+
+| Workload | Previous RX pipeline MB/s | TX transform MB/s | Change |
+| --- | ---: | ---: | ---: |
+| Read QD1 | 595.54 | 611.93 | +2.75% |
+| Read QD8 | 737.09 | 736.91 | -0.02% |
+| Write QD1 | 341.83 | 342.41 | +0.17% |
+| Write QD8 | 565.70 | 563.90 | -0.32% |
+
+Same fio 3.38, direct/libaio, one job, 1 MiB blocks and 30 seconds per benchmark.
+Existing and fresh 256 MiB CRC, sector-offset 32 MiB CRC and post-flush verification
+passed. All 27,501,002,752 written bytes matched block-sector accounting. SMART
+critical warnings, media errors and error-log entries stayed zero; unsafe
+shutdowns stayed at 26. These historical comparisons are not an interleaved
+statistical study. At the end of this initial test, the board was live and idle; SD boot
+files had not yet been updated. One startup and short I/O testing do not qualify cold
+cycles, endurance, full Recovery or compliance; setup margin remains narrow.
+[Exact implementation and physical evidence](evidence/tx_transform_v1/completion.json).
+
+The TX transform image subsequently became the SD default. Bitstream and script
+SHA-256 readback passed after remount and again after an unattended warm reboot.
+The restarted Linux instance reported Gen3 x1; existing 256 MiB read-only NVMe
+CRC passed with zero SSD writes and unchanged SMART counters. UART boot output
+was unavailable, so no UART CRC observation is claimed. Existing bootloader and
+Linux files were retained, no QSPI update was required, and persistent SD ext4
+root remains read/write. The boot partition was unmounted after verification.
+[Default-boot evidence](evidence/tx_transform_v1/default-boot.json). No cold-cycle
+qualification was added.
+
+The TX transform image also passed a [repeatable 15-minute mixed random I/O
+benchmark](benchmarks/README.md#tx-transform-baseline-2026-10-27): 4 KiB,
+70/30 reads/writes, QD32, one direct/libaio job. Combined throughput was
+42,081 IOPS (172.36 MB/s), with zero fio errors and passing post-test CRC/SMART
+checks. fio used nearly one CPU core; this is not a hardware-only capacity
+measurement.
+
 ## RX timing pipeline image
 
 The RX timing refactor passed fresh unified 1.1 Gen3 packaging, full synthesis

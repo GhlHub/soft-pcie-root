@@ -1,7 +1,7 @@
 # Performance improvements leading to the current design
 
-The current experimental Gen3 x1 design delivers **745.36 MB/s sequential read**
-and **567.71 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
+The current experimental Gen3 x1 design delivers **736.91 MB/s sequential read**
+and **563.90 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
 990 EVO 1 TB. Widening the receive path produced the largest read improvement;
 wider transmit transfers with eight-slot DDR prefetch and concurrent normal ACK
 retirement produced the later write improvements. These are measured single-drive
@@ -10,11 +10,10 @@ results, not projected speeds for other topologies.
 The frozen release remains Gen1/Gen2 x1. The current source tree also contains optional
 experimental Gen3 and changes to shared host/replay logic. The current default Gen2
 ACK-retirement configuration has now also passed its own fresh build, audit and physical
-I/O/CRC tests. The historical Gen2 bitstream remains the SD boot default; the latest
-Gen3 image was tested through temporary programming. All benchmark rows predate the
-unified 1.1 catalog/checkbox packaging. That package has passed customization and
-synthesis/CDC checks for both selections, but has no new routed or physical performance
-result; see [catalog validation](verification.md#unified-catalog-development).
+I/O/CRC tests. The latest TX transform Gen3 image is now the SD boot default and has passed
+an unattended warm reboot and read-only CRC check. The unified 1.1 catalog flow
+has passed full synthesis/PNR and physical performance tests with Gen3 enabled;
+see [current validation](verification.md). Gen3 remains experimental.
 
 ## Comparable physical benchmarks
 
@@ -36,7 +35,9 @@ small differences should not be treated as statistically established changes.
 | 64-bit RX packet path [6] | Gen3 x1 | 612.22 | 741.81 | 200.43 | 260.30 |
 | 64-bit RX/TX and eight-slot read prefetch [7] | Gen3 x1 | 611.16 | 742.25 | 297.12 | 454.74 |
 | **Normal ACK retirement, current [9]** | **Gen2 x1** | **380.46** | **428.30** | **200.84** | **260.21** |
-| **Normal ACK retirement, current [8]** | **Gen3 x1** | **599.84** | **745.36** | **339.54** | **567.71** |
+| Normal ACK retirement [8] | Gen3 x1 | 599.84 | 745.36 | 339.54 | 567.71 |
+| RX timing pipeline [10] | Gen3 x1 | 595.54 | 737.09 | 341.83 | 565.70 |
+| **TX transform, current [11]** | **Gen3 x1** | **611.93** | **736.91** | **342.41** | **563.90** |
 
 Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json), [2
 — repackaged example](evidence/repackaged_v1/completion.json), [3 — payload
@@ -46,7 +47,32 @@ window](../experiments/gen3/evidence/tx-window.json), [6 —
 RX64](evidence/rx64_v1/completion.json), [7 — eight-slot
 prefetch](evidence/prefetch_v1/completion.json), [8 — current Gen3
 measurements](evidence/prefetch_v1/ack-retirement-performance.json), [9 — current Gen2
-measurements](evidence/prefetch_v1/ack-retirement-gen2.json).
+measurements](evidence/prefetch_v1/ack-retirement-gen2.json), [10 — RX timing
+pipeline](evidence/rx_pipeline_v1/completion.json), [11 — TX
+transform](evidence/tx_transform_v1/completion.json).
+
+## Mixed random I/O baseline — 2026-10-27
+
+The TX transform Gen3 x1 image completed a 15-minute fio 3.38 workload with
+4 KiB random requests, 70% reads / 30% writes, QD32, one direct/libaio job and
+a fixed 4 GiB region. These concurrent read/write results establish a separate
+baseline from the sequential measurements above.
+
+| Direction | IOPS | MB/s (decimal) | Mean completion latency | p99 completion latency |
+| --- | ---: | ---: | ---: | ---: |
+| Read | 29,457.75 | 120.66 | 0.749 ms | 0.848 ms |
+| Write | 12,623.33 | 51.71 | 0.722 ms | 0.807 ms |
+| Combined | 42,081.09 | 172.36 | — | — |
+
+Zero fio errors, exact write accounting, final flush, healthy idle and a
+post-test 256 MiB read-only CRC outside the working region passed. SMART
+warnings, media errors and error-log entries stayed zero. The randomly written
+payload itself was not CRC-verified. fio consumed nearly one CPU core, so the
+measurement may include a CPU/software bottleneck. This single run does not
+establish steady-state performance or extend Gen3 qualification.
+
+See the [repeatable preset and detailed results](benchmarks/README.md) and
+[sanitized measurement evidence](evidence/tx_transform_v1/random-rw-15m.json).
 
 ## What each change accomplished
 

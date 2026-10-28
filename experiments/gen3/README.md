@@ -9,7 +9,7 @@ Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 The current Gen3 host uses 64-bit host packet transfers, eight 64-byte DDR read
 prefetch slots, an eight-entry shared replay store, two framing banks and normal
 ACK retirement concurrent with later original packets. Latest 30-second QD8
-throughput with the RX pipeline is **737.09 MB/s read / 565.70 MB/s write**.
+throughput with the RX pipeline and TX transform is **736.91 MB/s read / 563.90 MB/s write**.
 The preceding ACK-retirement measurement was 745.36/567.71 MB/s. See the consolidated
 [performance history](../../docs/performance-history.md) and
 [current verification](../../docs/verification.md).
@@ -45,8 +45,68 @@ Freeze RTL/scripts/constraints throughout the build. These commands build only;
 they do not program a board. Do not replace PL while Linux owns the host.
 The startup correction still needs cold-cycle and broader qualification. Full
 Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
-margin; the subsequent RX pipeline image below achieves +0.073 ns.
-The SD default remains the historical Gen2 image.
+margin; the RX pipeline image achieves +0.073 ns and the later TX transform
+image achieves +0.090 ns.
+The TX transform image is now the SD default; see
+[default-boot evidence](../../docs/evidence/tx_transform_v1/default-boot.json).
+
+### TX timing investigation after the RX pipeline image
+
+The development Recovery TX now computes the fixed 32-bit LFSR advance and
+scrambling mask independently of SKP, selecting hold/advance after the transform.
+Both packet and training-byte encoders use the mask. This adds no registers or
+latency and preserves the word-2 correction decision for word 3, the running
+balance, cadence, SKP state, packet handshake and stop sequence.
+
+Matched Vivado 2026.1 isolated synthesis on XCZU7EV-2 with a 4 ns clock gave:
+
+| TX revision | LUTs | FFs | Estimated internal WNS | Correction-path slack |
+| --- | ---: | ---: | ---: | ---: |
+| RX pipeline image's original TX (`5a0eaf3`) | 472 | 157 | -0.184 ns | -0.184 ns |
+| Fixed transform, retained in development | 460 | 157 | +0.127 ns | +0.127 ns |
+| Transform plus parallel correction thresholds, not retained | 485 | 158 | -0.105 ns | +0.267 ns |
+
+The threshold experiment rewrote comparisons against balance plus disparity as
+comparisons against threshold minus disparity. It shortened the correction path
+but worsened the balance-update path, so only the fixed transform was retained.
+These are unplaced synthesis estimates without I/O delay constraints, not routed
+WNS. No TX pipeline stage has been added.
+
+The retained transform matched the original RTL cycle by cycle for 120,000
+modeled cycles with varying training fields, TS1/TS2, cadence, packets, stop and
+reset. The independent wire decoder and native-link CRC tests also passed.
+Recovery TX wire/CRC/cadence checks, including stop requests at cadence boundaries,
+are now included in `tests/test_gen3_tx.py`.
+All 82 repository tests passed. [Development evidence](../../docs/evidence/tx_transform_v1/development.json)
+records the retained source hash and isolated results.
+
+The retained transform subsequently passed fresh full synthesis/PNR and an
+independent reopened audit. Overall Gen3 setup/hold is **+0.090/+0.012 ns**;
+Gen1 startup is +0.699/+0.012 ns. The TX formatter's worst slack improved from
++0.073 to +0.184 ns. The limiting path moved to buffered RX packet-parser
+read-pointer logic. Resources are 11,175 LUTs, 10,444 FFs, 538 control sets and
+2.5 BRAM tiles. The source manifests match the audited and programmed image.
+
+One controlled startup negotiated Gen3 x1 on its first attempt, followed by
+read-only CRC and eight passing performance/integrity jobs. QD1/QD8 reads were
+611.93/736.91 MB/s; writes were 342.41/563.90 MB/s. QD8 performance is within
+0.32% of the preceding RX pipeline image. Exact write accounting and SMART
+checks passed. At the end of this initial test, the board ran the TX transform image; SD boot
+files had not yet been updated. These short tests do not qualify cold cycles, endurance, full Recovery
+or compliance. See [implementation and physical evidence](../../docs/evidence/tx_transform_v1/completion.json).
+
+The image subsequently became the SD default. SD bitstream/script hash readback
+and an unattended warm reboot to Gen3 x1 passed, followed by 256 MiB read-only
+NVMe CRC with unchanged SMART counters. The UART listener captured no boot text;
+verification used the restarted Linux instance over SSH and postboot SD readback.
+Bootloader and Linux files were retained; no QSPI update was needed. Persistent
+SD ext4 root remains read/write. No cold power-cycle test was added.
+
+```sh
+vivado -mode batch -source experiments/gen3/synth_recovery_tx.tcl \
+  -tclargs build/recovery_tx_synth_next
+.venv/bin/python -m pytest -q tests/test_gen3_tx.py tests/test_gen3_startup.py
+```
 
 ### Receive timing refactor after the startup-tested image
 

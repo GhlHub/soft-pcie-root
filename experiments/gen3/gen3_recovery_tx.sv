@@ -67,7 +67,8 @@ module gen3_recovery_tx (
     wire [31:0] new_fields={^{1'b0,post_i,low_fields},1'b0,post_i,low_fields};
     wire [31:0] use_fields=word_index==0?new_fields:fields;
     reg [31:0] plain, encoded, training_plain, training_encoded;
-    reg [22:0] next_lfsr;
+    reg [22:0] next_lfsr, advanced_lfsr;
+    reg [31:0] scramble_mask;
     reg signed [10:0] next_balance;
     reg [1:0] correction;
     reg [7:0] value, training_value;
@@ -114,7 +115,14 @@ module gen3_recovery_tx (
             if(correction!=0)training_plain[31:24]=balance_o>0?8'h08:8'hf7;
         end
         if(kind==TS1)plain=training_plain;
-        encoded=plain;next_lfsr=lfsr;next_balance=balance_o;
+        // Fixed transform independent of SKP. Select hold/advance only after
+        // generating the mask, rather than gating every unrolled bit step.
+        advanced_lfsr=lfsr;
+        for(b=0;b<32;b=b+1)begin
+            scramble_mask[b]=advanced_lfsr[22];
+            advanced_lfsr={advanced_lfsr[21:0],1'b0}^(advanced_lfsr[22]?23'h210125:23'b0);
+        end
+        encoded=plain;next_lfsr=kind==SKP?lfsr:advanced_lfsr;next_balance=balance_o;
         value=0;ones=0;dc_sum=0;
         for(j=0;j<4;j=j+1)begin
             value=plain[8*j+:8];
@@ -122,11 +130,10 @@ module gen3_recovery_tx (
             for(b=0;b<8;b=b+1)begin
                 if(kind==DATA || (kind==TS1 && !(word_index==0 && j==0) &&
                    !(word_index==3 && ((j==2 && correction==2)||(j==3 && correction!=0)))))
-                    value[b]=value[b]^next_lfsr[22];
+                    value[b]=value[b]^(kind==SKP?lfsr[22]:scramble_mask[8*j+b]);
                 if(!(word_index==0 && j==0) &&
                    !(word_index==3 && ((j==2 && correction==2)||(j==3 && correction!=0))))
-                    training_value[b]=training_value[b]^next_lfsr[22];
-                if(kind!=SKP)next_lfsr={next_lfsr[21:0],1'b0}^(next_lfsr[22]?23'h210125:23'b0);
+                    training_value[b]=training_value[b]^(kind==SKP?lfsr[22]:scramble_mask[8*j+b]);
             end
             encoded[8*j+:8]=value;
             training_encoded[8*j+:8]=training_value;

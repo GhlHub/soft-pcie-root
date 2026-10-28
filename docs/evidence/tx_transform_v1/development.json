@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-27",
+  "base_commit": "5a0eaf36abf3ee33e96143e75875e76c85fddcd3",
+  "scope": "Isolated Recovery TX synthesis and simulation; no new full route or physical image",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "clock_period_ns": 4.0,
+  "retained_change": "Unconditional 32-bit LFSR advance and mask with one SKP hold/advance selection",
+  "additional_latency_cycles": 0,
+  "synthesis": {
+    "baseline": {
+      "LUT": 472,
+      "FF": 157,
+      "estimated_WNS_ns": -0.184,
+      "correction_slack_ns": -0.184
+    },
+    "retained_transform": {
+      "LUT": 460,
+      "FF": 157,
+      "estimated_WNS_ns": 0.127,
+      "correction_slack_ns": 0.127
+    },
+    "rejected_threshold_experiment": {
+      "LUT": 485,
+      "FF": 158,
+      "estimated_WNS_ns": -0.105,
+      "correction_slack_ns": 0.267,
+      "reason": "Balance update became the worse limiting path"
+    }
+  },
+  "validation": {
+    "repository_tests_passed": 82,
+    "cycle_equivalence_to_baseline": 120000,
+    "independent_recovery_wire_oracle": "PASS",
+    "native_link_crc_tests": "PASS",
+    "lint": "PASS",
+    "full_design_route": "NOT RUN",
+    "board_deployment": "NOT RUN"
+  },
+  "source_sha256": {
+    "original_gen3_recovery_tx.sv": "fc48090ac9d2bbfa0c9229405ec21f6ded9aafe63efe97363ea04c6876901cf2",
+    "gen3_recovery_tx.sv": "1fee7674bb042c12aad877abb53f6221efd0a7c6c69388bf637ec7d7f06c70f0"
+  },
+  "report_sha256": {
+    "before_utilization.rpt": "55941c74f38a507274cf2d703a534d15052ba2f7e92880b707791092b7b3ac0b",
+    "before_timing.rpt": "ae6d4862c411fb0349ea2067955c4fd547caa2b6aa9fe69ff9868f363a4b5316",
+    "before_correction.rpt": "d3524775da7ba1f8f86ae13ff5e96c6921354f6c46754d976cdd227891b156b6",
+    "transform_utilization.rpt": "1d5b14ff738cd5280189fc4fbb55917391ebf1fb9bcfc4ebeeeeeb6c7af25629",
+    "transform_timing.rpt": "462688fc1fcb84b0d2d1ec57661aedaff9131c67283cb1bfc20868c2eb3800c2",
+    "transform_correction.rpt": "d441042a3c12578a7b5794c25ad62f7df4515b4b0224b4ccf6f4e72fcf45d59e",
+    "threshold_utilization.rpt": "a52bb72da299029b28563c6406b81026e6764812474af6b9916e0ce346259b65",
+    "threshold_timing.rpt": "e7c21c1bef0d99f7aa4a66ce38f76271fb8c8e86df541377b23e656a1283f74d",
+    "threshold_correction.rpt": "edd2f108be29ca6837f838d67f137a2c006d50c0fc2ddb09e7c75d6847d708ed"
+  },
+  "limitations": [
+    "Unplaced synthesis estimates without I/O delay constraints are not full-design routed WNS",
+    "No TX pipeline added; preserve word-2-to-word-3 correction dependency",
+    "Board remains on previously verified RX pipeline image"
+  ]
+}

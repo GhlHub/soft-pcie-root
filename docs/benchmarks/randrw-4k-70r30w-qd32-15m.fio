@@ -1,0 +1,28 @@
+; DESTRUCTIVE: overwrites [8 GiB, 12 GiB) on /dev/nvme0n1.
+; Requires explicit authorization and device identity/unmounted/idle checks.
+; Fixed 4 GiB region previously reserved for tests; does not format the drive.
+[global]
+filename=/dev/nvme0n1
+ioengine=libaio
+direct=1
+rw=randrw
+rwmixread=70
+bs=4k
+iodepth=32
+numjobs=1
+offset=8G
+size=4G
+time_based=1
+runtime=900
+ramp_time=0
+randrepeat=1
+randseed=20261027
+norandommap=1
+refill_buffers=1
+end_fsync=1
+group_reporting=1
+clat_percentiles=1
+percentile_list=50:90:95:99:99.9:99.99
+log_avg_msec=1000
+
+[randrw_4k_70r30w_qd32_15m]

@@ -34,7 +34,13 @@ The subsequent RX timing pipeline image passed full implementation and a control
 Gen3 x1 boot with NVMe CRC/performance checks. Routed setup margin improved to
 **+0.073 ns**; QD8 measured **737.09 MB/s read / 565.70 MB/s write**, within 1.11%
 of the earlier measurements. See [current evidence](docs/evidence/rx_pipeline_v1/completion.json).
-The historical Gen2 SD default is unchanged.
+The subsequent TX LFSR transform improved routed setup margin to **+0.090 ns**
+and passed Gen3 x1 startup, CRC and matched performance tests, measuring
+**736.91/563.90 MB/s** QD8 read/write. See [latest validation](docs/evidence/tx_transform_v1/completion.json).
+The TX transform image is now the SD default. An unattended warm reboot,
+SD hash readback and 256 MiB read-only NVMe CRC passed; existing bootloader and
+Linux files were retained, with no QSPI flash update required.
+[Default-boot evidence](docs/evidence/tx_transform_v1/default-boot.json).
 
 ## Verified example
 

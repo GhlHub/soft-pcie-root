@@ -1,0 +1,123 @@
+{
+  "status": "PASS",
+  "start_time_utc": "2026-10-27T18:49:38Z",
+  "end_time_utc": "2026-10-27T19:04:39Z",
+  "image": "tx_transform_v1",
+  "image_evidence": "completion.json",
+  "link": "Gen3 x1",
+  "fio": "3.38",
+  "kernel": "6.6.70",
+  "drive_model": "Samsung SSD 990 EVO 1TB",
+  "drive_firmware": "0B2QKXJ7",
+  "preset": "../../benchmarks/randrw-4k-70r30w-qd32-15m.fio",
+  "runtime_ms": 900000,
+  "directions": {
+    "read": {
+      "io_bytes": 108593184768,
+      "bw_bytes": 120658960,
+      "iops": 29457.753936,
+      "clat_ns": {
+        "min": 46071,
+        "max": 102833037,
+        "mean": 749030.346063,
+        "stddev": 171418.001642,
+        "N": 26512008,
+        "percentile": {
+          "50.000000": 765952,
+          "90.000000": 806912,
+          "95.000000": 815104,
+          "99.000000": 847872,
+          "99.900000": 2211840,
+          "99.990000": 5144576
+        }
+      },
+      "lat_ns": {
+        "min": 65150,
+        "max": 102843537,
+        "mean": 762438.524009,
+        "stddev": 171692.174043,
+        "N": 26512008
+      }
+    },
+    "write": {
+      "io_bytes": 46534705152,
+      "bw_bytes": 51705170,
+      "iops": 12623.332641,
+      "clat_ns": {
+        "min": 22661,
+        "max": 32428284,
+        "mean": 721587.496061,
+        "stddev": 67143.514782,
+        "N": 11361012,
+        "percentile": {
+          "50.000000": 741376,
+          "90.000000": 782336,
+          "95.000000": 798720,
+          "99.000000": 806912,
+          "99.900000": 831488,
+          "99.990000": 856064
+        }
+      },
+      "lat_ns": {
+        "min": 32631,
+        "max": 32444674,
+        "mean": 735641.490476,
+        "stddev": 68148.945715,
+        "N": 11361012
+      }
+    }
+  },
+  "cpu_percent": {
+    "user": 40.469222,
+    "system": 59.355556
+  },
+  "combined_iops_per_five_minute_window_approx": [
+    45519.5,
+    40849.67,
+    39918.94
+  ],
+  "write_accounting_bytes": 46534705152,
+  "smart": {
+    "critical_warning": {
+      "before": 0,
+      "after": 0
+    },
+    "media_errors": {
+      "before": 0,
+      "after": 0
+    },
+    "num_err_log_entries": {
+      "before": 0,
+      "after": 0
+    },
+    "unsafe_shutdowns": {
+      "before": 26,
+      "after": 26
+    },
+    "temperature": {
+      "before": 309,
+      "after": 317
+    },
+    "thm_temp1_trans_count": {
+      "before": 0,
+      "after": 0
+    },
+    "thm_temp2_trans_count": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "post_test": {
+    "idle_dma": true,
+    "read_only_crc_bytes": 268435456,
+    "crc_pass": true,
+    "crc_region_outside_benchmark": true,
+    "random_payload_verified": false
+  },
+  "limitations": [
+    "One run, fixed 4 GiB working set, no preconditioning or steady-state qualification",
+    "fio used nearly one CPU core; result may be CPU/software limited",
+    "Not separate pure read/write maxima",
+    "Experimental Gen3 remains pending further stabilization/qualification"
+  ]
+}

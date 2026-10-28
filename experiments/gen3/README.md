@@ -47,8 +47,8 @@ The startup correction still needs cold-cycle and broader qualification. Full
 Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
 margin; the RX pipeline image achieves +0.073 ns and the later TX transform
 image achieves +0.090 ns.
-The TX transform image is now the SD default; see
-[default-boot evidence](../../docs/evidence/tx_transform_v1/default-boot.json).
+The RX metadata image is now the SD default; see
+[default-boot evidence](../../docs/evidence/rx_metadata_v1/default-boot.json).
 
 ### RX ingress metadata and parallel pointer candidates
 
@@ -77,7 +77,8 @@ Gen3 setup/hold **+0.136/+0.010 ns**, compared with +0.090/+0.012 ns before.
 The limiting path moved to read-pointer-to-count-clear logic. Whole-design
 resources are 11,252 LUTs, 10,459 FFs and 538 control sets. Gen3 x1 startup and
 all eight matched CRC/performance jobs passed; QD8 read/write measured
-734.84/564.79 MB/s. The board runs this image; SD retains the TX transform default.
+734.84/564.79 MB/s. The image is now the SD default. Unattended warm boot, SD hash readback and
+256 MiB read-only CRC passed, with unchanged SMART and persistent read/write root.
 [Full evidence](../../docs/evidence/rx_metadata_v1/completion.json).
 
 ```sh

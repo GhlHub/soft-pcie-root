@@ -43,8 +43,8 @@ Linux files were retained, with no QSPI flash update required.
 [Default-boot evidence](docs/evidence/tx_transform_v1/default-boot.json).
 The latest RX parser metadata/parallel-pointer image improves routed Gen3 WNS to
 **+0.136 ns** and passes startup, CRC and performance checks, with QD8 read/write
-**734.84/564.79 MB/s**. It is running on the board; SD remains on the TX transform
-image. [Latest evidence](docs/evidence/rx_metadata_v1/completion.json) and
+**734.84/564.79 MB/s**. It is now the SD default; unattended warm boot, SD hash readback and
+256 MiB read-only CRC passed. [Default-boot evidence](docs/evidence/rx_metadata_v1/default-boot.json). [Latest evidence](docs/evidence/rx_metadata_v1/completion.json) and
 [timing-strategy graphic](docs/media/linkedin-rx-parser-timing-v2.png).
 
 ## Verified example

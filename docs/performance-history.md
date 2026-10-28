@@ -10,7 +10,7 @@ results, not projected speeds for other topologies.
 The frozen release remains Gen1/Gen2 x1. The current source tree also contains optional
 experimental Gen3 and changes to shared host/replay logic. The current default Gen2
 ACK-retirement configuration has now also passed its own fresh build, audit and physical
-I/O/CRC tests. The latest TX transform Gen3 image is now the SD boot default and has passed
+I/O/CRC tests. The latest RX metadata Gen3 image is now the SD boot default and has passed
 an unattended warm reboot and read-only CRC check. The unified 1.1 catalog flow
 has passed full synthesis/PNR and physical performance tests with Gen3 enabled;
 see [current validation](verification.md). Gen3 remains experimental.

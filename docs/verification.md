@@ -1,5 +1,9 @@
 # Verification and release scope
 
+The [Gen1/Gen2 compliance coverage matrix](gen1-gen2-compliance-matrix.md) maps
+existing tests to protocol topics, identifies missing coverage and separates
+functional evidence from compliance qualification.
+
 ## RX ingress metadata and parallel pointer image
 
 The parser change passed fresh unified Gen3 packaging, full synthesis/PNR and
@@ -40,6 +44,17 @@ TX transform image. One controlled startup and short tests do not qualify cold
 cycles, endurance, full Recovery or compliance. Gen3 remains experimental.
 [Implementation and physical evidence](evidence/rx_metadata_v1/completion.json).
 [LinkedIn graphic](media/linkedin-rx-parser-timing-v2.png).
+
+The RX metadata image subsequently became the SD default. SHA-256 readback
+passed after remount and after an unattended warm reboot. A new Linux boot ID
+and the `soft_pcie.image=rx_metadata_v1` command-line marker confirmed execution
+of the updated boot script, whose boot path requires successful FPGA loading.
+Gen3 x1 and 256 MiB read-only CRC passed; SMART counters were unchanged, with
+zero SSD writes. Bootloader, Linux and DTB files were retained, no QSPI update
+was made, and persistent SD ext4 root remains read/write. The boot partition was
+unmounted afterward. [Default-boot evidence](evidence/rx_metadata_v1/default-boot.json).
+No cold-cycle qualification or UART CRC observation is claimed.
+
 
 ## TX LFSR transform image
 

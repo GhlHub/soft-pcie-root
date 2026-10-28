@@ -1,0 +1,28 @@
+{
+  "bit_sha256": "47fa53736c60394a5fc6526b79ee50db690ffc7002d5b1312c8ddefa9dc376df",
+  "bit_size": 19311306,
+  "bit_crc32": "6cc65379",
+  "date": "2026-10-28",
+  "scope": "Verified RX metadata image made the SD default",
+  "sd_image_path": "/rx-metadata-v1/system.bit",
+  "boot_script_sha256": "d6cfa0be21cdfffa6e7fa2fde5a2c10e9993d5d9d26061689426d0e9793a59c4",
+  "boot_command_sha256": "53570c7b6341be960e484aaff2c939588f55af269428d9885b4a318895c754fc",
+  "sd_readback": "PASS after remount and after reboot",
+  "warm_boot": "PASS without JTAG or console input; new Linux boot ID and soft_pcie.image=rx_metadata_v1 command-line marker",
+  "observed_link": "Gen3 x1",
+  "root_filesystem": "Persistent read/write SD ext4",
+  "readonly_crc_bytes": 268435456,
+  "readonly_crc": "PASS",
+  "ssd_write_bytes": 0,
+  "smart_unchanged": true,
+  "bootloader_files_changed": false,
+  "kernel_and_dtb_changed": false,
+  "qspi_flash_written": false,
+  "final_state": "NVMe live and idle; SD boot partition unmounted",
+  "limitations": [
+    "Warm reboot only; no cold power-cycle test",
+    "No UART boot CRC observation claimed",
+    "Previously audited bitstream retained; whitespace-only source formatting did not rebuild hardware",
+    "Gen3 remains experimental; full Recovery and compliance unqualified"
+  ]
+}

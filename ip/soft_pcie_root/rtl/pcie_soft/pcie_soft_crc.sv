@@ -2,12 +2,12 @@
 // Lower byte is processed first. clear_i seeds before this cycle's bytes.
 // The complemented reflected result has the first wire byte in bits [7:0].
 module pcie_soft_crc (
-    input  wire        clk,
-    input  wire        rst_n,
-    input  wire        clear_i,
-    input  wire        valid_i,
-    input  wire [15:0] data_i,
-    input  wire [1:0]  keep_i,
+    input wire clk,
+    input wire rst_n,
+    input wire clear_i,
+    input wire valid_i,
+    input wire [15:0] data_i,
+    input wire [1:0] keep_i,
     output wire [31:0] lcrc_o,
     output wire [15:0] dllp_crc_o
 );
@@ -42,6 +42,6 @@ module pcie_soft_crc (
             crc16_q <= crc16_next;
         end
     end
-    assign lcrc_o = ~crc32_q;
+    assign lcrc_o     = ~crc32_q;
     assign dllp_crc_o = ~crc16_q;
 endmodule

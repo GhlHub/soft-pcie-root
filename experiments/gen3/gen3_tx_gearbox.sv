@@ -17,18 +17,18 @@ module gen3_tx_gearbox (
     input wire m_ready_i
 );
     reg [161:0] bits_q, bits_next;
-    reg [7:0] count_q;
-    wire pop = m_valid_o && m_ready_i;
+    reg  [7:0] count_q;
+    wire       pop = m_valid_o && m_ready_i;
     wire [7:0] remaining = count_q - (pop ? 8'd32 : 8'd0);
-    wire push = s_valid_i && s_ready_o;
+    wire       push = s_valid_i && s_ready_o;
     assign m_valid_o = !reset_i && count_q >= 8'd32;
-    assign m_data_o = bits_q[31:0];
+    assign m_data_o  = bits_q[31:0];
     assign s_ready_o = !reset_i && remaining <= 8'd32;
     always @* begin
         bits_next = pop ? bits_q >> 32 : bits_q;
         // Only the occupied low bits matter; overwrite the complete new block.
         // Variable part select is bounded to [161:0] by s_ready_o.
-        if (push) bits_next[remaining +: 130] = {s_payload_i, s_header_i};
+        if (push) bits_next[remaining+:130] = {s_payload_i, s_header_i};
     end
     always @(posedge clk) begin
         if (reset_i) count_q <= 0;

@@ -3,10 +3,10 @@
 // All inputs are synchronous to clk. Run clk continuously during this substate;
 // an independent PHY management watchdog must cover stopped-clock failure.
 module gen3_eq_phase1 #(
-    parameter integer CLK_HZ = 250000000,
+    parameter integer CLK_HZ         = 250000000,
     parameter integer TIMEOUT_CYCLES = (CLK_HZ / 1000) * 24,
-    parameter integer SETTLE_CYCLES = CLK_HZ / 2000000
-)(
+    parameter integer SETTLE_CYCLES  = CLK_HZ / 2000000
+) (
     input wire clk, rst,
     input wire enter, cancel,
     // Latch policy per attempt. False hands off to a separate phase 2 engine.
@@ -41,7 +41,7 @@ module gen3_eq_phase1 #(
     output reg [15:0] ts_events
 );
     localparam integer TW = (TIMEOUT_CYCLES > 1) ? $clog2(TIMEOUT_CYCLES) : 1;
-    localparam integer SW = (SETTLE_CYCLES > 1) ? $clog2(SETTLE_CYCLES+1) : 1;
+    localparam integer SW = (SETTLE_CYCLES > 1) ? $clog2(SETTLE_CYCLES + 1) : 1;
     reg [TW-1:0] timer;
     reg [SW-1:0] settle;
     reg skip_latched, preset_valid, seen_ts;
@@ -49,46 +49,71 @@ module gen3_eq_phase1 #(
     // Values are captured once per attempt. Changing PHY settings externally
     // during an attempt requires cancel/re-entry, not a silent coefficient swap.
     assign tx_ts1_valid = active && preset_valid && phy_gen3_ready;
-    assign tx_ec = 2'b01;
+    assign tx_ec        = 2'b01;
     wire qualified = preset_valid && phy_gen3_ready && rx_aligned && settle == 0;
     wire matching_ts = rx_ts1_valid && rx_ec == 2'b01;
     initial begin
-        if (TIMEOUT_CYCLES < 1 || SETTLE_CYCLES < 0 ||
-            SETTLE_CYCLES > CLK_HZ / 2000000)
+        if (TIMEOUT_CYCLES < 1 || SETTLE_CYCLES < 0 || SETTLE_CYCLES > CLK_HZ / 2000000)
             $fatal(1, "Invalid equalization timer parameters");
     end
     always @(posedge clk) begin
         if (rst) begin
-            active <= 0; timer <= 0; settle <= 0;
-            skip_latched <= 0; preset_valid <= 0; seen_ts <= 0;
-            go_rcvrlock <= 0; go_phase2 <= 0; go_speed <= 0;
-            phase1_success <= 0; phase2_success <= 0; phase3_success <= 0;
-            complete <= 0; phases23_skipped <= 0; failed <= 0;
-            failure_reason <= 0; ts_events <= 0;
+            active           <= 0;
+            timer            <= 0;
+            settle           <= 0;
+            skip_latched     <= 0;
+            preset_valid     <= 0;
+            seen_ts          <= 0;
+            go_rcvrlock      <= 0;
+            go_phase2        <= 0;
+            go_speed         <= 0;
+            phase1_success   <= 0;
+            phase2_success   <= 0;
+            phase3_success   <= 0;
+            complete         <= 0;
+            phases23_skipped <= 0;
+            failed           <= 0;
+            failure_reason   <= 0;
+            ts_events        <= 0;
         end else begin
-            go_rcvrlock <= 0; go_phase2 <= 0; go_speed <= 0;
+            go_rcvrlock <= 0;
+            go_phase2   <= 0;
+            go_speed    <= 0;
             if (cancel) begin
-                active <= 0; preset_valid <= 0; seen_ts <= 0;
+                active       <= 0;
+                preset_valid <= 0;
+                seen_ts      <= 0;
             end else if (enter && !active) begin
-                active <= 1; timer <= 0; settle <= SW'(SETTLE_CYCLES);
-                skip_latched <= skip_phase23; preset_valid <= 0; seen_ts <= 0;
-                phase1_success <= 0; phase2_success <= 0; phase3_success <= 0;
-                complete <= 0; phases23_skipped <= 0; failed <= 0;
-                failure_reason <= 0; ts_events <= 0;
+                active           <= 1;
+                timer            <= 0;
+                settle           <= SW'(SETTLE_CYCLES);
+                skip_latched     <= skip_phase23;
+                preset_valid     <= 0;
+                seen_ts          <= 0;
+                phase1_success   <= 0;
+                phase2_success   <= 0;
+                phase3_success   <= 0;
+                complete         <= 0;
+                phases23_skipped <= 0;
+                failed           <= 0;
+                failure_reason   <= 0;
+                ts_events        <= 0;
             end else if (active) begin
-                if (rx_ts_event && ts_events != 16'hffff)
-                    ts_events <= ts_events + 1'b1;
+                if (rx_ts_event && ts_events != 16'hffff) ts_events <= ts_events + 1'b1;
                 if (settle != 0) settle <= settle - 1'b1;
                 if (!preset_valid && preset_applied && phy_gen3_ready) begin
                     preset_valid <= 1;
-                    tx_preset <= applied_preset;
-                    tx_fs <= applied_fs; tx_lf <= applied_lf; tx_post <= applied_post;
+                    tx_preset    <= applied_preset;
+                    tx_fs        <= applied_fs;
+                    tx_lf        <= applied_lf;
+                    tx_post      <= applied_post;
                 end
                 if (!qualified) seen_ts <= 0;
                 else if (rx_ts_event) begin
                     seen_ts <= matching_ts;
                     if (matching_ts) begin
-                        peer_fs <= rx_fs; peer_lf <= rx_lf;
+                        peer_fs             <= rx_fs;
+                        peer_lf             <= rx_lf;
                         previous_symbols6_9 <= rx_symbols6_9;
                     end
                 end
@@ -97,19 +122,29 @@ module gen3_eq_phase1 #(
                 if (preset_valid && !phy_gen3_ready) begin
                     // A completed preset acknowledgement cannot survive loss
                     // of PHY readiness. Require a new outer-LTSSM attempt.
-                    active <= 0; preset_valid <= 0; seen_ts <= 0;
-                    go_speed <= 1; complete <= 1; failed <= 1;
+                    active         <= 0;
+                    preset_valid   <= 0;
+                    seen_ts        <= 0;
+                    go_speed       <= 1;
+                    complete       <= 1;
+                    failed         <= 1;
                     failure_reason <= 3'd5;
                 end else if (qualified && rx_ts_event && matching_ts && seen_ts &&
-                    rx_symbols6_9 == previous_symbols6_9) begin
-                    active <= 0; phase1_success <= 1;
+                             rx_symbols6_9 == previous_symbols6_9) begin
+                    active         <= 0;
+                    phase1_success <= 1;
                     if (skip_latched) begin
-                        go_rcvrlock <= 1; complete <= 1;
-                        phase2_success <= 1; phase3_success <= 1;
+                        go_rcvrlock      <= 1;
+                        complete         <= 1;
+                        phase2_success   <= 1;
+                        phase3_success   <= 1;
                         phases23_skipped <= 1;
                     end else go_phase2 <= 1;
-                end else if (timer == TW'(TIMEOUT_CYCLES-1)) begin
-                    active <= 0; go_speed <= 1; complete <= 1; failed <= 1;
+                end else if (timer == TW'(TIMEOUT_CYCLES - 1)) begin
+                    active   <= 0;
+                    go_speed <= 1;
+                    complete <= 1;
+                    failed   <= 1;
                     if (!phy_gen3_ready) failure_reason <= 3'd1;
                     else if (!preset_valid) failure_reason <= 3'd2;
                     else if (!rx_aligned) failure_reason <= 3'd3;

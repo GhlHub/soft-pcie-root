@@ -1,7 +1,8 @@
 # PCIe RX parser timing graphic
 
-[Download PNG](linkedin-rx-parser-timing.png) · [Generation prompt](linkedin-rx-parser-timing-prompt.txt)
+[Download PNG](linkedin-rx-parser-timing-v2.png) · [Generation prompt](linkedin-rx-parser-timing-prompt.txt)
 
+The footer qualification sentence was removed at the author's request.
 Created with the built-in imagegen tool and visually checked for text, numbers,
 RTL pseudocode and qualification scope. The diagram simplifies the pointer
 feedback path; metadata storage/read, occupancy checks and full packet validation
@@ -27,7 +28,5 @@ checkpoint audit passed, followed by Gen3 x1 startup and all eight NVMe
 performance/integrity jobs. QD8 reads/writes measured 734.84/564.79 MB/s, within
 0.3% of the preceding image. QD1 reads were 2.73% lower in this historical
 comparison; these runs are not an interleaved statistical study.
-
-Gen3 remains experimental, with further stabilization and qualification pending.
 
 [Exact build and hardware evidence](../evidence/rx_metadata_v1/completion.json).

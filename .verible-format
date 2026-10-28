@@ -1,0 +1,11 @@
+--indentation_spaces=4
+--wrap_spaces=4
+--column_limit=100
+--assignment_statement_alignment=align
+--module_net_variable_alignment=align
+--port_declarations_alignment=flush-left
+--named_port_alignment=align
+--named_parameter_alignment=align
+--formal_parameters_alignment=align
+--try_wrap_long_lines=true
+--max_search_states=2000000

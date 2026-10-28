@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-28",
+  "base_commit": "90c0f4dcda121b931c9e2a7303acdfe1f638a6a2",
+  "scope": "Whitespace-only formatting of all 121 tracked HDL files",
+  "formatter": "Verible v0.0-4296-g0f262651",
+  "token_comparison": "PASS for all 121 files using verible-verilog-diff against base commit",
+  "format_idempotence": "PASS, zero files require further formatting",
+  "source_hash_mapping": "sources.json",
+  "historical_hardware_manifests": "Preserved; formatted file bytes intentionally differ",
+  "hardware_build_or_deployment": "Not performed for formatting pass",
+  "regression_tests_passed": 85,
+  "lint_and_real_xpm_elaboration": "PASS"
+}

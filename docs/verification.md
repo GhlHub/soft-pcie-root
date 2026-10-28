@@ -39,7 +39,7 @@ The board is healthy and idle on the RX metadata image; SD still defaults to the
 TX transform image. One controlled startup and short tests do not qualify cold
 cycles, endurance, full Recovery or compliance. Gen3 remains experimental.
 [Implementation and physical evidence](evidence/rx_metadata_v1/completion.json).
-[LinkedIn graphic](media/linkedin-rx-parser-timing.png).
+[LinkedIn graphic](media/linkedin-rx-parser-timing-v2.png).
 
 ## TX LFSR transform image
 

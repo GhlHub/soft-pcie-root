@@ -22,7 +22,7 @@ module gen3_scrambler (
     integer octet, bit_no;
     always @* begin
         next_state = state_q;
-        next_data = s_data_i;
+        next_data  = s_data_i;
         byte_state = state_q;
         for (octet = 0; octet < 4; octet = octet + 1) begin
             byte_state = next_state;
@@ -30,23 +30,22 @@ module gen3_scrambler (
                 if (xor_i[octet])
                     next_data[octet*8+bit_no] = s_data_i[octet*8+bit_no] ^ byte_state[22];
                 // x^23 + x^21 + x^16 + x^8 + x^5 + x^2 + 1.
-                byte_state = {byte_state[21:0], 1'b0} ^
-                             (byte_state[22] ? 23'h210125 : 23'b0);
+                byte_state = {byte_state[21:0], 1'b0} ^ (byte_state[22] ? 23'h210125 : 23'b0);
             end
             if (advance_i[octet]) next_state = byte_state;
         end
         if (reseed_after_i) next_state = SEED;
     end
-    assign state_o = state_q;
+    assign state_o   = state_q;
     assign s_ready_o = !reset_i && (!m_valid_o || m_ready_i);
     always @(posedge clk) begin
         if (reset_i) begin
-            state_q <= SEED;
+            state_q   <= SEED;
             m_valid_o <= 0;
         end else if (s_ready_o) begin
             m_valid_o <= s_valid_i;
             if (s_valid_i) begin
-                state_q <= next_state;
+                state_q  <= next_state;
                 m_data_o <= next_data;
             end
         end

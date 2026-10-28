@@ -28,3 +28,5 @@ Below: "Data + metadata share write enable"
 Footer strip: "Fresh synthesis + place & route • Independent audit • Gen3 x1 startup + CRC passed"
 Bottom footnote in clearly readable smaller type: "Gen3 remains experimental; further stabilization and qualification pending."
 Ensure exact numbers and spelling, especially WNS not WMS, RTL, 6,745, +0.090 ns and +0.136 ns. Do not claim formal equivalence, higher clock frequency, extra pipeline stages, or full PCIe qualification. Use meaningful arrows and balanced layout.
+
+Edit request: Remove only the bottom sentence "Gen3 remains experimental; further stabilization and qualification pending." Fill with the same navy background; retain all other content and layout. Built-in imagegen edit.

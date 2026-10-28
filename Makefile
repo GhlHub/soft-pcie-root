@@ -56,3 +56,9 @@ ip:
 	$(VIVADO) -mode batch -log $(IP_OUTPUT).log -journal $(IP_OUTPUT).jou -source ip/soft_pcie_root/package.tcl -tclargs $(IP_OUTPUT)
 release-check:
 	$(PYTHON) scripts/check_release.py
+
+.PHONY: format-hdl format-hdl-check
+format-hdl:
+	$(PYTHON) scripts/format_hdl.py --write
+format-hdl-check:
+	$(PYTHON) scripts/format_hdl.py

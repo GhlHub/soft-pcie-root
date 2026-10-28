@@ -10,8 +10,12 @@ module gen3_native_clock (
     output wire user_clk_o
 );
     BUFG_GT user_clock (
-        .I(txoutclk_i), .CE(bufgtce_i), .CEMASK(bufgtcemask_i),
-        .CLR(bufgtreset_i), .CLRMASK(bufgtrstmask_i),
-        .DIV(bufgtdiv_i), .O(user_clk_o)
+        .I      (txoutclk_i),
+        .CE     (bufgtce_i),
+        .CEMASK (bufgtcemask_i),
+        .CLR    (bufgtreset_i),
+        .CLRMASK(bufgtrstmask_i),
+        .DIV    (bufgtdiv_i),
+        .O      (user_clk_o)
     );
 endmodule

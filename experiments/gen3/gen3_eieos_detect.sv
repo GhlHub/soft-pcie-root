@@ -12,34 +12,33 @@ module gen3_eieos_detect (
     output reg [4:0] end_bit_o
 );
     localparam [129:0] EIEOS = {{8{16'hff00}}, 2'b01};
-    reg [128:0] history_q;
-    reg [7:0] history_count_q;
-    wire [160:0] window_bits = {data_i, history_q};
-    reg found_next;
-    reg [4:0] end_next;
-    integer bit_no;
+    reg     [128:0] history_q;
+    reg     [  7:0] history_count_q;
+    wire    [160:0] window_bits = {data_i, history_q};
+    reg             found_next;
+    reg     [  4:0] end_next;
+    integer         bit_no;
     always @* begin
-        found_next=0;
-        end_next=0;
-        for (bit_no=0;bit_no<32;bit_no=bit_no+1) begin
-            if ((int'(history_count_q)+bit_no >= 129) &&
-                window_bits[bit_no +: 130] == EIEOS) begin
-                found_next=1;
-                end_next=5'(bit_no);
+        found_next = 0;
+        end_next   = 0;
+        for (bit_no = 0; bit_no < 32; bit_no = bit_no + 1) begin
+            if ((int'(history_count_q) + bit_no >= 129) && window_bits[bit_no+:130] == EIEOS) begin
+                found_next = 1;
+                end_next   = 5'(bit_no);
             end
         end
     end
     always @(posedge clk) begin
         if (reset_i) begin
-            found_o<=0;
-            history_count_q<=0;
+            found_o         <= 0;
+            history_count_q <= 0;
         end else begin
-            found_o<=0;
+            found_o <= 0;
             if (valid_i) begin
-                history_q<=window_bits[160:32];
-                history_count_q<=history_count_q<97 ? history_count_q+8'd32 : 8'd129;
-                found_o<=search_i && found_next;
-                if (search_i && found_next) end_bit_o<=end_next;
+                history_q       <= window_bits[160:32];
+                history_count_q <= history_count_q < 97 ? history_count_q + 8'd32 : 8'd129;
+                found_o         <= search_i && found_next;
+                if (search_i && found_next) end_bit_o <= end_next;
             end
         end
     end

@@ -45,7 +45,7 @@ The latest RX parser metadata/parallel-pointer image improves routed Gen3 WNS to
 **+0.136 ns** and passes startup, CRC and performance checks, with QD8 read/write
 **734.84/564.79 MB/s**. It is running on the board; SD remains on the TX transform
 image. [Latest evidence](docs/evidence/rx_metadata_v1/completion.json) and
-[timing-strategy graphic](docs/media/linkedin-rx-parser-timing.png).
+[timing-strategy graphic](docs/media/linkedin-rx-parser-timing-v2.png).
 
 ## Verified example
 
@@ -137,3 +137,5 @@ Original RTL, tools and documentation: **Apache-2.0**. The Linux host driver in
 upstream software retain their own licenses. The GPL pcievhost oracle is optional,
 test-only and fetched into ignored build output; it is not synthesized or vendored.
 See [LICENSE](LICENSE), [NOTICE](NOTICE) and [third-party notices](THIRD_PARTY.md).
+
+For the HDL whitespace style and repeatable checks, see [HDL formatting](docs/hdl-formatting.md).

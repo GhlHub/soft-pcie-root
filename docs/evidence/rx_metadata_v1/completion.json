@@ -160,8 +160,8 @@
     "Historical performance comparison is not an interleaved statistical study"
   ],
   "graphic": {
-    "path": "docs/media/linkedin-rx-parser-timing.png",
-    "sha256": "4b0f8e957aa74f93047f0b36c5071a0396f2463e431a7fc28b4371fd571cc1da",
+    "path": "docs/media/linkedin-rx-parser-timing-v2.png",
+    "sha256": "4b2b580dc5a1956ffda382afe6c72b79eb5b8cceb1f30e81179777a6b8fa1dd3",
     "tool": "Built-in imagegen",
     "prompt": "docs/media/linkedin-rx-parser-timing-prompt.txt"
   }

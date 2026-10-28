@@ -29,7 +29,7 @@ measured progression, [configuration](docs/ip-guide.md#optional-gen3-packaging)
 and [verification](docs/verification.md) for exact scope. The
 [startup correction](experiments/gen3/startup-stabilization.md) passed ten of ten
 warm-start trials, but cold-cycle qualification remains open. Gen3 setup margin is
-only +0.002 ns, and full Recovery remains incomplete.
+only +0.002 ns on that startup-tested image, and full Recovery remains incomplete.
 The subsequent RX timing pipeline image passed full implementation and a controlled
 Gen3 x1 boot with NVMe CRC/performance checks. Routed setup margin improved to
 **+0.073 ns**; QD8 measured **737.09 MB/s read / 565.70 MB/s write**, within 1.11%
@@ -41,6 +41,11 @@ The TX transform image is now the SD default. An unattended warm reboot,
 SD hash readback and 256 MiB read-only NVMe CRC passed; existing bootloader and
 Linux files were retained, with no QSPI flash update required.
 [Default-boot evidence](docs/evidence/tx_transform_v1/default-boot.json).
+The latest RX parser metadata/parallel-pointer image improves routed Gen3 WNS to
+**+0.136 ns** and passes startup, CRC and performance checks, with QD8 read/write
+**734.84/564.79 MB/s**. It is running on the board; SD remains on the TX transform
+image. [Latest evidence](docs/evidence/rx_metadata_v1/completion.json) and
+[timing-strategy graphic](docs/media/linkedin-rx-parser-timing.png).
 
 ## Verified example
 

@@ -9,7 +9,7 @@ Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 The current Gen3 host uses 64-bit host packet transfers, eight 64-byte DDR read
 prefetch slots, an eight-entry shared replay store, two framing banks and normal
 ACK retirement concurrent with later original packets. Latest 30-second QD8
-throughput with the RX pipeline and TX transform is **736.91 MB/s read / 563.90 MB/s write**.
+throughput with RX ingress metadata is **734.84 MB/s read / 564.79 MB/s write**.
 The preceding ACK-retirement measurement was 745.36/567.71 MB/s. See the consolidated
 [performance history](../../docs/performance-history.md) and
 [current verification](../../docs/verification.md).
@@ -49,6 +49,42 @@ margin; the RX pipeline image achieves +0.073 ns and the later TX transform
 image achieves +0.090 ns.
 The TX transform image is now the SD default; see
 [default-boot evidence](../../docs/evidence/tx_transform_v1/default-boot.json).
+
+### RX ingress metadata and parallel pointer candidates
+
+The buffered parser now stores per-byte zero, DLLP, token and nullification
+classification alongside ingress data. Metadata and data share the exact write
+enable/address and remain unreset. The pointer selects precomputed hold, +4,
++prefix+4 or +prefix+8 candidates. Token validation, error quarantine, downstream
+packet ownership and synchronous control resets are unchanged; no latency or
+intentional bubbles are added.
+
+Matched isolated synthesis at 250 MHz on XCZU7EV-2 improved estimated parser WNS
+from +0.183 to +0.496 ns, and worst read-pointer endpoint slack from +0.780 to
++1.190 ns. LUTs increased from 457 to 498; FFs stayed at 124. The candidate's
+worst estimated path now ends at the count register's synchronous reset.
+These unplaced estimates have no I/O delays and do not establish full-design
+routed timing improvement.
+
+All 208 independent parser cases and native RX/link checks passed. A comparison
+against the prior parser matched cycle by cycle over 6,745 stimulus entries
+plus inter-case drains, checking control state, pointers, count and valid data.
+All 82 existing repository tests and three added RX tests passed.
+The framing/native checks are included in `tests/test_gen3_rx.py`.
+[Development evidence](../../docs/evidence/rx_metadata_v1/development.json).
+The change subsequently passed fresh full synthesis/PNR and independent audit:
+Gen3 setup/hold **+0.136/+0.010 ns**, compared with +0.090/+0.012 ns before.
+The limiting path moved to read-pointer-to-count-clear logic. Whole-design
+resources are 11,252 LUTs, 10,459 FFs and 538 control sets. Gen3 x1 startup and
+all eight matched CRC/performance jobs passed; QD8 read/write measured
+734.84/564.79 MB/s. The board runs this image; SD retains the TX transform default.
+[Full evidence](../../docs/evidence/rx_metadata_v1/completion.json).
+
+```sh
+vivado -mode batch -source experiments/gen3/synth_stream_buffered_rx.tcl \
+  -tclargs build/parser_synth_next
+.venv/bin/python -m pytest -q tests/test_gen3_rx.py
+```
 
 ### TX timing investigation after the RX pipeline image
 

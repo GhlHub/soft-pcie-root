@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-28",
+  "base_commit": "a8c64a15414c3fdedb904e6613273f6cd91daf12",
+  "scope": "Isolated RX parser synthesis and simulation; no full route or board programming",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "period_ns": 4.0,
+  "change": "Write per-byte zero/DLLP/token/nullification metadata atomically with ingress data; select parallel hold/+4/+prefix+4/+prefix+8 pointer candidates",
+  "added_latency_cycles": 0,
+  "synthesis": {
+    "baseline": {
+      "LUT": 457,
+      "FF": 124,
+      "LUT_as_memory": 84,
+      "estimated_WNS_ns": 0.183,
+      "read_pointer_worst_slack_ns": 0.78
+    },
+    "candidate": {
+      "LUT": 498,
+      "FF": 124,
+      "LUT_as_memory": 100,
+      "estimated_WNS_ns": 0.496,
+      "read_pointer_worst_slack_ns": 1.19,
+      "worst_path": "read_pointer_reg[2]/C to count_reg[0]/R"
+    }
+  },
+  "checks": {
+    "independent_parser_cases": 208,
+    "cycle_equivalence_stimulus_entries": 6745,
+    "cycle_equivalence": "PASS including control state, cursors, counts and valid output data; additional drain cycles between cases",
+    "parser_lint": "PASS",
+    "native_rx_and_link": "PASS",
+    "repository_tests_passed": 82,
+    "additional_rx_tests_passed": 3
+  },
+  "source_sha256": {
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "ecdc56cf9c3785b5028903084761d5960648ea34e9da664cc91d9280e891c772",
+    "experiments/gen3/synth_stream_buffered_rx.tcl": "b35b69f14e08d38fd38db301e10458edc68b39778f0b9f5b4128c04427830916"
+  },
+  "baseline_sha256": "0180c9f4a3c001409e37a6073c0add9a4ce19207f381fdf56cad2a499e7798bd",
+  "report_sha256": {
+    "baseline_synth/utilization.rpt": "c6f1b251c6602bd6ff4bb5c13614b784cfc0d90f56211edac469f6f4cfa2179d",
+    "baseline_synth/timing.rpt": "bb6d38f610b62f0a16c4e2bfd458e437440bcb779765d3f496a36dc4fc46d859",
+    "baseline_synth/read_pointer.rpt": "b439562f1dc8b2337c5fb42fefe274b62f2c5839a2db8259eab90a5834212c60",
+    "candidate_synth/utilization.rpt": "f40cf1e4d7f0ce79cd40656533ea6da203e1ca19c02e7d1774de08dcd96a2283",
+    "candidate_synth/timing.rpt": "d6ac5add68eed507906b254ad31ccf8139271aeee007eb2826291d14c5f0b552",
+    "candidate_synth/read_pointer.rpt": "d2c44ab2f5d45797ad18e050455a8a99b4e7804cd936b6165765a2b31b8d2fa4"
+  },
+  "limitations": [
+    "Unplaced synthesis estimates without I/O delays, not full-design routed WNS",
+    "No new physical image or performance measurement; board and SD retain TX transform image",
+    "Metadata and payload remain unreset; control reset remains synchronous; downstream validation unchanged"
+  ]
+}

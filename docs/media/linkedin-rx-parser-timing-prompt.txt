@@ -1,0 +1,30 @@
+Create a polished, technically precise LinkedIn engineering infographic, landscape 1536x1024. Dark navy background, restrained cyan and green accents, crisp white typography, generous spacing, subtle circuit traces. Clear hierarchy, no tiny text, no vendor logos. This is an FPGA timing optimization case study, not an advertisement promising qualified PCIe compliance.
+Title: "Shortening the PCIe RX feedback path"
+Subtitle: "Soft PCIe Gen3 x1 • ZCU104 • 250 MHz"
+Hero comparison, largest text:
+"ROUTED WNS"
+"Before  +0.090 ns" → "After  +0.136 ns"
+Below: "+46 ps setup margin • Same 4 ns clock period"
+Three concise panels:
+1. "STRATEGY"
+"Predecode byte metadata at ingress"
+"Compute pointer candidates in parallel"
+"Select late; preserve parser latency"
+Include a simple BEFORE flow: "RAM → align → decode → add"
+and AFTER flow: "Metadata → classify → select".
+2. "RTL CHANGE"
+A clean monospace pseudocode card, clearly labeled "Simplified RTL":
+"meta[wr] <= classify(data);"
+"p4 = rd + 4;"
+"pt = rd + prefix + 4;"
+"pd = rd + prefix + 8;"
+"next_rd = select(hold, p4, pt, pd);"
+Below: "Data + metadata share write enable"
+3. "CHECKED BEFORE HARDWARE"
+"6,745 stimulus entries + drain cycles"
+"Cycle-by-cycle match on tested cases"
+"208 independent framing cases"
+"85 regression tests passed"
+Footer strip: "Fresh synthesis + place & route • Independent audit • Gen3 x1 startup + CRC passed"
+Bottom footnote in clearly readable smaller type: "Gen3 remains experimental; further stabilization and qualification pending."
+Ensure exact numbers and spelling, especially WNS not WMS, RTL, 6,745, +0.090 ns and +0.136 ns. Do not claim formal equivalence, higher clock frequency, extra pipeline stages, or full PCIe qualification. Use meaningful arrows and balanced layout.

@@ -1,5 +1,46 @@
 # Verification and release scope
 
+## RX ingress metadata and parallel pointer image
+
+The parser change passed fresh unified Gen3 packaging, full synthesis/PNR and
+an independent reopened audit on 2026-10-28. Routed Gen3 setup WNS improved
+from **+0.090 to +0.136 ns** (+46 ps); hold is +0.010 ns. Gen1 startup setup/hold
+is +0.642/+0.010 ns. No extra postroute optimization was used. Timing coverage,
+CDC, DRC, routing, bus skew and source manifests passed. The limiting path now
+runs from the parser read pointer to the count register's synchronous reset.
+Resources are 11,252 LUTs, 10,459 FFs, 538 control sets, two RAMB36 and one RAMB18.
+
+Per-byte classifications are written with ingress data, and the pointer selects
+parallel advance candidates. No parser latency was added. Payload and metadata
+remain unreset; control resets remain synchronous and packet validation is
+unchanged. All 82 existing tests plus three added RX tests passed. The independent
+framing oracle covers 208 cases; cycle-by-cycle comparison matched the prior
+parser across 6,745 stimulus entries plus drains, including control state,
+cursors, counts and valid data. This is tested equivalence, not a formal proof.
+
+One clean-halt/kernel-stop/program/resume attempt negotiated Gen3 x1 and passed
+256 MiB read-only CRC. All eight matched performance/integrity jobs passed:
+
+| Workload | Previous TX transform MB/s | RX metadata MB/s | Change |
+| --- | ---: | ---: | ---: |
+| Read QD1 | 611.93 | 595.24 | -2.73% |
+| Read QD8 | 736.91 | 734.84 | -0.28% |
+| Write QD1 | 342.41 | 339.91 | -0.73% |
+| Write QD8 | 563.90 | 564.79 | +0.16% |
+
+Same fio 3.38, 1 MiB direct/libaio, one job, 30 seconds per benchmark. Existing
+and fresh 256 MiB CRC, sector-offset 32 MiB CRC and post-flush CRC passed. Exact
+27,453,816,832 written bytes matched block accounting; SMART warnings, media
+errors and error-log entries stayed zero, with unsafe shutdowns unchanged.
+Historical performance comparisons are not interleaved statistical trials.
+The random-I/O baseline was not remeasured.
+
+The board is healthy and idle on the RX metadata image; SD still defaults to the
+TX transform image. One controlled startup and short tests do not qualify cold
+cycles, endurance, full Recovery or compliance. Gen3 remains experimental.
+[Implementation and physical evidence](evidence/rx_metadata_v1/completion.json).
+[LinkedIn graphic](media/linkedin-rx-parser-timing.png).
+
 ## TX LFSR transform image
 
 The TX transform passed fresh unified Gen3 packaging, full synthesis/PNR and an

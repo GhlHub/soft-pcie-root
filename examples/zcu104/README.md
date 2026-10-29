@@ -72,7 +72,12 @@ full synthesis, place-and-route and an independent checkpoint audit; see
 [implementation evidence](../../docs/evidence/catalog_gen3_v1/implementation.json).
 The later startup-corrected unified image passed ten controlled warm-start/read-only
 NVMe CRC trials ([evidence](../../docs/evidence/startup_fix_v1/completion.json)).
-Broader qualification remains incomplete; Gen3 setup margin is only +0.002 ns.
+That startup-tested image had +0.002 ns Gen3 setup margin. The later RX metadata
+image improved it to +0.136 ns and passed NVMe CRC/performance and SD-default
+warm-boot checks ([evidence](../../docs/evidence/rx_metadata_v1/completion.json)).
+The subsequent requester timeout fix and Gen3 test campaigns have not produced
+a new hardware image. Broader qualification remains incomplete; see the
+[Gen3 coverage matrix](../../docs/gen3-verification-matrix.md).
 
 ## Linux and first boot
 

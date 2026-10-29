@@ -46,7 +46,7 @@ banking](evidence/ddr_banked_v1/completion.json), [4 — initial
 Gen3](../experiments/gen3/evidence/performance-comparison.json), [5 — transmit
 window](../experiments/gen3/evidence/tx-window.json), [6 —
 RX64](evidence/rx64_v1/completion.json), [7 — eight-slot
-prefetch](evidence/prefetch_v1/completion.json), [8 — current Gen3
+prefetch](evidence/prefetch_v1/completion.json), [8 — ACK-retirement Gen3
 measurements](evidence/prefetch_v1/ack-retirement-performance.json), [9 — current Gen2
 measurements](evidence/prefetch_v1/ack-retirement-gen2.json), [10 — RX timing
 pipeline](evidence/rx_pipeline_v1/completion.json), [11 — TX
@@ -198,8 +198,9 @@ evidence](evidence/prefetch_v1/ack-retirement.json).
 
 All 49 repository tests, lint, focused Gen3 regressions, fresh synthesis/route
 and the independent reopened-checkpoint audit passed. Setup margin remains very
-narrow. The current image trained on its first deployment attempt, but earlier
-startup intermittence remains unresolved.
+narrow. That image trained on its first deployment attempt, but startup intermittence
+was unresolved at that stage. The later startup correction passed ten controlled
+warm-start CRC trials; cold-cycle qualification remains open.
 
 All eight jobs in the 30-second remeasurement passed: four benchmarks plus
 existing-pattern, fresh 256 MiB, sector-offset 32 MiB and post-flush CRC tests.

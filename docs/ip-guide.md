@@ -114,9 +114,15 @@ earlier separate Gen3 package passed full synthesis, routing and reopened audits
 fixing an initial-link drain bug, that image also passed temporary NVMe I/O/CRC and
 performance tests. Those performance results predate the unified 1.1 catalog. Its
 startup-corrected Gen3 image subsequently passed full implementation and ten warm-start
-read-only CRC trials. Cold-cycle qualification and full Recovery remain open, and
-Gen3 setup margin is only +0.002 ns. See
+read-only CRC trials. Its Gen3 setup margin was +0.002 ns; the later RX metadata
+image reached +0.136 ns and passed physical I/O/CRC checks. Cold-cycle
+qualification and full Recovery remain open. See
 [verification](verification.md#startup-corrected-unified-gen3-image).
+
+Independent native Gen3 simulation now checks all eight replay slots, cumulative
+retirement/reuse, selective replay and natural sequence/credit rollover. These
+checks do not qualify DDR prefetch depth, full Recovery or physical wire timing;
+see the [Gen3 verification matrix](gen3-verification-matrix.md).
 
 ### Normal ACK retirement
 

@@ -36,8 +36,8 @@ Gen3 x1 boot with NVMe CRC/performance checks. Routed setup margin improved to
 of the earlier measurements. See [current evidence](docs/evidence/rx_pipeline_v1/completion.json).
 The subsequent TX LFSR transform improved routed setup margin to **+0.090 ns**
 and passed Gen3 x1 startup, CRC and matched performance tests, measuring
-**736.91/563.90 MB/s** QD8 read/write. See [latest validation](docs/evidence/tx_transform_v1/completion.json).
-The TX transform image is now the SD default. An unattended warm reboot,
+**736.91/563.90 MB/s** QD8 read/write. See [TX transform validation](docs/evidence/tx_transform_v1/completion.json).
+The TX transform image became the SD default at that stage. An unattended warm reboot,
 SD hash readback and 256 MiB read-only NVMe CRC passed; existing bootloader and
 Linux files were retained, with no QSPI flash update required.
 [Default-boot evidence](docs/evidence/tx_transform_v1/default-boot.json).
@@ -49,11 +49,18 @@ The latest RX parser metadata/parallel-pointer image improves routed Gen3 WNS to
 
 The current source also fixes a requester completion/timeout race discovered by
 new Gen1/Gen2 fault-injection tests: a valid completion at the timeout deadline
-could return success while blocking subsequent requests until reset. All 669
-regression tests pass, including 584 new cases; lint and real-XPM elaboration
-also pass. This fix has not been rebuilt or deployed to hardware. See the
+could return success while blocking subsequent requests until reset. That campaign
+passed 669 tests, including 584 new cases, plus lint and real-XPM elaboration.
+This fix has not been rebuilt or deployed to hardware. See the
 [NVMe-scope coverage matrix](docs/gen1-gen2-compliance-matrix.md#nvme-scope-regression-campaign)
 and [verification results](docs/evidence/gen12_coverage_v1/completion.json).
+
+The subsequent independent Gen3 verification campaigns add 994 tests for training,
+CRC/error containment, replay/credit ownership, eight-slot reuse and natural RX/TX
+sequence rollover. The latest full regression passes **1,663 tests**. These
+campaigns change tests and documentation only; full Recovery, wire-time deadlines
+and physical qualification remain open. See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md)
+and [latest simulation evidence](docs/evidence/gen3_tx_ownership_v1/completion.json).
 
 ## Verified example
 

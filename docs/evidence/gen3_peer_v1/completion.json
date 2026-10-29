@@ -1,0 +1,57 @@
+{
+  "scope": "Independent scheduled Gen3 training peer at ordered-set interface; decoder plus Phase 1 controller",
+  "base_revision": "c835607311408e8179940c86298e07a1dba941b0",
+  "source_state": "Test and documentation working tree changes; design RTL unchanged",
+  "source_sha256": {
+    "tests/test_gen3_peer.py": "c130e3479daf8e96bf983c4b66f2aa86c8b4d3ad1f25363327529a77526dc919",
+    "experiments/gen3/test_gen3_peer.sv": "8b2653d9169053653d4a31565675be0b7778c2d759c30a05c2abab575da740ca",
+    "experiments/gen3/gen3_training_rx.sv": "69fc322845d5f3607cd716f761ffd35f7574041c6b899e1b4fe8acfd083c9fb7",
+    "experiments/gen3/gen3_eq_phase1.sv": "1b8115727ad2b6de67dc92418d559f7a232f5143601145a90207e8b97d8f3366"
+  },
+  "peer_scenarios": 10,
+  "policies": [
+    "phase2_handoff",
+    "skip_phase23"
+  ],
+  "valid_beat_gaps": [
+    0,
+    2
+  ],
+  "preset_labels": [
+    0,
+    4,
+    10
+  ],
+  "functional_cases": 120,
+  "mutation_cases": 3,
+  "mutations": [
+    "accept single TS instead of matching pair",
+    "disable lane validation",
+    "disable parity validation"
+  ],
+  "independence": [
+    "No DUT internal-state reads",
+    "No production TX instantiated",
+    "Python constructs scrambled peer blocks and schedules stimulus",
+    "Checks decoder events, controller result and transition pulse counts"
+  ],
+  "limitations": [
+    "Not a complete endpoint BFM or full LTSSM test",
+    "No adaptive Phase 2/3 or packet-bearing Recovery qualification",
+    "No analog, serial or electrical test",
+    "Final normative clause/timer review remains open",
+    "No new design RTL, synthesis, routing or deployment"
+  ],
+  "focused_command": ".venv/bin/python -m pytest -q tests/test_gen3_peer.py",
+  "full_regression_command": "VIVADO_BIN=/tools/Xilinx/2026.1/Vivado/bin .venv/bin/python -m pytest -q tests",
+  "full_regression_result": {
+    "passed": 792,
+    "failed": 0,
+    "seconds": 104.33
+  },
+  "new_cases_result": {
+    "functional_passed": 120,
+    "mutation_detection_passed": 3,
+    "failed": 0
+  }
+}

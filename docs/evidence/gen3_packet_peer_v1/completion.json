@@ -1,0 +1,50 @@
+{
+  "scope": "Independent native scrambled Gen3 ingress peer and framed link-layer egress scoreboard before physical TX scheduler/scrambler",
+  "base_revision": "c835607311408e8179940c86298e07a1dba941b0",
+  "source_state": "Test and documentation working tree changes; design RTL unchanged",
+  "source_sha256": {
+    "tests/test_gen3_packet_peer.py": "73cd8a20f7251bc196ab95939027432de9d3443c104d7abbef9c93b135829b1a",
+    "tests/test_pcie_soft.py": "00cbb5c6e2d667c6d6c8ad30f433a80a1c415c3a79fa0a60c07fc72adf94a1e2",
+    "experiments/gen3/test_gen3_packet_peer.sv": "f178c48b1a9b511181bd1bd7bb5d33beb270e6079da18ec09d895c047bffd552",
+    "experiments/gen3/gen3_native_rx.sv": "73e75c4ce5e6fe80ffc041180e41311d0a59d12275a445f0cde27ba5ec752889",
+    "experiments/gen3/gen3_data_rx.sv": "47cb142de00af89859a01b9c6fc81c3ba139b9ab532e681d461abab767c361c8",
+    "experiments/gen3/gen3_stream_rx.sv": "81b6d1f3512877c306bd2fe041b16af03a4bc675148b73a577b761d29d1fd8b4",
+    "experiments/gen3/gen3_stream_buffered_rx.sv": "f2b4de22225e77d87b6e63d031a798e214df26a8f6c21568f9d7ff15aa9c1feb",
+    "experiments/gen3/gen3_packet_gate.sv": "0b7aa779cf2d3731e111ed6e30907d707445cecdf70af0ba9b29c879a54a79bd",
+    "experiments/gen3/gen3_link_layer.sv": "324e5a2d46acacd59dfa8bfe9b32ee4231c586ccb9041c60837e7b2e8d0e0caa",
+    "experiments/gen3/gen3_link_profile.sv": "5150b64f1f814d4c4530cefe353094ca7f5cabea554ac6e00db19c190962228e",
+    "experiments/gen3/gen3_dllp_source.sv": "8ce80f5b04ef567f4fb2a23984986cd0bf5584ee6d9d4266262087a5370c9552",
+    "experiments/gen3/gen3_tx_window.sv": "964b2500a0e5f4ed503d51bea4791cfa46f855fc3b26cab08b96c9ac9d9142dc",
+    "experiments/gen3/gen3_tlp_source.sv": "81fd3c5efec799f5af095c2772249b86c3512211246c89ad5df08cc08077e671",
+    "experiments/gen3/gen3_stp.sv": "1a18ca8cfa18471d299435313a9a7078c09c352b0e18d951b083329d4ee45042",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv": "852edbe4c29b8b4f9b5f1c297d860a06d229b661a0e013bf8b4ba28ea2d5c25e",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv": "176fd51490f54ff403c3f8b2e670138f3cc4ccb212834ec81dbfc15a2d8471bf",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_replay.sv": "a79a84482b14b768707c5af4042cdc51648a6447821cc2227e98e6dd5db5d0b5",
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ack_capture.sv": "ca3cbc24761b7884178a33b82bd82466c647992b252a810c1752abdfa33c3b7e"
+  },
+  "cases": {
+    "replay_credit_pause": 12,
+    "lcrc_bits_by_offsets": 512,
+    "dllp_body_crc_bits": 96,
+    "pcs_reacquisition_by_offsets": 32
+  },
+  "new_cases_result": {
+    "passed": 652,
+    "failed": 0
+  },
+  "full_regression_command": "VIVADO_BIN=/tools/Xilinx/2026.1/Vivado/bin .venv/bin/python -m pytest -q tests",
+  "full_regression_result": {
+    "passed": 1444,
+    "failed": 0,
+    "seconds": 124.04
+  },
+  "limitations": [
+    "One 3DW MWr plus one DWORD payload shape",
+    "No full LTSSM Recovery or accepted AXI ownership test",
+    "Egress checked before physical TX scheduler/scrambler",
+    "Interface beat gaps are not wire-time qualification",
+    "No adaptive Phase 2/3, analog or electrical qualification",
+    "Final normative clauses and production timer audit remain open",
+    "No design RTL changes, synthesis, routing or deployment"
+  ]
+}

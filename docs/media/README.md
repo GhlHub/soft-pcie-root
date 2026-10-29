@@ -1,7 +1,7 @@
 # Performance graphics
 
 Use [the ACK-retirement comparison](linkedin-ack-retirement-gen2-gen3.png) for
-the latest measured Gen2/Gen3 comparison. Its conceptual hardware illustration
+the historical ACK-retirement Gen2/Gen3 comparison. Its conceptual hardware illustration
 is not a photograph of the tested board. The accompanying
 [generation prompt](linkedin-ack-retirement-gen2-gen3-prompt.txt) records the
 requested content.
@@ -19,9 +19,19 @@ essentially unchanged. Gen3 gains include packet-width and prefetch changes;
 they are not an ACK-retirement-only or link-rate-only comparison.
 
 **Gen3 is pending further stabilization.** These physical measurements predate
-the unified version 1.1 catalog package, which still needs its own route and
-board verification. See the [performance history](../performance-history.md)
+the unified version 1.1 catalog package. Later unified Gen3 images passed routing,
+startup and physical I/O/CRC tests; the RX metadata image reached +0.136 ns WNS
+and 734.84/564.79 MB/s QD8 read/write. The graphic retains its original historical
+figures. See the [performance history](../performance-history.md)
 and [verification scope](../verification.md).
+
+## RX parser timing graphic
+
+The [RX parser timing graphic](linkedin-rx-parser-timing-v2.png) and
+[post/evidence notes](linkedin-rx-parser-timing.md) describe the +0.090 to
++0.136 ns timing improvement and 6,745-entry equivalence comparison. Its 85-test
+count belongs to that build. Later simulation-only verification increased the
+repository regression to 1,663 tests without changing that hardware evidence.
 
 ## Earlier assets
 

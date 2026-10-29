@@ -6,6 +6,73 @@ functional evidence from compliance qualification. Its project-scope waivers
 exclude features unrelated to direct-attached NVMe operation while retaining
 protocol correctness, error containment and data-integrity coverage.
 
+The latest full regression passes **1,663 tests**, including 994 added Gen3
+peer cases across the four campaigns below. Earlier test totals and physical
+results are historical checkpoints, not measurements of the latest source.
+The shared requester timeout fix remains unbuilt/undeployed; the recorded
+SD-default image is still RX metadata. Gen3 scope and remaining gaps are in the
+[Gen3 verification matrix](gen3-verification-matrix.md).
+
+## Gen3 TX rollover and eight-slot replay coverage
+
+The [TX ownership extension](gen3-verification-matrix.md#native-tx-rollover-and-full-replay-window-extension)
+adds 17 tests. Sixteen cases fill all eight replay slots with spare credits,
+retire and reuse each possible prefix, and check exact selective replay. A
+4,098-packet case checks natural TX sequence and header/data credit rollover,
+including NAK retries on both sides of sequence wrap without fresh credits.
+
+All **1,663 repository tests passed** in 157.92 seconds. No design RTL bug was
+found; production RTL and the test harness are unchanged. This is functional
+simulation at the native-ingress/framed-egress boundary. Full LTSSM Recovery,
+wire-time deadlines and endpoint/DDR integration remain open.
+[Results and exact sources](evidence/gen3_tx_ownership_v1/completion.json).
+No synthesis, routing, deployment or hardware verification was performed.
+
+## Gen3 native sequence and replay-ownership coverage
+
+The [sequence extension](gen3-verification-matrix.md#native-sequence-and-replay-ownership-extension)
+adds 202 tests: duplicate/future/corrupted-duplicate rejection at four payload
+sizes and all byte offsets, cumulative retirement/selective replay of three
+outstanding packets, and natural 12-bit RX sequence rollover. Retained RX data
+and emitted sequence/payload/ACK results are checked independently.
+
+All **1,646 repository tests passed** in 141.42 seconds. No design RTL bug was
+found and production RTL is unchanged. The test harness watchdog is longer to
+allow rollover without seeding internal state. TX rollover was subsequently
+checked by the extension above. Full LTSSM Recovery, wire-time qualification
+and end-to-end endpoint/DDR coverage remain open.
+[Results and exact sources](evidence/gen3_sequence_peer_v1/completion.json).
+No synthesis, routing, deployment or hardware verification was performed.
+
+## Gen3 independent native packet-peer coverage
+
+The [native packet campaign](gen3-verification-matrix.md#independent-native-packet-peer-campaign)
+adds 652 cases covering LCRC corruption at all 16 byte offsets, ACK/UpdateFC
+body and CRC bit corruption, replay retirement/retry/pause, credit exhaustion,
+and preservation of committed RX packets across PCS reacquisition. Input is
+independently encoded and scrambled; output is checked at the framed link-layer
+boundary before the physical TX scheduler/scrambler.
+
+All **1,444 repository tests passed** in 124.04 seconds. No design RTL bug was
+found or RTL changed by this campaign. Full LTSSM Recovery, mixed native endpoint
+transactions, wire-time deadlines and physical qualification remain open.
+[Results and exact sources](evidence/gen3_packet_peer_v1/completion.json).
+No new synthesis, routing or deployment was performed.
+
+## Gen3 independent training-peer coverage
+
+The [Gen3 verification matrix](gen3-verification-matrix.md) maps 24 active
+functional topics to existing tests, primary reference sources and remaining
+work within the direct-NVMe scope. A new independently scheduled Python peer
+exercises the native training decoder and Phase 1 equalization controller
+without reading DUT state or using the production training transmitter.
+The suite includes 120 scenario combinations plus three mutation tests proving
+that removed pair, lane and parity checks are detected. Full endpoint negotiation, adaptive Phase
+2/3, packet-bearing Recovery and physical qualification remain open. This
+campaign changes tests/documentation only; no design RTL or deployed image changed.
+The final full regression passed **792 tests**, including all 123 new cases.
+[Results and exact sources](evidence/gen3_peer_v1/completion.json).
+
 ## Gen1/Gen2 NVMe-scope fault and timer coverage
 
 The [coverage matrix](gen1-gen2-compliance-matrix.md#nvme-scope-regression-campaign)

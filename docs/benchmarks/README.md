@@ -42,7 +42,7 @@ sequential benchmarks.
 
 ## TX transform baseline, 2026-10-27
 
-The current Gen3 x1 TX transform image completed the full 900-second preset on
+The Gen3 x1 TX transform image at that stage completed the full 900-second preset on
 a Samsung 990 EVO 1 TB, firmware 0B2QKXJ7, Linux 6.6.70 and fio 3.38.
 
 | Direction | IOPS | MB/s (decimal) | Mean completion latency | p99 completion latency | p99.9 completion latency |

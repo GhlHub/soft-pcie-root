@@ -10,8 +10,12 @@ code. Latest physical tests cover both Gen3 and a fresh default Gen2 ACK-retirem
 build; these are short I/O/CRC tests, not full qualification. The later unified 1.1
 catalog/checkbox packaging has now been routed; its startup-corrected Gen3 image
 passed ten controlled warm-start/read-only CRC trials. See
-docs/evidence/startup_fix_v1/completion.json. Gen3 setup margin is +0.002 ns;
-cold-cycle, endurance, full Recovery and compliance qualification remain open.
+docs/evidence/startup_fix_v1/completion.json (+0.002 ns Gen3 setup margin).
+The later RX metadata SD-default image passed physical I/O/CRC and warm boot
+with +0.136 ns Gen3 WNS; see docs/evidence/rx_metadata_v1/completion.json.
+Subsequent requester timeout RTL and simulation-only Gen3 coverage have not
+been rebuilt/deployed. Latest regression: 1,663 passed; see docs/gen3-verification-matrix.md.
+Cold-cycle, endurance, full Recovery and compliance qualification remain open.
 
 Reusable sources: ip/soft_pcie_root/rtl; packaging: ip/soft_pcie_root/package.tcl;
 board build/audit/constraints: examples/zcu104; Linux integration: software/.

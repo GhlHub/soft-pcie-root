@@ -33,7 +33,7 @@ recipe sets `CONFIG.ENABLE_GEN3=true` explicitly. The default board recipe sets 
 false. The optional packaging argument `1` sets the initial checkbox value only. Earlier
 sections below describing separate native host packages refer to historical builds. The
 unified 1.1 package has passed customization and synthesis/CDC checks for both
-selections; the physical measurements above predate it. Its Gen3-enabled configuration
+selections; the earlier ACK-retirement measurements predate it. Its Gen3-enabled configuration
 has also passed full synthesis, place-and-route, bitstream generation and an independent
 checkpoint audit ([evidence](../../docs/evidence/catalog_gen3_v1/implementation.json)).
 The later [startup correction](startup-stabilization.md) passed ten controlled
@@ -46,7 +46,7 @@ they do not program a board. Do not replace PL while Linux owns the host.
 The startup correction still needs cold-cycle and broader qualification. Full
 Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
 margin; the RX pipeline image achieves +0.073 ns and the later TX transform
-image achieves +0.090 ns.
+image achieves +0.090 ns. The later RX metadata image reaches +0.136 ns.
 The RX metadata image is now the SD default; see
 [default-boot evidence](../../docs/evidence/rx_metadata_v1/default-boot.json).
 
@@ -977,3 +977,36 @@ read-only CRC pass. SD boot files still select the previous image.
 [Implementation](../../docs/evidence/rx64_v1/implementation.json) and
 [physical evidence](../../docs/evidence/rx64_v1/completion.json) record exact
 hashes, results and limitations.
+
+## Independent peer and verification matrix
+
+Latest full regression: **1,663 passed**. The four independent-peer campaigns
+add 994 cases in total (123 training/mutation, 652 packet, 202 sequence and
+17 TX ownership cases). No production RTL changed in these campaigns;
+[latest source evidence](../../docs/evidence/gen3_tx_ownership_v1/completion.json).
+
+See the [Gen3 NVMe verification matrix](../../docs/gen3-verification-matrix.md)
+for active requirements, reference sources and remaining gaps. The new
+[scheduled peer tests](../../tests/test_gen3_peer.py) exercise the training
+decoder and Phase 1 controller together without using the production TX or
+reading internal DUT state. This is a bounded control-plane peer, not a full
+endpoint or analog PHY model.
+
+The [native packet peer](../../tests/test_gen3_packet_peer.py) adds 652 cases for
+CRC faults, ACK/NAK/replay, credit ownership and PCS reacquisition with retained
+RX packets. It drives scrambled native ingress and checks framed egress before
+the physical TX scheduler/scrambler. At that campaign checkpoint, the complete regression passed 1,444 tests;
+see [packet evidence](../../docs/evidence/gen3_packet_peer_v1/completion.json).
+Full LTSSM Recovery and wire-time qualification remain open.
+
+The [sequence extension](../../tests/test_gen3_packet_sequences.py) adds 202
+cases for duplicate/future rejection at four payload sizes, three-packet
+cumulative retirement and selective replay, and natural 12-bit RX sequence
+rollover. See the [campaign scope](../../docs/gen3-verification-matrix.md#native-sequence-and-replay-ownership-extension)
+and [source evidence](../../docs/evidence/gen3_sequence_peer_v1/completion.json).
+
+The [TX ownership extension](../../tests/test_gen3_tx_ownership.py) adds 17 cases
+for all eight replay slots, cumulative retirement/reuse, exact selective replay,
+and natural TX sequence/header-credit/data-credit rollover. See
+[scope and results](../../docs/gen3-verification-matrix.md#native-tx-rollover-and-full-replay-window-extension).
+Production RTL and the test harness are unchanged by this extension.

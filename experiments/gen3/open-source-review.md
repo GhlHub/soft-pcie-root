@@ -71,6 +71,12 @@ The runner creates a fresh output directory containing vectors and a result
 manifest. Icarus Verilog and Python are required. The dependency is optional
 and is not downloaded by the standard component regression.
 
+The subsequent [Gen3 verification matrix](../../docs/gen3-verification-matrix.md)
+records independently written training and native packet peers, including replay,
+credit, corruption and rollover checks. Those tests do not import additional
+third-party RTL or implement a complete endpoint BFM. The list below records
+the remaining applications considered at this historical review stage.
+
 ## Next applications and remaining gaps
 
 1. Extend independent transaction models to check the upcoming transmit

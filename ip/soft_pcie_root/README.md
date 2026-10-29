@@ -68,3 +68,10 @@ Use the packaged block-design cell for AXI automation. Vivado 2026.1 standalone 
 retain the default two-read annotation in Gen3 mode; the generated HDL parameter and
 eight-slot hardware are correct. See the integration guide for this limitation and the
 distinction between package validation and board tests.
+
+Verification coverage is tracked separately for
+[Gen1/Gen2](../../docs/gen1-gen2-compliance-matrix.md) and
+[Gen3](../../docs/gen3-verification-matrix.md). The latest 1,663-test simulation
+regression includes independent Gen3 training/packet peers, eight-slot replay
+ownership and natural sequence/credit rollover. These tests do not qualify the
+physical PHY or full Recovery; the latest source has not been deployed.

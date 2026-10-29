@@ -26,7 +26,7 @@ The suggested marketing graphic is a conceptual FPGA/NVMe illustration showing
 Gen2 x1, 428 MB/s read and 260 MB/s write. Its rounded values describe the
 packaged example. See [asset notes](linkedin-marketing-v2.md).
 
-The original editable [SVG](linkedin-soft-pcie.svg) and
-[PNG](linkedin-soft-pcie.png) instead show the txdouble_v1 baseline's rounded
+The original editable [SVG](linkedin-soft-pcie-gen2-baseline.svg) and
+[PNG](linkedin-soft-pcie-gen2-baseline.png) instead show the txdouble_v1 baseline's rounded
 428.6/260.1 MB/s. Regenerate those original assets with
 `python3 scripts/render_graphic.py`; requires Pillow and DejaVu Sans fonts.

@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-29",
+  "source_revision": "739961de2236b26d3f4d5028b3362ecea6b30e38",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "ENABLE_GEN3": true,
+  "change": "Valid matching completion cancels coincident requester timeout fault; malformed completions and link-loss priority retained",
+  "requester_sha256": "176fd51490f54ff403c3f8b2e670138f3cc4ccb212834ec81dbfc15a2d8471bf",
+  "regressions": {
+    "focused_requester_passed": 56,
+    "focused_seconds": 0.99,
+    "previous_full_regression_passed": 1663
+  },
+  "implementation": {
+    "fresh_synthesis_route": "PASS",
+    "reopened_audit": "PASS",
+    "source_manifests": "PASS",
+    "gen3": {
+      "setup_ns": 0.116,
+      "hold_ns": 0.01,
+      "pulse_width_ns": 0.543
+    },
+    "gen1_startup": {
+      "setup_ns": 0.569,
+      "hold_ns": 0.01,
+      "pulse_width_ns": 0.543
+    },
+    "unwaived_critical_CDC": 0,
+    "critical_or_error_DRC": 0,
+    "routing_errors": 0,
+    "bus_skew": "PASS",
+    "timing_coverage": "PASS",
+    "extra_postroute_optimization": false
+  },
+  "resources": {
+    "LUT": 11245,
+    "FF": 10491,
+    "control_sets": 539,
+    "BRAM36_equivalents": 2.5,
+    "GTHE4_CHANNEL": 1,
+    "hard_PCIE": 0
+  },
+  "physical": {
+    "board": "ZCU104",
+    "adapter": "OP047 Rev D SSD1",
+    "ssd_model": "Samsung SSD 990 EVO 1TB",
+    "link": "Gen3 x1",
+    "startup_attempts": 1,
+    "startup_successes": 1,
+    "deployment": "Clean Linux halt; independently verified kernel-entry stop; temporary JTAG programming; resume",
+    "configuration_reads": {
+      "before-io": {
+        "config_read_operations": 14000,
+        "seconds": 0.28609846800000227,
+        "root_status": {
+          "0x8": "0x93",
+          "0x34": "0x2"
+        },
+        "passed": true,
+        "exact_timeout_edge_injection": false
+      },
+      "after-io": {
+        "config_read_operations": 14000,
+        "seconds": 0.2846544989999984,
+        "root_status": {
+          "0x8": "0x93",
+          "0x34": "0x2"
+        },
+        "passed": true,
+        "exact_timeout_edge_injection": false
+      }
+    },
+    "performance_integrity_jobs_passed": 8,
+    "ssd_written_bytes": 27422359552,
+    "write_accounting": "Exact match",
+    "existing_crc_bytes": 268435456,
+    "fresh_crc_bytes": 268435456,
+    "sector_offset_crc_bytes": 33554432,
+    "postflush_crc": "PASS",
+    "final_readonly_crc": "PASS",
+    "final_root_status": "0x93",
+    "final_dma_status": "0xc",
+    "final_nvme_state": "live",
+    "sd_or_flash_updated": false,
+    "smart_before": {
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "smart_after": {
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    }
+  },
+  "benchmark": {
+    "block_size": "1 MiB",
+    "runtime_seconds": 30,
+    "direct": true,
+    "ioengine": "libaio",
+    "jobs": 1,
+    "MB_s": {
+      "read1": 589.629583,
+      "read8": 733.454646,
+      "write1": 339.494959,
+      "write8": 564.16372
+    }
+  },
+  "artifacts_sha256": {
+    "system.bit": "145aec8dd4a63e3326bfadf15c0498b92db10448083d2e8307925686d150eb8c",
+    "system.xsa": "84b0194ede7877d6aaf6e9bb50bc4a5ae9fc4022fda322f26baa5a365cab42fb",
+    "routed.dcp": "70689cec6bc3330f54cc33fbc752e1a1a4249e9d3a31868f6c9dfa06d800f0b3",
+    "sources.json": "24548c59a2e4b27db205807055dfd47ac7b7e9d1ba68080d5a32412facd94527"
+  },
+  "audit_reports_sha256": {
+    "timing.rpt": "f5975f8cf5ca2c2476032af8ac6b0292044f9a17f74d284877cf908e4b7fc5db",
+    "pcie_top100.rpt": "819ccb4090a2003fd448351e512365dd76b5d6c1fc85205a1a5c3474943d9ac7",
+    "clocks.rpt": "0509f57d8284e6a0805da41bd23b21ffb543044a40fc7947270b6e1a8526fd89",
+    "cdc.rpt": "ae1768482cfacb6f02de3498ce0a81680bc2f8c98e7d2cac057ab77d5a0e4d44",
+    "bus_skew.rpt": "060333c7b05315d6f623de4433e69f71e9a0bcbb103997eae5285e73fecc1981",
+    "utilization.rpt": "a463a1892b5bdc74596d38ae96e448c90ab548854adf94c90a9b0d1460ef3f55",
+    "utilization_hierarchical.rpt": "5b44a6228c075977f9bddc69d1c39aa2bbd7187d2b0b1e9c5de18f99648c5f20",
+    "drc.rpt": "80507d09540a598730d21639000af7b473255a8910a662f848fa42a1be3158bc",
+    "route.rpt": "e6037e1ff85e8a4f01d2ebc89d2367c76813fea75d7ca4c358c33a1118c7976f",
+    "check_timing.rpt": "e95f28cb122ebf23f8336096598d16b5f5323df6c6e788247e4b3c3dcb01a7c1",
+    "control_sets.rpt": "bdbed5101b147aee9022d5c0ba98acf8e4bad726ddd152ca49c76908e0702a95",
+    "gen1_timing.rpt": "77ed0dc681ceb359188dd0742c6283c9277ebda30805b56ab929c607db20a442"
+  },
+  "limitations": [
+    "Exact completion-on-timeout-cycle race tested in simulation, not injected on SSD",
+    "No new Gen2 backend hardware build or qualification",
+    "No cold-cycle, endurance, full Recovery or electrical compliance claim",
+    "Source revision qualified on temporary Gen3 image; SD default remains RX metadata"
+  ]
+}

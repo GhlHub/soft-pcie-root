@@ -12,6 +12,11 @@ checkpoints. All campaigns are simulation-only; production RTL is unchanged.
 The earlier packet harness hash predates its documented watchdog extension;
 latest source hashes are in [TX ownership evidence](evidence/gen3_tx_ownership_v1/completion.json).
 
+The same requester-fix source subsequently passed a separate
+[Gen3 hardware campaign](evidence/requester_fix_v1/completion.json): fresh
+route/audit, 28,000 configuration reads and NVMe I/O/CRC. It does not turn the
+peer campaigns into physical protocol qualification or close full Recovery.
+
 ## Reference basis
 
 | Key | Reference | Use and boundary |

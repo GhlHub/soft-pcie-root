@@ -8,8 +8,11 @@ Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 
 The current Gen3 host uses 64-bit host packet transfers, eight 64-byte DDR read
 prefetch slots, an eight-entry shared replay store, two framing banks and normal
-ACK retirement concurrent with later original packets. Latest 30-second QD8
-throughput with RX ingress metadata is **734.84 MB/s read / 564.79 MB/s write**.
+ACK retirement concurrent with later original packets. The 30-second QD8
+throughput with the requester fix is **733.45 MB/s read / 564.16 MB/s write**.
+That image passed fresh route/audit, 28,000 config reads and NVMe integrity checks;
+[hardware evidence](../../docs/evidence/requester_fix_v1/completion.json).
+The RX metadata SD-default image measured 734.84/564.79 MB/s.
 The preceding ACK-retirement measurement was 745.36/567.71 MB/s. See the consolidated
 [performance history](../../docs/performance-history.md) and
 [current verification](../../docs/verification.md).
@@ -1010,3 +1013,13 @@ for all eight replay slots, cumulative retirement/reuse, exact selective replay,
 and natural TX sequence/header-credit/data-credit rollover. See
 [scope and results](../../docs/gen3-verification-matrix.md#native-tx-rollover-and-full-replay-window-extension).
 Production RTL and the test harness are unchanged by this extension.
+
+## Requester timeout fix hardware validation
+
+The shared requester fix passed a fresh unified Gen3 build and independent audit,
+with +0.116 ns setup and +0.010 ns hold slack. Temporary deployment passed
+first-attempt Gen3 x1 startup, 28,000 driver-mediated configuration reads, all
+eight NVMe performance/integrity jobs and final read-only CRC. SD remains RX
+metadata. The exact timeout-cycle collision was not injected on the SSD; its
+regression evidence remains simulation-only. See
+[results and source hashes](../../docs/evidence/requester_fix_v1/completion.json).

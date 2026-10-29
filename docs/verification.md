@@ -9,9 +9,49 @@ protocol correctness, error containment and data-integrity coverage.
 The latest full regression passes **1,663 tests**, including 994 added Gen3
 peer cases across the four campaigns below. Earlier test totals and physical
 results are historical checkpoints, not measurements of the latest source.
-The shared requester timeout fix remains unbuilt/undeployed; the recorded
-SD-default image is still RX metadata. Gen3 scope and remaining gaps are in the
+The shared requester timeout fix has now passed a fresh Gen3 build and temporary
+hardware validation described below. The SD-default image is still RX metadata. Gen3 scope and remaining gaps are in the
 [Gen3 verification matrix](gen3-verification-matrix.md).
+
+## Requester timeout fix: Gen3 hardware validation
+
+Source revision `739961d` passed fresh unified Gen3-enabled
+packaging, synthesis, route and independent reopened-checkpoint audit on
+2026-10-29. All hardware source hashes match the manifests. Gen3 setup/hold
+is **+0.116/+0.010 ns**;
+Gen1 startup setup/hold is **+0.569/+0.010 ns**.
+Timing coverage, CDC, DRC, routing and bus skew pass without extra postroute
+optimization. Resources are **11,245 LUTs, 10,491 FFs, 539 control sets**, two
+RAMB36 and one RAMB18, one GTH and no hard PCIe block. The 56 focused requester
+simulation cases passed again; the prior complete regression passed 1,663 tests.
+
+One guarded clean-halt/kernel-entry-stop/program/resume attempt negotiated
+Gen3 x1. Existing 256 MiB read-only CRC passed. Before and after the eight
+matched NVMe benchmark/integrity jobs, 14,000 configuration-read operations
+through Linux's serialized host driver returned the expected identity/class/
+subsystem values with byte, halfword and DWORD accesses. Requester and DMA
+status remained healthy. Successful enumeration also exercised configuration
+writes, but there was no controlled completion-delay injection.
+
+| Workload | Requester fix MB/s | RX metadata MB/s |
+| --- | ---: | ---: |
+| Read QD1 | 589.63 | 595.24 |
+| Read QD8 | 733.45 | 734.84 |
+| Write QD1 | 339.49 | 339.91 |
+| Write QD8 | 564.16 | 564.79 |
+
+Same 30-second, one-job, 1 MiB, direct/libaio settings. Existing/fresh 256 MiB
+CRC, sector-offset 32 MiB CRC and post-flush CRC passed. Exact
+**27,422,359,552 written bytes** match block-sector accounting.
+SMART warning/media/error-log and unsafe-shutdown counters were unchanged.
+A final read-only CRC passed; the board was left live and idle on the temporary
+requester-fix image. SD and QSPI flash were not modified.
+
+This validates normal operation of the fixed source on the Gen3 hardware path.
+It does **not** reproduce the exact timeout/completion collision on the SSD;
+that corner remains covered by deterministic simulation. No new Gen2 backend
+build, cold-cycle, endurance, full Recovery or electrical qualification is
+claimed. [Exact sources and evidence](evidence/requester_fix_v1/completion.json).
 
 ## Gen3 TX rollover and eight-slot replay coverage
 
@@ -90,8 +130,10 @@ All **669 repository tests passed**, including the 584 new cases. Repository
 lint and real-XPM elaboration passed with Vivado 2026.1.
 [Results and exact changed-source hashes](evidence/gen12_coverage_v1/completion.json).
 
-This shared requester RTL change has not been synthesized, routed or deployed;
-the recorded SD image and historical hardware evidence are unchanged.
+This shared requester RTL change subsequently passed the Gen3 hardware campaign
+above. The exact deadline collision remains simulation-only evidence, and a
+new Gen2 backend hardware build is still outstanding. SD and historical
+hardware evidence are unchanged.
 
 ## RX ingress metadata and parallel pointer image
 

@@ -1,96 +1,71 @@
 # Soft PCIe Root Port
 
-**A transceiver-based PCIe root port in FPGA logic, verified with an NVMe SSD under Linux.**
-No integrated hard PCIe controller or vendor PCIe controller IP is instantiated.
-The implementation uses an AMD GTH transceiver, custom SystemVerilog protocol
-logic, AXI interfaces and a Linux PCI host driver. Linux's standard NVMe driver
-handles the SSD; this is not an FPGA NVMe command engine.
+**Gen3 x1 PCIe in FPGA logic: 733.45 MB/s read and 564.16 MB/s write with an NVMe SSD under Linux.**
 
-![Transceiver-based soft PCIe, verified with Linux and NVMe](docs/media/linkedin-soft-pcie.png)
+A GTH transceiver and custom SystemVerilog implement the PCIe root port, with
+no hard PCIe controller or vendor PCIe controller IP. A custom Linux PCI host
+driver connects it to the standard Linux NVMe driver.
 
-The frozen release is **Gen1/Gen2 x1**. Current development also offers an
-optional **experimental Gen3 x1** backend. The PHY targets UltraScale+ GTHE4;
-portability to other FPGA families and PCIe compliance are not claimed.
+![Gen3 x1 soft PCIe: 733.45 MB/s sequential read and 564.16 MB/s sequential write](docs/media/linkedin-soft-pcie.png)
 
-The earlier ACK-retirement Gen3 build measured **745.36 MB/s read and 567.71 MB/s write** at QD8 with 1
-MiB direct I/O and 30-second runs. It uses 64-bit host RX/TX packet paths, eight 64-byte
-DDR read-prefetch slots, and normal ACK retirement concurrent with later original
-packets. Gen3-disabled packaging retains 32-bit packet paths and two slots. The shared
-RTL has evolved beyond the frozen Gen2 source baseline; both the Gen3-enabled and
-default Gen2 ACK-retirement images now have short physical I/O/CRC tests. Current Gen2
-QD8 read/write is 428.30/260.21 MB/s, essentially unchanged from the historical Gen2
-baseline. These measurements predate the unified version 1.1 catalog package. Its
-startup-corrected Gen3 configuration has now passed full implementation and ten
-controlled warm-start/NVMe CRC trials; both catalog selections have passed
-customization and synthesis checks.
+## Current Gen3 x1 results
 
-See the [performance improvement history](docs/performance-history.md) for the
-measured progression, [configuration](docs/ip-guide.md#optional-gen3-packaging)
-and [verification](docs/verification.md) for exact scope. The
-[startup correction](experiments/gen3/startup-stabilization.md) passed ten of ten
-warm-start trials, but cold-cycle qualification remains open. Gen3 setup margin is
-only +0.002 ns on that startup-tested image, and full Recovery remains incomplete.
-The subsequent RX timing pipeline image passed full implementation and a controlled
-Gen3 x1 boot with NVMe CRC/performance checks. Routed setup margin improved to
-**+0.073 ns**; QD8 measured **737.09 MB/s read / 565.70 MB/s write**, within 1.11%
-of the earlier measurements. See [current evidence](docs/evidence/rx_pipeline_v1/completion.json).
-The subsequent TX LFSR transform improved routed setup margin to **+0.090 ns**
-and passed Gen3 x1 startup, CRC and matched performance tests, measuring
-**736.91/563.90 MB/s** QD8 read/write. See [TX transform validation](docs/evidence/tx_transform_v1/completion.json).
-The TX transform image became the SD default at that stage. An unattended warm reboot,
-SD hash readback and 256 MiB read-only NVMe CRC passed; existing bootloader and
-Linux files were retained, with no QSPI flash update required.
-[Default-boot evidence](docs/evidence/tx_transform_v1/default-boot.json).
-The latest RX parser metadata/parallel-pointer image improves routed Gen3 WNS to
-**+0.136 ns** and passes startup, CRC and performance checks, with QD8 read/write
-**734.84/564.79 MB/s**. It is now the SD default; unattended warm boot, SD hash readback and
-256 MiB read-only CRC passed. [Default-boot evidence](docs/evidence/rx_metadata_v1/default-boot.json). [Latest evidence](docs/evidence/rx_metadata_v1/completion.json) and
-[timing-strategy graphic](docs/media/linkedin-rx-parser-timing-v2.png).
+The requester-fix image passed fresh synthesis, place-and-route, independent
+checkpoint audit and physical validation on **2026-10-29**. These measurements
+cover the complete ZCU104 PL example, including its AXI interconnects.
 
-The current source also fixes a requester completion/timeout race discovered by
-new Gen1/Gen2 fault-injection tests: a valid completion at the timeout deadline
-could return success while blocking subsequent requests until reset. That campaign
-passed 669 tests, including 584 new cases, plus lint and real-XPM elaboration.
-This fix has not been rebuilt or deployed to hardware. See the
-[NVMe-scope coverage matrix](docs/gen1-gen2-compliance-matrix.md#nvme-scope-regression-campaign)
-and [verification results](docs/evidence/gen12_coverage_v1/completion.json).
-
-The subsequent independent Gen3 verification campaigns add 994 tests for training,
-CRC/error containment, replay/credit ownership, eight-slot reuse and natural RX/TX
-sequence rollover. The latest full regression passes **1,663 tests**. These
-campaigns change tests and documentation only; full Recovery, wire-time deadlines
-and physical qualification remain open. See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md)
-and [latest simulation evidence](docs/evidence/gen3_tx_ownership_v1/completion.json).
-
-## Verified example
-
-| Item | Configuration |
+| Item | Current measured result |
 | --- | --- |
-| FPGA board | AMD ZCU104, XCZU7EV-2FFVC1156 |
-| Adapter used in testing | Opsero OP047 Rev D, SSD1, FMC LPC DP0 |
-| SSD | Samsung 990 EVO 1 TB, MZ-V9E1T0 |
-| Link | Gen2 x1, 5 GT/s; MPS128, MRRS512, RCB64 |
-| Software | Linux 6.6.70, custom PCI host driver + standard NVMe driver |
-| Sequential read / write | **428.58 / 260.06 MB/s**, 1 MiB, QD8, direct/libaio, 30 s |
-| Verified baseline resources | 11,881 LUTs, 11,171 FFs, 2 BRAM tiles, one GTH |
-| Verified baseline timing | WNS +0.284 ns; WHS +0.011 ns |
+| FPGA / adapter | ZCU104, XCZU7EV-2; Opsero OP047 Rev D, SSD1 |
+| SSD | Samsung 990 EVO 1 TB |
+| Link | **Gen3 x1, 8 GT/s** |
+| Software | Linux 6.6.70, custom PCI host driver, standard NVMe driver |
+| Sequential read / write, QD8 | **733.45 / 564.16 MB/s** |
+| Sequential read / write, QD1 | **589.63 / 339.49 MB/s** |
+| Workload | 1 MiB, direct/libaio, one job, 30 seconds per workload; decimal MB/s |
+| Resources | **11,245 LUTs, 10,491 FFs**, 2.5 BRAM tiles, one GTH; no DSP or URAM |
+| Routed Gen3 setup / hold slack | **+0.116 / +0.010 ns** |
+| Hardware checks | 28,000 configuration reads; eight NVMe performance/integrity jobs; final read-only CRC |
 
-These measurements describe the complete ZCU104 example at the `txdouble_v1`
-hardware baseline, not standalone-core utilization or guaranteed drive speeds.
-See [validation and exact scope](docs/verification.md).
-The historical banked-payload revision uses **10,864 LUTs / 9,294 FFs** and passed
-physical Gen2 x1 I/O/CRC tests, with QD8 read/write **428.65 / 259.17 MB/s**.
-The deployed Linux image now uses a persistent ext4 SD root.
-The packaged example was also deployed and verified: QD8 read/write **428.33 / 259.73 MB/s**, within 0.13% of that baseline; all integrity checks passed.
+Existing and fresh data CRC, sector-offset CRC, post-flush verification and exact
+write accounting passed. SMART error and unsafe-shutdown counters were unchanged.
+The timeout fix prevents a completion accepted on the timeout cycle from leaving
+the requester faulted. That exact collision is verified in simulation; it was
+not deliberately injected on the SSD.
 
-**Adapter succession:** Opsero discontinued OP047 and names **OP063 (FPGA Drive
-FMC Gen4)** as its replacement. The example was tested on OP047 Rev D, not OP063.
-OP047 is sufficient for this release's Gen2 x1 limit. OP063's Gen4 capability
-does not increase the core's speed or lane count. The example's power initializer
-currently recognizes OP047 only; OP063 needs a reviewed bring-up change.
-[Opsero OP047 notice](https://opsero.com/product/fpga-drive-fmc-dual/) ·
-[OP063 product](https://opsero.com/product/fpga-drive-fmc-gen4/) ·
-[adapter notes](examples/zcu104/README.md#adapter-compatibility).
+[Exact hardware evidence](docs/evidence/requester_fix_v1/completion.json) ·
+[Verification scope](docs/verification.md) ·
+[Performance history](docs/performance-history.md)
+
+The Gen3 path uses 64-bit host packet transfers, eight 64-byte DDR read-prefetch
+slots, an eight-entry replay store and concurrent normal ACK retirement.
+The latest full regression passed **1,663 tests**, including 994 independent
+Gen3 training, packet, corruption, ownership and rollover cases.
+See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md).
+
+**Gen3 remains experimental.** Full Recovery, cold-cycle qualification, broader
+SSD interoperability and PCIe compliance are not established. The new image was
+validated through temporary JTAG programming; the SD default remains the
+previous [RX metadata image](docs/evidence/rx_metadata_v1/default-boot.json).
+No SD or flash update is included in these results.
+
+## Configuration and earlier results
+
+The unified Vivado **Enable experimental Gen3** checkbox selects Gen3 at build
+time. It defaults off, selecting Gen1/Gen2 x1 with 32-bit host packet paths and
+two DDR read-prefetch slots. Both selections retain a 64-bit/125 MHz DDR AXI
+interface. See [packaging and integration](docs/ip-guide.md#optional-gen3-packaging).
+The PHY targets UltraScale+ GTHE4; other families and wider links need development.
+
+The frozen release remains Gen1/Gen2 x1. The latest measured Gen2 ACK-retirement
+build achieved **428.30/260.21 MB/s** at QD8; a fresh Gen2 backend build containing
+the requester fix is still outstanding. Historical Gen2/Gen3 results and timing
+improvements remain in the [performance history](docs/performance-history.md).
+They are separate runs, not interleaved statistical comparisons.
+
+OP047 Rev D is the tested adapter. Its successor OP063 has not been qualified;
+the power initializer currently recognizes OP047 only. See
+[adapter compatibility](examples/zcu104/README.md#adapter-compatibility).
 
 ## Repository layout
 
@@ -129,7 +104,17 @@ frozen Gen1/Gen2 baseline and is expected to reject this development tree's shar
 changes. Its historical manifests are preserved; do not regenerate them to label
 experimental Gen3 as a qualified release. See [IP
 integration](ip/soft_pcie_root/README.md) and [ZCU104 setup](examples/zcu104/README.md).
-These commands do not program a board.
+Those hardware commands select the default Gen1/Gen2 backend. For the Gen3
+configuration featured above, use the same fresh IP package with:
+
+```sh
+vivado -mode batch -source experiments/gen3/build_host.tcl \
+  -tclargs build/zcu104_gen3_next build/ip_v1/core
+```
+
+See [Gen3 reproduction](experiments/gen3/README.md#current-design-and-reproduction)
+for source-manifest checks and build constraints. These commands do not program
+a board.
 
 ## Scope and limitations
 

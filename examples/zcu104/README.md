@@ -75,8 +75,9 @@ NVMe CRC trials ([evidence](../../docs/evidence/startup_fix_v1/completion.json))
 That startup-tested image had +0.002 ns Gen3 setup margin. The later RX metadata
 image improved it to +0.136 ns and passed NVMe CRC/performance and SD-default
 warm-boot checks ([evidence](../../docs/evidence/rx_metadata_v1/completion.json)).
-The subsequent requester timeout fix and Gen3 test campaigns have not produced
-a new hardware image. Broader qualification remains incomplete; see the
+The subsequent requester timeout fix passed a fresh Gen3 build and temporary
+board validation ([evidence](../../docs/evidence/requester_fix_v1/completion.json));
+SD remains on RX metadata. Broader qualification remains incomplete; see the
 [Gen3 coverage matrix](../../docs/gen3-verification-matrix.md).
 
 ## Linux and first boot

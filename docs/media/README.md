@@ -1,5 +1,26 @@
 # Performance graphics
 
+The current [Gen3 x1 graphic](linkedin-soft-pcie.png) is the README lead image
+and is suitable for sharing. Its editable [SVG](linkedin-soft-pcie.svg) and
+[renderer](../../scripts/render_graphic.py) use the requester-fix hardware
+[evidence](../evidence/requester_fix_v1/completion.json) as the numeric source.
+Regenerate with `python3 scripts/render_graphic.py` (Pillow and DejaVu Sans).
+
+It shows **733.45 MB/s read / 564.16 MB/s write**, sequential 1 MiB, QD8,
+direct/libaio, one job, 30 seconds per workload on ZCU104 with Samsung 990 EVO
+1 TB. These are separate read/write tests, not simultaneous aggregate bandwidth.
+The diagram is conceptual; it is not a photograph or an electrical schematic.
+The qualification note retains Gen3's experimental status. The latest image was
+temporarily programmed; SD still selects RX metadata.
+
+Alt text: A dark blue Gen3 x1 soft PCIe performance card shows 733.45 MB/s
+sequential read and 564.16 MB/s sequential write. Linux and DDR connect through
+soft PCIe RTL and one GTH to an NVMe SSD. It states that no hard PCIe controller
+or vendor PCIe controller IP is used and includes workload and qualification
+scope. See the [current post draft](linkedin-gen3-current.md).
+
+## Historical ACK-retirement comparison
+
 Use [the ACK-retirement comparison](linkedin-ack-retirement-gen2-gen3.png) for
 the historical ACK-retirement Gen2/Gen3 comparison. Its conceptual hardware illustration
 is not a photograph of the tested board. The accompanying
@@ -41,10 +62,10 @@ repository regression to 1,663 tests without changing that hardware evidence.
 - [Historical LinkedIn draft](linkedin-post.md) and
   [marketing asset notes](linkedin-marketing-v2.md) describe the original
   packaged Gen2 launch.
-- `linkedin-soft-pcie.svg` and `.png` show the older transmit-buffering baseline,
+- `linkedin-soft-pcie-gen2-baseline.svg` and `.png` show the older transmit-buffering baseline,
   rounded to 428.6/260.1 MB/s. The SVG remains editable.
 
-## Latest graphic alt text
+## Historical comparison alt text
 
 Three cards compare originally shared Gen2, Gen2 with ACK retirement, and
 experimental Gen3 with ACK retirement. Read/write figures are respectively

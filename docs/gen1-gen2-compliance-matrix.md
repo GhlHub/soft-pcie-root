@@ -167,8 +167,11 @@ fault in both data and header-only paths. Malformed matching completions still
 quarantine; wrong-tag and late completions do not clear timeout; link loss has
 final priority. No accepted ownership or packet validation is bypassed.
 
-This is a functional RTL change requiring a fresh build before hardware use.
-Existing bitstream/source manifests and hardware qualification remain unchanged.
+This functional RTL change subsequently passed a fresh Gen3 build and temporary
+board validation, including 28,000 configuration reads and NVMe I/O/CRC checks
+([evidence](evidence/requester_fix_v1/completion.json)). The exact timeout edge
+was not injected on the SSD. New Gen1/Gen2 backend hardware validation remains
+outstanding; historical bitstream/source manifests are unchanged.
 The campaign does not close driver configuration policy, full LTSSM transitions,
 all ordering/CDC combinations, or the remaining physical Gen1/Gen2 tests.
 

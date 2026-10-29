@@ -1,7 +1,7 @@
 # Performance improvements leading to the current design
 
-The current experimental Gen3 x1 design delivers **734.84 MB/s sequential read**
-and **564.79 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
+The latest requester-fix Gen3 x1 image delivers **733.45 MB/s sequential read**
+and **564.16 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
 990 EVO 1 TB. Widening the receive path produced the largest read improvement;
 wider transmit transfers with eight-slot DDR prefetch and concurrent normal ACK
 retirement produced the later write improvements. These are measured single-drive
@@ -14,6 +14,14 @@ I/O/CRC tests. The latest RX metadata Gen3 image is now the SD boot default and 
 an unattended warm reboot and read-only CRC check. The unified 1.1 catalog flow
 has passed full synthesis/PNR and physical performance tests with Gen3 enabled;
 see [current validation](verification.md). Gen3 remains experimental.
+
+The subsequent requester-timeout fix passed fresh Gen3 synthesis/route and
+temporary hardware validation. QD1/QD8 reads measured **589.63/733.45 MB/s**
+and writes **339.49/564.16 MB/s**, with the same benchmark settings. All eight
+performance/integrity jobs and 28,000 driver-mediated configuration reads
+passed. This is a correctness fix, with QD8 throughput within 0.2% of RX metadata,
+not a performance optimization. SD remains RX metadata.
+[Requester-fix evidence](evidence/requester_fix_v1/completion.json).
 
 ## Comparable physical benchmarks
 
@@ -38,7 +46,8 @@ small differences should not be treated as statistically established changes.
 | Normal ACK retirement [8] | Gen3 x1 | 599.84 | 745.36 | 339.54 | 567.71 |
 | RX timing pipeline [10] | Gen3 x1 | 595.54 | 737.09 | 341.83 | 565.70 |
 | TX transform [11] | Gen3 x1 | 611.93 | 736.91 | 342.41 | 563.90 |
-| **RX metadata, current [12]** | **Gen3 x1** | **595.24** | **734.84** | **339.91** | **564.79** |
+| RX metadata, SD default [12] | Gen3 x1 | 595.24 | 734.84 | 339.91 | 564.79 |
+| **Requester fix, current [13]** | **Gen3 x1** | **589.63** | **733.45** | **339.49** | **564.16** |
 
 Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json), [2
 — repackaged example](evidence/repackaged_v1/completion.json), [3 — payload
@@ -51,7 +60,8 @@ measurements](evidence/prefetch_v1/ack-retirement-performance.json), [9 — curr
 measurements](evidence/prefetch_v1/ack-retirement-gen2.json), [10 — RX timing
 pipeline](evidence/rx_pipeline_v1/completion.json), [11 — TX
 transform](evidence/tx_transform_v1/completion.json), [12 — RX
-metadata](evidence/rx_metadata_v1/completion.json).
+metadata](evidence/rx_metadata_v1/completion.json), [13 — requester
+fix](evidence/requester_fix_v1/completion.json).
 
 ## Mixed random I/O baseline — 2026-10-27
 

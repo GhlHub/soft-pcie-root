@@ -74,4 +74,6 @@ Verification coverage is tracked separately for
 [Gen3](../../docs/gen3-verification-matrix.md). The latest 1,663-test simulation
 regression includes independent Gen3 training/packet peers, eight-slot replay
 ownership and natural sequence/credit rollover. These tests do not qualify the
-physical PHY or full Recovery; the latest source has not been deployed.
+physical PHY or full Recovery. The requester-fix source subsequently passed
+a fresh Gen3 build and temporary board I/O/CRC validation; see
+[hardware evidence](../../docs/evidence/requester_fix_v1/completion.json).

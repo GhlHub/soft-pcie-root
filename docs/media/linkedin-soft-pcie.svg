@@ -1,29 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><rect width="1600" height="900" fill="#071827"/>
-<text x="80" y="74.68" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="700" fill="#59dfda">SOFT PCIe ROOT PORT</text>
-<text x="80" y="177.32" font-family="DejaVu Sans,sans-serif" font-size="76" font-weight="700" fill="#ffffff">PCIe, built in logic.</text>
-<text x="80" y="247.88" font-family="DejaVu Sans,sans-serif" font-size="34" font-weight="400" fill="#c8dae8">Transceiver-based. Verified with NVMe under Linux.</text>
-<rect x="80" y="290" width="1440" height="70" rx="16" fill="#103747"/>
-<text x="110" y="335.6" font-family="DejaVu Sans,sans-serif" font-size="30" font-weight="700" fill="#59dfda">NO HARD PCIe BLOCK  /  NO VENDOR PCIe CONTROLLER IP</text>
-<rect x="80" y="415" width="310" height="130" rx="16" fill="#142d40"/>
-<text x="102" y="465.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="700" fill="#ffffff">Linux + DDR</text>
-<text x="102" y="509.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">Custom PCI host driver</text>
-<rect x="450" y="415" width="360" height="130" rx="16" fill="#142d40"/>
-<text x="472" y="465.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="700" fill="#ffffff">Soft PCIe RTL</text>
-<text x="472" y="509.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">Gen1 / Gen2 · x1</text>
-<rect x="870" y="415" width="230" height="130" rx="16" fill="#142d40"/>
-<text x="892" y="465.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="700" fill="#ffffff">GTH</text>
-<text x="892" y="509.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">One transceiver</text>
-<rect x="1160" y="415" width="360" height="130" rx="16" fill="#142d40"/>
-<text x="1182" y="465.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="700" fill="#ffffff">NVMe SSD</text>
-<text x="1182" y="509.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">Standard Linux NVMe</text>
-<text x="404" y="480.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">→</text>
-<text x="824" y="480.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">→</text>
-<text x="1114" y="480.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">→</text>
-<text x="80" y="645.92" font-family="DejaVu Sans,sans-serif" font-size="56" font-weight="700" fill="#59dfda">428.6 MB/s</text>
-<text x="80" y="689.86" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="400" fill="#c8dae8">SEQUENTIAL READ</text>
-<text x="760" y="645.92" font-family="DejaVu Sans,sans-serif" font-size="56" font-weight="700" fill="#59dfda">260.1 MB/s</text>
-<text x="760" y="689.86" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="400" fill="#c8dae8">SEQUENTIAL WRITE</text>
-<text x="80" y="768.5" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="700" fill="#ffffff">ZCU104  ·  OP047 Rev D  ·  Samsung 990 EVO  ·  Linux 6.6</text>
-<text x="80" y="815.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#a5bacb">Measured Gen2 x1 baseline · 1 MiB direct I/O · QD8 · 30 seconds · decimal MB/s</text>
-<text x="80" y="855.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#a5bacb">Experimental release · Gen3+ and wider links: future research · Original RTL: Apache-2.0</text>
+<text x="80" y="66.86" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="700" fill="#59dfda">SOFT PCIe ROOT PORT  /  CURRENT HARDWARE RESULTS</text>
+<text x="80" y="161.04" font-family="DejaVu Sans,sans-serif" font-size="72" font-weight="700" fill="#ffffff">Gen3 x1. Built in logic.</text>
+<text x="80" y="222.42" font-family="DejaVu Sans,sans-serif" font-size="31" font-weight="400" fill="#c8dae8">NVMe under Linux. One GTH. Custom PCIe RTL.</text>
+<rect x="80" y="265" width="700" height="200" rx="16" fill="#103747"/>
+<rect x="800" y="265" width="720" height="200" rx="16" fill="#103747"/>
+<text x="110" y="308.04" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="700" fill="#c8dae8">SEQUENTIAL READ</text>
+<text x="110" y="400.96" font-family="DejaVu Sans,sans-serif" font-size="78" font-weight="700" fill="#59dfda">733.45</text>
+<text x="495" y="408.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#c8dae8">MB/s</text>
+<text x="830" y="308.04" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="700" fill="#c8dae8">SEQUENTIAL WRITE</text>
+<text x="830" y="400.96" font-family="DejaVu Sans,sans-serif" font-size="78" font-weight="700" fill="#59dfda">564.16</text>
+<text x="1215" y="408.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#c8dae8">MB/s</text>
+<text x="80" y="520.14" font-family="DejaVu Sans,sans-serif" font-size="27" font-weight="700" fill="#59dfda">NO HARD PCIe CONTROLLER  /  NO VENDOR PCIe CONTROLLER IP</text>
+<rect x="80" y="557" width="310" height="120" rx="16" fill="#142d40"/>
+<text x="102" y="602.6" font-family="DejaVu Sans,sans-serif" font-size="30" font-weight="700" fill="#ffffff">Linux + DDR</text>
+<text x="102" y="646.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">Custom PCI host driver</text>
+<rect x="450" y="557" width="360" height="120" rx="16" fill="#142d40"/>
+<text x="472" y="602.6" font-family="DejaVu Sans,sans-serif" font-size="30" font-weight="700" fill="#ffffff">Soft PCIe RTL</text>
+<text x="472" y="646.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">Gen3 x1 · 8 GT/s</text>
+<rect x="870" y="557" width="230" height="120" rx="16" fill="#142d40"/>
+<text x="892" y="602.6" font-family="DejaVu Sans,sans-serif" font-size="30" font-weight="700" fill="#ffffff">GTH</text>
+<text x="892" y="646.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">One transceiver</text>
+<rect x="1160" y="557" width="360" height="120" rx="16" fill="#142d40"/>
+<text x="1182" y="602.6" font-family="DejaVu Sans,sans-serif" font-size="30" font-weight="700" fill="#ffffff">NVMe SSD</text>
+<text x="1182" y="646.4" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="400" fill="#c8dae8">Standard Linux NVMe</text>
+<text x="399" y="624.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">↔</text>
+<text x="819" y="624.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">↔</text>
+<text x="1109" y="624.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">↔</text>
+<text x="80" y="732.68" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="700" fill="#ffffff">ZCU104 · OP047 Rev D · Samsung 990 EVO 1 TB · Linux 6.6.70</text>
+<text x="80" y="775.04" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="400" fill="#a5bacb">1 MiB · QD8 · direct/libaio · one job · 30 s per workload · decimal MB/s</text>
+<text x="80" y="817.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#e8c783">Experimental Gen3 · Full Recovery and broader qualification remain open</text>
+<text x="80" y="862.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#c8dae8">github.com/GhlHub/soft-pcie-root</text>
+<text x="1090" y="862.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#c8dae8">Measured 2026-10-29</text>
 </svg>

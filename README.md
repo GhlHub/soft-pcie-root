@@ -47,6 +47,14 @@ The latest RX parser metadata/parallel-pointer image improves routed Gen3 WNS to
 256 MiB read-only CRC passed. [Default-boot evidence](docs/evidence/rx_metadata_v1/default-boot.json). [Latest evidence](docs/evidence/rx_metadata_v1/completion.json) and
 [timing-strategy graphic](docs/media/linkedin-rx-parser-timing-v2.png).
 
+The current source also fixes a requester completion/timeout race discovered by
+new Gen1/Gen2 fault-injection tests: a valid completion at the timeout deadline
+could return success while blocking subsequent requests until reset. All 669
+regression tests pass, including 584 new cases; lint and real-XPM elaboration
+also pass. This fix has not been rebuilt or deployed to hardware. See the
+[NVMe-scope coverage matrix](docs/gen1-gen2-compliance-matrix.md#nvme-scope-regression-campaign)
+and [verification results](docs/evidence/gen12_coverage_v1/completion.json).
+
 ## Verified example
 
 | Item | Configuration |

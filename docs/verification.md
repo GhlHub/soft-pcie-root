@@ -2,7 +2,29 @@
 
 The [Gen1/Gen2 compliance coverage matrix](gen1-gen2-compliance-matrix.md) maps
 existing tests to protocol topics, identifies missing coverage and separates
-functional evidence from compliance qualification.
+functional evidence from compliance qualification. Its project-scope waivers
+exclude features unrelated to direct-attached NVMe operation while retaining
+protocol correctness, error containment and data-integrity coverage.
+
+## Gen1/Gen2 NVMe-scope fault and timer coverage
+
+The [coverage matrix](gen1-gen2-compliance-matrix.md#nvme-scope-regression-campaign)
+now records 584 new parameterized simulation cases covering packet corruption,
+completion validation, requester timeout arbitration, replay boundaries and
+UpdateFC scheduling. Unit benches run at both Gen1/Gen2 clock rates; they do not
+constitute physical link or full compliance qualification.
+
+The tests found and reproduced a timeout/completion race: a valid completion on
+the deadline returned success while leaving the requester faulted, blocking
+subsequent commands until reset. The failure reproduced at both test clock rates;
+it was found in simulation, not observed on the board. Both header-only and data-completion paths now cancel the coincident timeout fault.
+Malformed completions remain quarantined and link loss retains final priority.
+All **669 repository tests passed**, including the 584 new cases. Repository
+lint and real-XPM elaboration passed with Vivado 2026.1.
+[Results and exact changed-source hashes](evidence/gen12_coverage_v1/completion.json).
+
+This shared requester RTL change has not been synthesized, routed or deployed;
+the recorded SD image and historical hardware evidence are unchanged.
 
 ## RX ingress metadata and parallel pointer image
 

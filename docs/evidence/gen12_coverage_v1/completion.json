@@ -1,0 +1,49 @@
+{
+  "scope": "Bounded Gen1/Gen2 NVMe transport simulation coverage; not full compliance closure",
+  "base_revision": "b4acfe0506f239d942f427d53f56225e287ad9da",
+  "source_state": "Working tree modifications; exact campaign source hashes below",
+  "source_sha256": {
+    "ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv": "176fd51490f54ff403c3f8b2e670138f3cc4ccb212834ec81dbfc15a2d8471bf",
+    "tests/test_gen12_coverage.py": "65105e54acd8151fe0dfc43331514a68a5f4f50254e5c484e472dd697309e734",
+    "tests/pcie_soft/tb_requester_coverage.sv": "5a2c6b12161da8308301645217d407fb58c65c17b86c4e1c93a2c200c0d36afc",
+    "tests/pcie_soft/tb_rx_fault_matrix.sv": "9ba1963cc540b538c098a405d77e8fc6dbfd0fe9e8abe939bcb86f860eee14b8",
+    "tests/pcie_soft/tb_fc_timer_coverage.sv": "ea67586ada0f26763d6268380fa7a081d23bad94f3adcea2c5aeb33f2510544c",
+    "tests/pcie_soft/tb_replay_timer_coverage.sv": "d8d67d00b4edfe68587842c5893b40a59dd50ddb4fd9d7b81d26892019246bc3"
+  },
+  "focused_command": ".venv/bin/python -m pytest -q tests/test_gen12_coverage.py",
+  "focused_result": {
+    "passed": 584,
+    "failed": 0
+  },
+  "case_groups": {
+    "requester": 56,
+    "tlp_rejection_and_retry": 412,
+    "dllp_crc_rejection": 96,
+    "updatefc_boundaries": 8,
+    "replay_boundaries": 12
+  },
+  "lint_command": "VIVADO_BIN=/tools/Xilinx/2026.1/Vivado/bin make lint",
+  "lint_result": "PASS including real-XPM elaboration",
+  "tools": {
+    "python": "3.12.3",
+    "pytest": "9.1.1",
+    "verilator": "5.020",
+    "vivado": "2026.1"
+  },
+  "discovered_bug": "Valid completion at timeout deadline returned success but left sticky requester fault at both test clock rates",
+  "fix": "Matching completion acceptance cancels coincident timeout fault; malformed validation and link-loss priority retained",
+  "pre_fix_reproduction": "Requester CASE 22 failed at both HALF_PERIOD=4 and HALF_PERIOD=2",
+  "limitations": [
+    "Decoded-symbol and module simulation, not physical link proof",
+    "Accelerated and configured timer edge tests; normative time ranges and integrated contention remain open",
+    "No new synthesis, place-and-route, bitstream or board/media write",
+    "Driver policy, full LTSSM/Recovery, complete ordering/CDC and physical NVMe qualification remain open"
+  ],
+  "full_regression_command": "VIVADO_BIN=/tools/Xilinx/2026.1/Vivado/bin .venv/bin/python -m pytest -q tests",
+  "full_regression_result": {
+    "passed": 669,
+    "failed": 0,
+    "seconds": 106.4
+  },
+  "initial_tool_setup_failure": "Initial full run: 656 passed, one XPM test failed because Vivado path was unset; corrected VIVADO_BIN and reran the complete final suite successfully."
+}

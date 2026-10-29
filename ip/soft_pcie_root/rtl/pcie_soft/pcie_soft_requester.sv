@@ -200,6 +200,10 @@ module pcie_soft_requester #(
                     if (rx_index_q == 2) begin
                         if (state_q == WAIT && completion_type && incoming[31:16] == REQUESTER_ID &&
                             incoming[15:8] == tag_q) begin
+                            // A matching completion wins over a timeout on
+                            // this edge. Validation below still quarantines
+                            // malformed packets; link loss has final priority.
+                            fault_o     <= 0;
                             rsp_valid_o <= 1;
                             rsp_data_o  <= 0;
                             state_q     <= HOLD;
@@ -216,6 +220,9 @@ module pcie_soft_requester #(
                             end else rsp_status_o <= 0;
                         end else unexpected_o <= 1;
                     end else if (state_q == WAIT && completion_type && response_matches) begin
+                        // Keep successful completion and timeout arbitration
+                        // consistent with the header-only path above.
+                        fault_o     <= 0;
                         rsp_valid_o <= 1;
                         state_q     <= HOLD;
                         if (bad_completion) begin

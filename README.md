@@ -1,17 +1,25 @@
 # Soft PCIe Root Port
 
-**Gen3 x1 PCIe in FPGA logic: 733.45 MB/s read and 564.16 MB/s write with an NVMe SSD under Linux.**
+**Gen3 x1 PCIe in FPGA logic: 733.38 MB/s read and 562.68 MB/s write with an NVMe SSD under Linux.**
 
 A GTH transceiver and custom SystemVerilog implement the PCIe root port, with
 no hard PCIe controller or vendor PCIe controller IP. A custom Linux PCI host
 driver connects it to the standard Linux NVMe driver.
 
-![Gen3 x1 soft PCIe: 733.45 MB/s sequential read and 564.16 MB/s sequential write](docs/media/linkedin-soft-pcie.png)
+![Gen3 x1 soft PCIe: 733.38 MB/s sequential read and 562.68 MB/s sequential write](docs/media/linkedin-soft-pcie.png)
+
+Current development adds bounded same-rate Recovery, adaptive Phase 2/3
+equalization, startup-only Gen2 fallback and prompt configuration-fault reporting.
+The 2026-11-02 build passed route/audit and three controlled Gen3 startups,
+measuring 733.38 MB/s read and 562.68 MB/s write at QD8. Physical fallback and
+injected Recovery remain open. This image is now the verified SD boot default.
+See [adaptive equalization and fallback](docs/adaptive-equalization.md) and the
+[design-review follow-up](docs/review-followup.md).
 
 ## Current Gen3 x1 results
 
-The requester-fix image passed fresh synthesis, place-and-route, independent
-checkpoint audit and physical validation on **2026-10-29**. These measurements
+The adaptive-equalization image passed fresh synthesis, place-and-route, independent
+checkpoint audit and physical validation on **2026-11-02**. These measurements
 cover the complete ZCU104 PL example, including its AXI interconnects.
 
 | Item | Current measured result |
@@ -20,12 +28,12 @@ cover the complete ZCU104 PL example, including its AXI interconnects.
 | SSD | Samsung 990 EVO 1 TB |
 | Link | **Gen3 x1, 8 GT/s** |
 | Software | Linux 6.6.70, custom PCI host driver, standard NVMe driver |
-| Sequential read / write, QD8 | **733.45 / 564.16 MB/s** |
-| Sequential read / write, QD1 | **589.63 / 339.49 MB/s** |
+| Sequential read / write, QD8 | **733.38 / 562.68 MB/s** |
+| Sequential read / write, QD1 | **589.33 / 340.19 MB/s** |
 | Workload | 1 MiB, direct/libaio, one job, 30 seconds per workload; decimal MB/s |
-| Resources | **11,245 LUTs, 10,491 FFs**, 2.5 BRAM tiles, one GTH; no DSP or URAM |
-| Routed Gen3 setup / hold slack | **+0.116 / +0.010 ns** |
-| Hardware checks | 28,000 configuration reads; eight NVMe performance/integrity jobs; final read-only CRC |
+| Resources | **16,117 LUTs, 12,367 FFs**, 3 BRAM tiles, one GTH; no DSP or URAM |
+| Routed Gen3 setup / hold slack | **+0.101 / +0.014 ns** |
+| Hardware checks | Three controlled Gen3 startups; 28,000 configuration reads; eight NVMe performance/integrity jobs; SD warm boot and CRC |
 
 Existing and fresh data CRC, sector-offset CRC, post-flush verification and exact
 write accounting passed. SMART error and unsafe-shutdown counters were unchanged.
@@ -33,21 +41,21 @@ The timeout fix prevents a completion accepted on the timeout cycle from leaving
 the requester faulted. That exact collision is verified in simulation; it was
 not deliberately injected on the SSD.
 
-[Exact hardware evidence](docs/evidence/requester_fix_v1/completion.json) ·
+[Exact hardware evidence](docs/evidence/adaptive_eq_v2/completion.json) ·
 [Verification scope](docs/verification.md) ·
 [Performance history](docs/performance-history.md)
 
 The Gen3 path uses 64-bit host packet transfers, eight 64-byte DDR read-prefetch
 slots, an eight-entry replay store and concurrent normal ACK retirement.
-The latest full regression passed **1,663 tests**, including 994 independent
+The latest full regression passed **1,711 tests**, including 994 independent
 Gen3 training, packet, corruption, ownership and rollover cases.
 See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md).
 
 **Gen3 remains experimental.** Full Recovery, cold-cycle qualification, broader
-SSD interoperability and PCIe compliance are not established. The new image was
-validated through temporary JTAG programming; the SD default remains the
-previous [RX metadata image](docs/evidence/rx_metadata_v1/default-boot.json).
-No SD or flash update is included in these results.
+SSD interoperability and PCIe compliance are not established. The image passed temporary
+JTAG testing and subsequently became the [verified SD default](docs/evidence/adaptive_eq_v2/default-boot.json).
+No QSPI update was needed. The existing Linux driver remains deployed; the new
+early-quarantine software branch has model coverage but has not been deployed.
 
 ## Configuration and earlier results
 

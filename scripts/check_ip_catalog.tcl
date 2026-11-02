@@ -24,12 +24,16 @@ foreach mode {0 1} {
   if {[get_property CONFIG.DATA_WIDTH $bus]!=64 || [get_property CONFIG.NUM_WRITE_OUTSTANDING $bus]!=2} {error "DDR interface changed"}
  }
  set_property CONFIG.ENABLE_GEN3 $mode $cell
+ set preset [expr {$mode ? 10 : 4}]
+ if {$mode} {set_property CONFIG.GEN3_TX_PRESET $preset $cell}
  create_ip -vlnv soft-pcie.org:user:soft_pcie_root:1.1 -module_name selected_$mode
  set_property CONFIG.ENABLE_GEN3 $mode [get_ips selected_$mode]
+ if {$mode} {set_property CONFIG.GEN3_TX_PRESET $preset [get_ips selected_$mode]}
  generate_target all [get_ips selected_$mode]
  set wrapper_file [open [glob $out/*.gen/sources_1/ip/selected_$mode/synth/selected_$mode.v] r]
  set wrapper [read $wrapper_file];close $wrapper_file
  if {![string match "*.ENABLE_GEN3($mode)*" $wrapper]} {error "Generated HDL parameter did not follow checkbox"}
+ if {![string match "*.GEN3_TX_PRESET($preset)*" $wrapper]} {error "Generated HDL preset did not follow customization"}
  # Vivado's standalone wrapper retains default bus annotations; supported AXI
  # automation uses the packaged BD cell whose live metadata is checked above.
 }

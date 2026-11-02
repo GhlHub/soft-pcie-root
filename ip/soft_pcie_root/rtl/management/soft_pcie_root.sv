@@ -1,6 +1,7 @@
 // ZCU104 SSD1 laboratory top; management is independent of the PCIe clock.
 module soft_pcie_root #(
-    parameter integer ENABLE_GEN3 = 0
+    parameter integer ENABLE_GEN3    = 0,
+    parameter integer GEN3_TX_PRESET = 4
 ) (
     (* X_INTERFACE_INFO="xilinx.com:signal:clock:1.0 aclk CLK",
     X_INTERFACE_PARAMETER="ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET aresetn, FREQ_HZ 50000000" *)
@@ -472,7 +473,9 @@ module soft_pcie_root #(
     endgenerate
     generate
         if (ENABLE_GEN3) begin : gen3_mode
-            gen3_native_root root_port (
+            gen3_native_root #(
+                .TX_PRESET(GEN3_TX_PRESET)
+            ) root_port (
                 .freerun_clk_i       (aclk),
                 .reset_i             (!aresetn),
                 .enable_i            (enable),

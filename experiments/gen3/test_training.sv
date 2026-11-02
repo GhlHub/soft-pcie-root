@@ -27,7 +27,9 @@ module test_training;
         done,
         stopped,
         header,
-        balance
+        balance,
+        32'b0,
+        1'b0
     );
     wire aligned, event_ts, valid_ts, error_rx, eios;
     wire [1:0] ec;

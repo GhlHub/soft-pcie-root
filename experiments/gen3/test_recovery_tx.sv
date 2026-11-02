@@ -38,7 +38,10 @@ module test_recovery_tx;
         1'b0,
         unused_ready,
         unused_submit,
-        unused_fault,
+        unused_fault
+        ,,
+        32'b0,
+        1'b0
     );
     integer fd, cycle = 0, count = 0;
     reg [1023:0] path;

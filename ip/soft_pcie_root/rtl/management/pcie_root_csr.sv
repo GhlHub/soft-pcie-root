@@ -207,6 +207,15 @@ module pcie_root_csr #(
                     {result_status_q, result_q} <= reply_payload_q;
                     busy_q                      <= 0;
                     done_q                      <= 1;
+                end else if (!status_sync_q[1] || status_sync_q[2]) begin
+                    // Complete the software-facing failure promptly. Do not
+                    // cancel the held CDC command or its eventual response:
+                    // the core state machine still drains that owner exactly once.
+                    busy_q          <= 0;
+                    done_q          <= 1;
+                    fault_q         <= 1;
+                    result_status_q <= 4;
+                    result_q        <= 32'hffffffff;
                 end else if (timer_q == TW'(TIMEOUT_CYCLES - 1)) begin
                     busy_q          <= 0;
                     done_q          <= 1;

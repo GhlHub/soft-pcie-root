@@ -44,6 +44,25 @@ and the single direct endpoint. Status 0 success, 1 UR, 2 CA/other, 3 timeout,
 cancel accepted ownership. Diagnostic multi-bit status is not an atomic control
 interface.
 
+For current native startup fallback, bit 2 at 0x50 is sticky for the boot, and
+bit 0 distinguishes Gen2 from Gen1. State 20 identifies adaptive equalization;
+after fallback the state field uses legacy encoding, with adapter states 30
+(rate transition) and 31 (failed rate transition). See
+[adaptive startup](adaptive-equalization.md).
+
+### Bounded Gen3 Recovery status
+
+In the Recovery development revision, SRP1 0x08 bit 1 remains asserted during a
+bounded same-rate Recovery attempt after Data Link initialization. This retains
+the host ownership epoch; bit 0 still reflects physical L0. Informational state
+19 is Recovery.RcvrLock. Fatal failure deasserts DL-active and asserts error.
+Do not treat temporary bit-0 deassertion alone as permission to reset ownership.
+
+A busy mailbox now reports status 4 plus quarantine promptly on observed
+DL-inactive/error status, without cancelling its accepted core command. A late
+response drains internally and cannot clear quarantine. The existing timeout
+values and ABI are unchanged. See [review follow-up](review-followup.md).
+
 ### Experimental Gen1 startup diagnostics
 
 In the startup-corrected Gen3 image, while the native PHY remains at Gen1,

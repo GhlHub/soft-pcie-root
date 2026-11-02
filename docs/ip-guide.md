@@ -36,7 +36,10 @@ In Vivado, add `build/package_next/core` under **Project Settings → IP → Rep
 then use **Add IP → Soft PCIe Root Port (optional experimental Gen3)**. Double-click the
 block, open **Configuration**, and select **Enable experimental Gen3** as needed. Apply
 the customization and regenerate output products before synthesis/implementation. This
-is not a runtime register.
+is not a runtime register. `GEN3_TX_PRESET` selects the initial preset from 0 to 10
+(default 4); its GUI field is enabled with Gen3. Phase 2 may change that setting.
+Current development adds adaptive Phase 2/3 and startup-only Gen2 fallback;
+see [behavior and qualification limits](adaptive-equalization.md).
 
 The equivalent block-design Tcl is:
 
@@ -89,8 +92,8 @@ valid/ready plus packet-end and final-single-DWORD signals; they are internal st
 not newly exposed AXI4-Stream ports. Gen3 uses a 64-bit whole-packet TX CDC and converts
 to 32-bit DWORDs in the 250 MHz link domain. The link serializer and replay interfaces
 retain their existing width. The selected host width and buffering stay fixed throughout
-operation; the checkbox does not imply that the experimental native backend supports
-runtime Gen2 fallback. Four packet CDC slots still hold up to 64 DWORDs each, and packet
+operation, including startup fallback to Gen2 or Gen1. Live migration after
+Gen3 L0 is not supported. Four packet CDC slots still hold up to 64 DWORDs each, and packet
 credits/replay capacity do not change.
 
 In wide mode, AR issuance and completion transmission have independent ownership.
@@ -123,6 +126,20 @@ Independent native Gen3 simulation now checks all eight replay slots, cumulative
 retirement/reuse, selective replay and natural sequence/credit rollover. These
 checks do not qualify DDR prefetch depth, full Recovery or physical wire timing;
 see the [Gen3 verification matrix](gen3-verification-matrix.md).
+
+### Bounded same-rate Recovery development
+
+The current source can retain the host-facing DL-active ownership epoch while
+retraining at Gen3 after a PCS/framing disturbance or peer training request.
+Wire admission and requester timeout ticks pause; accepted AXI transactions
+continue, and committed packet/replay/credit ownership is retained. A shared
+24 ms deadline bounds each attempt. Failure or unsupported rate/equalization
+transitions still quarantine and invoke accepted-AXI drain. No ownership reset
+or live Gen2 fallback is introduced. Startup-only fallback before Gen3 L0 is
+described in [adaptive equalization](adaptive-equalization.md). The current RTL
+has passed route/audit and normal Gen3 NVMe I/O; live Recovery fault injection
+and physical fallback remain open. See the linked hardware campaign and
+[earlier simulation scope](review-followup.md).
 
 ### Normal ACK retirement
 

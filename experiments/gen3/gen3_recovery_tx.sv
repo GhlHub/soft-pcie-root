@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Experimental x1 recovery source: TS1/TS2, SDS, idle and an optional bounded InitFC1 probe.
 // Configuration changes take effect at TS boundaries. stop emits one full EIOS.
-module gen3_recovery_tx (
+module gen3_recovery_tx #(
+    parameter integer EXTERNAL_EQ = 0
+) (
     input wire clk, reset_i, enable_i, stop_i,
     input wire ts2_i, stream_i,
     input wire [1:0] ec_i,
@@ -19,18 +21,21 @@ module gen3_recovery_tx (
     output wire packet_ready_o,
     output reg packet_submit_o,
     output reg packet_fault_o,
-    output wire [4:0] profile_events_o
+    output wire [4:0] profile_events_o,
+    input wire [31:0] eq_fields_i,
+    input wire reset_interval_i
 );
     localparam [2:0] EIEOS = 0, TS1 = 1, SKP = 2, EIOS = 3, SDS = 4, DATA = 5;
     reg [2:0] kind;
     reg [1:0] word_index;
     reg ts2_block, stream_active, parity, close_stream;
-    reg [6:0] cadence;
-    reg [5:0] ts_count;
-    reg [8:0] skp_count;
+    reg [ 6:0] cadence;
+    reg [ 5:0] ts_count;
+    reg [15:0] total_ts;
+    reg [ 8:0] skp_count;
     reg running, packet_sending;
     wire packet_first = kind == DATA && word_index == 0 && !close_stream && !initfc1_i && !stop_i &&
-        enable_i && skp_count < 370;
+        enable_i && stream_i && skp_count < 370;
     wire packet_emit = kind == DATA && (packet_sending || packet_first) && packet_valid_i;
     assign packet_ready_o = !reset_i && running && cadence != 64 && kind == DATA &&
         (packet_sending || packet_first);
@@ -69,7 +74,8 @@ module gen3_recovery_tx (
     reg [31:0] fields;
     wire [7:0] symbol6 = {1'b0, preset_i, 1'b0, ec_i};
     wire [23:0] low_fields = {2'b0, second_i, 2'b0, first_i, symbol6};
-    wire [31:0] new_fields = {^{1'b0, post_i, low_fields}, 1'b0, post_i, low_fields};
+    wire [31:0] new_fields = EXTERNAL_EQ != 0 ?
+        eq_fields_i : {^{1'b0, post_i, low_fields}, 1'b0, post_i, low_fields};
     wire [31:0] use_fields = word_index == 0 ? new_fields : fields;
     reg [31:0] plain, encoded, training_plain, training_encoded;
     reg [22:0] next_lfsr, advanced_lfsr;
@@ -168,6 +174,7 @@ module gen3_recovery_tx (
     end
     always @(posedge clk) begin
         if (reset_i) begin
+            total_ts        <= 0;
             packet_sending  <= 0;
             packet_submit_o <= 0;
             packet_fault_o  <= 0;
@@ -254,11 +261,13 @@ module gen3_recovery_tx (
                 if (word_index == 3) begin
                     if (kind == TS1) begin
                         ts_count   <= ts_count + 1'b1;
+                        total_ts   <= total_ts + 1'b1;
                         ts_done_o  <= 1;
                         ts2_done_o <= ts2_block;
                     end
                     if (kind == EIEOS) begin
                         ts_count     <= 0;
+                        total_ts     <= 0;
                         eieos_done_o <= 1;
                     end
                     if (kind == SDS) begin
@@ -274,21 +283,25 @@ module gen3_recovery_tx (
                         stream_active <= 0;
                     end else if (kind == DATA) begin
                         if (close_stream) begin
-                            kind         <= (stop_i || !enable_i) ? EIOS : SKP;
+                            kind <= (stop_i || !enable_i) ? EIOS : !stream_i ? EIEOS : SKP;
+                            if (!stream_i) stream_active <= 0;
                             close_stream <= 0;
                         end else if ((!packet_sending && !packet_emit) ||
                                      (packet_emit && packet_last_i)) begin
-                            if (stop_i || !enable_i || skp_count >= 370) close_stream <= 1;
+                            if (stop_i || !enable_i || !stream_i || skp_count >= 370)
+                                close_stream <= 1;
                         end
                     end else if (stream_active || kind == SDS) kind <= DATA;
                     else if (stop_i || !enable_i) kind <= EIOS;
                     else if (stream_i) kind <= SDS;
                     else if (skp_count == 371 && kind != SKP) kind <= SKP;
-                    else if (kind != EIEOS && (ts_count == 32 || (ts_count == 31 && kind == TS1)))
+                    else if (kind != EIEOS && (total_ts == 65535 || ts_count == 32 ||
+                                               (ts_count == 31 && kind == TS1)))
                         kind <= EIEOS;
                     else kind <= TS1;
                 end
             end
+            if (EXTERNAL_EQ != 0 && reset_interval_i) ts_count <= 0;
         end
     end
 endmodule

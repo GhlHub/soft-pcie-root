@@ -77,7 +77,10 @@ module test_native_link;
             txlast,
             txready,
             submit,
-            txfault,
+            txfault
+            ,,
+            32'b0,
+            1'b0
         );
         gen3_native_rx rx (
             clk,
@@ -181,7 +184,8 @@ module test_native_link;
             error[g],
             pending,
             debug,
-            5'b0
+            5'b0,
+            1'b0
         );
         always @(posedge clk)
             if (!reset) begin

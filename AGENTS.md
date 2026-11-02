@@ -15,9 +15,15 @@ The later RX metadata SD-default image passed physical I/O/CRC and warm boot
 with +0.136 ns Gen3 WNS; see docs/evidence/rx_metadata_v1/completion.json.
 Requester timeout fix subsequently passed a fresh Gen3 route/audit and temporary
 board validation (28,000 config reads and NVMe I/O/CRC); see
-docs/evidence/requester_fix_v1/completion.json. SD remains RX metadata. Exact
+docs/evidence/requester_fix_v1/completion.json. Exact
 timeout-edge injection is simulation-only; no new Gen2 backend hardware build.
-Latest regression: 1,663 passed; see docs/gen3-verification-matrix.md.
+Latest regression: 1,711 passed; see docs/gen3-verification-matrix.md.
+Current development adds adaptive Phase 2/3 and startup-only Gen2 fallback.
+Fresh route/audit and three controlled Gen3 startups/I/O passed 2026-11-02;
+physical fallback and injected Recovery remain open. See docs/adaptive-equalization.md.
+Adaptive EQ is now the SD default; unattended warm boot and CRC passed.
+See docs/evidence/adaptive_eq_v2/default-boot.json. Existing Linux driver retained.
+No fallback after Gen3 L0.
 Cold-cycle, endurance, full Recovery and compliance qualification remain open.
 
 Reusable sources: ip/soft_pcie_root/rtl; packaging: ip/soft_pcie_root/package.tcl;

@@ -37,7 +37,8 @@ module gen3_link_layer (
     input wire app_rx_ready_i,
     output wire active_o, error_o, pending_o,
     output wire [127:0] completion_debug_o,
-    input wire [4:0] pcs_profile_i
+    input wire [4:0] pcs_profile_i,
+    input wire recovery_i
 );
     wire [31:0] profile_events;
     wire        profile_select = cmd_op_i == 3'd7;
@@ -46,9 +47,10 @@ module gen3_link_layer (
     wire [2:0] profile_status, request_status;
     reg command_busy, command_profile;
     wire take_command = cmd_valid_i && cmd_ready_o;
-    assign cmd_ready_o  = !command_busy && (profile_select ? profile_ready : request_ready);
-    assign rsp_valid_o  = command_busy && (command_profile ? profile_valid : request_valid);
-    assign rsp_data_o   = command_profile ? profile_data : request_data;
+    assign cmd_ready_o = !command_busy &&
+        (profile_select ? profile_ready : (request_ready && enable_i));
+    assign rsp_valid_o = command_busy && (command_profile ? profile_valid : request_valid);
+    assign rsp_data_o = command_profile ? profile_data : request_data;
     assign rsp_status_o = command_profile ? profile_status : request_status;
     always @(posedge clk) begin
         if (reset_i) begin
@@ -174,8 +176,8 @@ module gen3_link_layer (
     pcie_soft_requester requester (
         clk,
         !reset_i,
-        active_o && enable_i,
-        cmd_valid_i && !command_busy && !profile_select,
+        active_o && (enable_i || recovery_i),
+        cmd_valid_i && !command_busy && !profile_select && enable_i,
         request_ready,
         cmd_op_i,
         cmd_address_i,

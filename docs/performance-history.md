@@ -1,7 +1,7 @@
 # Performance improvements leading to the current design
 
-The latest requester-fix Gen3 x1 image delivers **733.45 MB/s sequential read**
-and **564.16 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
+The latest adaptive-EQ Gen3 x1 image delivers **733.38 MB/s sequential read**
+and **562.68 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
 990 EVO 1 TB. Widening the receive path produced the largest read improvement;
 wider transmit transfers with eight-slot DDR prefetch and concurrent normal ACK
 retirement produced the later write improvements. These are measured single-drive
@@ -10,18 +10,27 @@ results, not projected speeds for other topologies.
 The frozen release remains Gen1/Gen2 x1. The current source tree also contains optional
 experimental Gen3 and changes to shared host/replay logic. The current default Gen2
 ACK-retirement configuration has now also passed its own fresh build, audit and physical
-I/O/CRC tests. The latest RX metadata Gen3 image is now the SD boot default and has passed
+I/O/CRC tests. The adaptive-EQ Gen3 image is now the SD boot default and has passed
 an unattended warm reboot and read-only CRC check. The unified 1.1 catalog flow
 has passed full synthesis/PNR and physical performance tests with Gen3 enabled;
 see [current validation](verification.md). Gen3 remains experimental.
 
-The subsequent requester-timeout fix passed fresh Gen3 synthesis/route and
+The earlier requester-timeout fix passed fresh Gen3 synthesis/route and
 temporary hardware validation. QD1/QD8 reads measured **589.63/733.45 MB/s**
 and writes **339.49/564.16 MB/s**, with the same benchmark settings. All eight
 performance/integrity jobs and 28,000 driver-mediated configuration reads
 passed. This is a correctness fix, with QD8 throughput within 0.2% of RX metadata,
-not a performance optimization. SD remains RX metadata.
+not a performance optimization. SD remained RX metadata at that checkpoint.
 [Requester-fix evidence](evidence/requester_fix_v1/completion.json).
+
+The adaptive-EQ revision adds bounded same-rate Recovery, adaptive Phase 2/3
+and startup-only Gen2 fallback. It passed fresh route/audit, three controlled
+Gen3 startups and the same eight I/O jobs plus 28,000 configuration reads.
+QD8 read/write changed by -0.01%/-0.26% versus the requester fix in these
+separate short runs; this is not evidence of a systematic performance change.
+Resources increased to 16,117 LUTs, 12,367 FFs and 3 BRAM tiles; Gen3 WNS is
++0.101 ns. Physical fallback and injected Recovery remain open.
+[SD-default verification](evidence/adaptive_eq_v2/default-boot.json).
 
 ## Comparable physical benchmarks
 
@@ -46,8 +55,9 @@ small differences should not be treated as statistically established changes.
 | Normal ACK retirement [8] | Gen3 x1 | 599.84 | 745.36 | 339.54 | 567.71 |
 | RX timing pipeline [10] | Gen3 x1 | 595.54 | 737.09 | 341.83 | 565.70 |
 | TX transform [11] | Gen3 x1 | 611.93 | 736.91 | 342.41 | 563.90 |
-| RX metadata, SD default [12] | Gen3 x1 | 595.24 | 734.84 | 339.91 | 564.79 |
-| **Requester fix, current [13]** | **Gen3 x1** | **589.63** | **733.45** | **339.49** | **564.16** |
+| RX metadata [12] | Gen3 x1 | 595.24 | 734.84 | 339.91 | 564.79 |
+| Requester fix [13] | Gen3 x1 | 589.63 | 733.45 | 339.49 | 564.16 |
+| **Adaptive EQ, current SD default [14]** | **Gen3 x1** | **589.33** | **733.38** | **340.19** | **562.68** |
 
 Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json), [2
 — repackaged example](evidence/repackaged_v1/completion.json), [3 — payload
@@ -61,7 +71,8 @@ measurements](evidence/prefetch_v1/ack-retirement-gen2.json), [10 — RX timing
 pipeline](evidence/rx_pipeline_v1/completion.json), [11 — TX
 transform](evidence/tx_transform_v1/completion.json), [12 — RX
 metadata](evidence/rx_metadata_v1/completion.json), [13 — requester
-fix](evidence/requester_fix_v1/completion.json).
+fix](evidence/requester_fix_v1/completion.json), [14 — adaptive
+EQ](evidence/adaptive_eq_v2/completion.json).
 
 ## Mixed random I/O baseline — 2026-10-27
 
@@ -163,8 +174,8 @@ and two 64-byte prefetch slots. The comparison is between the packaged configura
 not an isolated link-rate experiment.
 
 All eight benchmark/CRC jobs passed with exact 14,142,144,512-byte write accounting,
-unchanged SMART error/unsafe-shutdown counts and an idle healthy finish. The new Gen2
-image is temporarily running; SD boot files are unchanged. [Gen2
+unchanged SMART error/unsafe-shutdown counts and an idle healthy finish. At that checkpoint, the Gen2
+image was temporarily running and SD boot files were unchanged. [Gen2
 evidence](evidence/prefetch_v1/ack-retirement-gen2.json).
 
 ## Diagnostic runs and remaining constraints

@@ -22,29 +22,37 @@ improvements and [verification](verification.md) for evidence and remaining limi
   RX metadata SD-default image.
 - Independent Gen3 training and packet peers: 994 added cases, including CRC
   corruption, retained ownership, full replay-store reuse and natural sequence
-  rollover. Full regression: 1,663 passed. See the
+  rollover. Full regression: 1,711 passed. See the
   [Gen3 matrix](gen3-verification-matrix.md) for the remaining functional gaps.
 
-The latest requester-fix image measured 733.45 MB/s read and 564.16 MB/s write
+The latest adaptive-EQ image measured 733.38 MB/s read and 562.68 MB/s write
 at QD8; it passed 28,000 configuration reads and NVMe I/O/CRC checks. The earlier
 ACK-retirement image measured 745.36/567.71 MB/s.
 Its five-second link profile recorded no peer-credit or normal-ACK blocking, but
 replay admission blocked 27.62% of cycles and formatter output blocked 16.13%.
 These events overlap. More DDR slots are not yet justified by these measurements.
 
+The current image also implements bounded same-rate Recovery, adaptive Phase
+2/3 and startup-only Gen2 fallback. Three controlled Gen3 startups and an
+unattended SD-default reboot passed. New PHY rate selection is registered before
+its CDC boundary. The new early-quarantine Linux driver branch still needs
+physical deployment validation; the 50 ms completion allowance is retained.
+
 ## Remaining work
 
 - Route, audit and physically verify the latest shared source with both unified
   1.1 selections. The requester timeout fix passed fresh Gen3 routing/audit and
-  temporary board validation; the Gen2 backend still needs a matching new build.
+  board validation. The later adaptive-EQ image also passed route and SD boot;
+  the default Gen2 backend still needs a matching new build.
 - Resolve the standalone wrapper's stale read-outstanding annotation; use the
   packaged block-design cell for AXI automation in the meantime.
 - Distinguish replay-window/peer ACK latency from PCS boundary, cadence and DLLP
   arbitration limits before changing capacity or scheduling.
-- Continue timing work from the requester-fix image's +0.116 ns routed Gen3 WNS
+- Continue timing work from the adaptive-EQ image's +0.101 ns routed Gen3 WNS
   (RX metadata achieved +0.136 ns); verify changes in fresh source-matched builds.
 - Extend the corrected startup's ten warm-start CRC trials to cold cycles and
-  broader SSD coverage; complete full Recovery/equalization behavior.
+  broader SSD coverage; physically test adaptive response timing, startup
+  fallback and injected same-rate Recovery without discarding accepted owners.
 - Extend the new default Gen2 ACK-retirement hardware test to Gen1 and cold cycles.
 - Add repeated/interleaved benchmarks, longer runs, cold cycles and broader endpoint coverage.
 - Qualify OP063 with a reviewed FRU/VADJ policy and board bring-up.

@@ -4,15 +4,22 @@ This directory contains the optional experimental Gen3 x1 backend, its build
 recipes, tests and chronological bring-up records. The frozen release remains
 Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 
+Current development beyond the historical measurements below includes
+[adaptive Phase 2/3 and startup-only Gen2 fallback](../../docs/adaptive-equalization.md).
+The 2026-11-02 adaptive image passed fresh route/audit, three controlled Gen3
+startups and NVMe tests at 733.38/562.68 MB/s QD8 read/write. Physical fallback
+and injected Recovery remain open. The chronological records retain their
+original scope and limitations.
+
 ## Current design and reproduction
 
 The current Gen3 host uses 64-bit host packet transfers, eight 64-byte DDR read
 prefetch slots, an eight-entry shared replay store, two framing banks and normal
 ACK retirement concurrent with later original packets. The 30-second QD8
-throughput with the requester fix is **733.45 MB/s read / 564.16 MB/s write**.
+throughput with adaptive EQ is **733.38 MB/s read / 562.68 MB/s write**.
 That image passed fresh route/audit, 28,000 config reads and NVMe integrity checks;
-[hardware evidence](../../docs/evidence/requester_fix_v1/completion.json).
-The RX metadata SD-default image measured 734.84/564.79 MB/s.
+[hardware evidence](../../docs/evidence/adaptive_eq_v2/completion.json).
+The earlier RX metadata image measured 734.84/564.79 MB/s.
 The preceding ACK-retirement measurement was 745.36/567.71 MB/s. See the consolidated
 [performance history](../../docs/performance-history.md) and
 [current verification](../../docs/verification.md).
@@ -50,8 +57,8 @@ The startup correction still needs cold-cycle and broader qualification. Full
 Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
 margin; the RX pipeline image achieves +0.073 ns and the later TX transform
 image achieves +0.090 ns. The later RX metadata image reaches +0.136 ns.
-The RX metadata image is now the SD default; see
-[default-boot evidence](../../docs/evidence/rx_metadata_v1/default-boot.json).
+The adaptive-EQ image is now the SD default; see
+[default-boot evidence](../../docs/evidence/adaptive_eq_v2/default-boot.json).
 
 ### RX ingress metadata and parallel pointer candidates
 
@@ -80,7 +87,7 @@ Gen3 setup/hold **+0.136/+0.010 ns**, compared with +0.090/+0.012 ns before.
 The limiting path moved to read-pointer-to-count-clear logic. Whole-design
 resources are 11,252 LUTs, 10,459 FFs and 538 control sets. Gen3 x1 startup and
 all eight matched CRC/performance jobs passed; QD8 read/write measured
-734.84/564.79 MB/s. The image is now the SD default. Unattended warm boot, SD hash readback and
+734.84/564.79 MB/s. The image subsequently became the SD default at that checkpoint. Unattended warm boot, SD hash readback and
 256 MiB read-only CRC passed, with unchanged SMART and persistent read/write root.
 [Full evidence](../../docs/evidence/rx_metadata_v1/completion.json).
 
@@ -983,7 +990,8 @@ hashes, results and limitations.
 
 ## Independent peer and verification matrix
 
-Latest full regression: **1,663 passed**. The four independent-peer campaigns
+The independent-peer checkpoint passed **1,663 tests**; the later Recovery,
+adaptive-EQ and management work raises the full regression to **1,711**. The four independent-peer campaigns
 add 994 cases in total (123 training/mutation, 652 packet, 202 sequence and
 17 TX ownership cases). No production RTL changed in these campaigns;
 [latest source evidence](../../docs/evidence/gen3_tx_ownership_v1/completion.json).
@@ -1019,7 +1027,7 @@ Production RTL and the test harness are unchanged by this extension.
 The shared requester fix passed a fresh unified Gen3 build and independent audit,
 with +0.116 ns setup and +0.010 ns hold slack. Temporary deployment passed
 first-attempt Gen3 x1 startup, 28,000 driver-mediated configuration reads, all
-eight NVMe performance/integrity jobs and final read-only CRC. SD remains RX
-metadata. The exact timeout-cycle collision was not injected on the SSD; its
+eight NVMe performance/integrity jobs and final read-only CRC. SD remained RX
+metadata at that checkpoint. The exact timeout-cycle collision was not injected on the SSD; its
 regression evidence remains simulation-only. See
 [results and source hashes](../../docs/evidence/requester_fix_v1/completion.json).

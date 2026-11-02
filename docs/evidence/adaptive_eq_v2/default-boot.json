@@ -1,0 +1,41 @@
+{
+  "bit_sha256": "32fd8cc82bd10158106ff6413c3d40abd88102cc66bf502c3ef584ac1cee5ded",
+  "bit_size": 19311306,
+  "bit_crc32": "82bcc2f2",
+  "date": "2026-11-02",
+  "scope": "Audited adaptive-EQ image made the SD default",
+  "sd_image_path": "/adaptive-eq-v2/system.bit",
+  "boot_script_sha256": "314733b94727d19aba639d7113d2f4ff6c4ef571d0920ec863e0cb4c5e151ed1",
+  "boot_command_sha256": "0cd07378699971e074a52e6872db6eaca8dfd6b1b3b4deb0ab97847a7c859c17",
+  "sd_readback": "PASS after remount and after reboot",
+  "warm_boot": "PASS without JTAG or console input; new Linux boot ID and soft_pcie.image=adaptive_eq_v2 command-line marker",
+  "observed_link": "Gen3 x1",
+  "root_filesystem": "Persistent read/write SD ext4",
+  "readonly_crc_bytes": 268435456,
+  "readonly_crc": "PASS",
+  "ssd_write_bytes": 0,
+  "smart_unchanged": true,
+  "bootloader_files_changed": false,
+  "kernel_and_dtb_changed": false,
+  "qspi_flash_written": false,
+  "final_state": "NVMe live and idle; SD boot partition unmounted",
+  "limitations": [
+    "Warm reboot only; no cold power-cycle test",
+    "No UART boot CRC observation claimed",
+    "Physical Gen2 fallback and injected live Recovery remain unverified",
+    "Existing Linux driver retained; early-quarantine software change not deployed",
+    "Gen3 remains experimental; electrical margin and compliance unqualified"
+  ],
+  "installed_driver_changed": false,
+  "repository_validation": {
+    "tests_passed": 1711,
+    "seconds": 248.25,
+    "lint": "PASS",
+    "real_XPM_elaboration": "PASS",
+    "HDL_format_files": 131,
+    "HDL_token_equivalence": "PASS",
+    "markdown_files_reviewed": 30,
+    "missing_local_documentation_links": 0,
+    "hardware_source_manifests": "PASS"
+  }
+}

@@ -1,5 +1,8 @@
 # Gen3 startup correction
 
+This is the historical startup-fix campaign. Current source, hardware results
+and SD selection are recorded in [adaptive equalization](../../docs/adaptive-equalization.md).
+
 The startup-corrected unified 1.1 image passed ten controlled warm-start trials on
 ZCU104 with the OP047 adapter and Samsung 990 EVO. Every trial negotiated Gen3 x1,
 enumerated NVMe and verified an existing 256 MiB CRC32C pattern using direct,

@@ -66,6 +66,10 @@ if {[llength $param]!=1} {error "Missing inferred ENABLE_GEN3 parameter"}
 set_property -dict [list value_format bool value_resolve_type user value [expr {$enable_gen3 ? "true" : "false"}] display_name {Enable experimental Gen3}] $param
 set model [ipx::get_hdl_parameters ENABLE_GEN3 -of_objects $core]
 set_property value $enable_gen3 $model
+set preset [ipx::get_user_parameters GEN3_TX_PRESET -of_objects $core]
+if {[llength $preset]!=1} {error "Missing inferred GEN3_TX_PRESET parameter"}
+set_property -dict [list value_format long value_resolve_type user value 4 display_name {Gen3 TX preset (0-10)} value_validation_type range_long value_validation_range_minimum 0 value_validation_range_maximum 10] $preset
+set_property value 4 [ipx::get_hdl_parameters GEN3_TX_PRESET -of_objects $core]
 set busparam [ipx::get_bus_parameters NUM_READ_OUTSTANDING -of_objects [ipx::get_bus_interfaces M_DDR -of_objects $core]]
 set_property value_resolve_type dependent $busparam
 set_property value_dependency {2 + 6 * spirit:decode(id('MODELPARAM_VALUE.ENABLE_GEN3'))} $busparam

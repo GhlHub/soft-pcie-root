@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 module tb_csr;
-    reg clk = 0, core = 0, run_core = 1, rstn = 0, up = 0, active = 0;
+    parameter integer EARLY_FAULT = 0;
+    reg clk = 0, core = 0, run_core = 1, rstn = 0, up = 0, active = 0, link_error = 0;
     always #10 clk = ~clk;
     always #4 if (run_core) core = ~core;
     reg [11:0] awaddr = 0, araddr = 0;
@@ -50,7 +51,7 @@ module tb_csr;
         .core_reset_n_i    (rstn),
         .link_up_i         (up),
         .dl_active_i       (active),
-        .error_i           (1'b0),
+        .error_i           (link_error),
         .state_i           (5'd10),
         .phy_status_i      (phy),
         .completion_debug_i(128'h01234567_89abcdef_fedcba98_76543210),
@@ -201,6 +202,33 @@ module tb_csr;
         repeat (6) @(negedge clk);
         read_reg('h34, 2, 32'hffffffff);
         if (accepted != 2) $fatal(1, "Toggle wrap lost/duplicated command");
+        if (EARLY_FAULT != 0) begin
+            write_reg('h30, 1, 1, 0, 0);
+            wait (cv);
+            @(negedge core);
+            cr = 1;
+            @(negedge core);
+            cr = 0;
+            if (EARLY_FAULT == 1) active = 0;
+            else link_error = 1;
+            // Early failure must finish well before the 80-cycle watchdog,
+            // yet the core's accepted command remains owned until its reply.
+            repeat (8) @(negedge clk);
+            read_reg('h34, 32'h406, 32'hffffffff);
+            if (!rr || cv || accepted != 3) $fatal(1, "Lost accepted owner on early fault");
+            active     = 1;
+            link_error = 0;
+            repeat (5) @(negedge core);
+            rv = 1;
+            @(negedge core);
+            rv = 0;
+            repeat (8) @(negedge clk);
+            read_reg('h34, 32'h406, 32'hffffffff);
+            if (rr || cv || accepted != 3) $fatal(1, "Late reply repeated or cleared quarantine");
+            write_reg('h30, 1, 1, 0, 2);
+            $display("PASS CSR: early fault and late accepted-owner drain");
+            $finish;
+        end
         wait (core == 0);
         run_core = 0;
         phy      = 16'habcd;

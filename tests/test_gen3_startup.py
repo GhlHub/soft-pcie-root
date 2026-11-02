@@ -46,3 +46,14 @@ def test_receive_qualification_guards(tmp_path, case):
 @pytest.mark.parametrize('gaps', [0, 1])
 def test_native_ordered_set_validation(tmp_path, gaps):
     run_bench(tmp_path, 'test_native_ordered_sets', GAPS=gaps)
+
+
+@pytest.mark.parametrize('case', range(6))
+@pytest.mark.parametrize('preset', [0, 4, 10])
+def test_live_same_rate_recovery(tmp_path, case, preset):
+    run_bench(tmp_path, 'test_recovery_bringup', DATALINK=1, LIVE_RECOVERY=case, PRESET=preset)
+
+
+@pytest.mark.parametrize('case', [0, 1, 4])
+def test_adaptive_then_live_recovery(tmp_path, case):
+    run_bench(tmp_path, 'test_recovery_bringup', DATALINK=1, LIVE_RECOVERY=case, ADAPT_TEST=1)

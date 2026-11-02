@@ -71,9 +71,14 @@ distinction between package validation and board tests.
 
 Verification coverage is tracked separately for
 [Gen1/Gen2](../../docs/gen1-gen2-compliance-matrix.md) and
-[Gen3](../../docs/gen3-verification-matrix.md). The latest 1,663-test simulation
+[Gen3](../../docs/gen3-verification-matrix.md). The latest 1,711-test simulation
 regression includes independent Gen3 training/packet peers, eight-slot replay
 ownership and natural sequence/credit rollover. These tests do not qualify the
 physical PHY or full Recovery. The requester-fix source subsequently passed
-a fresh Gen3 build and temporary board I/O/CRC validation; see
-[hardware evidence](../../docs/evidence/requester_fix_v1/completion.json).
+a fresh Gen3 build and temporary board I/O/CRC validation. The later adaptive-EQ
+revision passed fresh route/audit, normal NVMe I/O and SD-default warm boot;
+see [hardware evidence](../../docs/evidence/adaptive_eq_v2/completion.json).
+`GEN3_TX_PRESET` selects the initial preset 0–10 (default 4); adaptive Phase 2
+may change it. Startup fallback uses a separate legacy engine on the same PHY
+and is prohibited after Gen3 L0. Physical fallback and injected Recovery remain
+open; see [scope](../../docs/adaptive-equalization.md).

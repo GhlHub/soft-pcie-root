@@ -112,19 +112,26 @@ set cdc_file [open [file join $out cdc.rpt] r]
 set cdc_check [read $cdc_file]
 close $cdc_file
 if {[regexp -line {^[[:space:]]*CDC-[0-9]+[[:space:]]+Critical[[:space:]]+[1-9]} $cdc_check]} {error "Unwaived critical CDC; image withheld"}
-# Check Gen1 startup mode on the same routed design; restore Gen3 before bitgen.
+# Check Gen1 startup and Gen2 fallback on the same routed design; restore
+# Gen3 before bitgen. Gen2 uses legacy encoding at the full 250 MHz PCLK.
 set gt [get_cells -hier -filter {REF_NAME == GTHE4_CHANNEL}]
 set rate_bits [get_pins -of_objects $gt -filter {REF_PIN_NAME == TXRATE[1] || REF_PIN_NAME == RXRATE[1]}]
 set txclock [get_pins -of_objects $gt -filter {REF_PIN_NAME == TXOUTCLK}]
 set clkname [get_property NAME [get_clocks -of_objects $txclock]]
 if {[llength $rate_bits]!=2 || [llength $clkname]!=1} {error "Native mode clocks missing"}
-set_case_analysis 0 $rate_bits
-create_clock -name $clkname -period 8 $txclock
-report_timing_summary -file $out/gen1_timing.rpt
-foreach type {max min} {
- set path [get_timing_paths -delay_type $type -max_paths 1]
- if {![llength $path] || [get_property SLACK $path]<0} {error "Gen1 timing failed"}
+set rate_low [get_pins -of_objects $gt -filter {REF_PIN_NAME == TXRATE[0] || REF_PIN_NAME == RXRATE[0]}]
+if {[llength $rate_low]!=2} {error "Native low rate bits missing"}
+foreach {mode low period} {gen1 0 8 gen2 1 4} {
+ set_case_analysis 0 $rate_bits
+ set_case_analysis $low $rate_low
+ create_clock -name $clkname -period $period $txclock
+ report_timing_summary -file [file join $out ${mode}_timing.rpt]
+ foreach type {max min} {
+  set path [get_timing_paths -delay_type $type -max_paths 1]
+  if {![llength $path] || [get_property SLACK $path]<0} {error "$mode $type timing failed; image withheld"}
+ }
 }
+set_case_analysis 0 $rate_low
 set_case_analysis 1 $rate_bits
 create_clock -name $clkname -period 4 $txclock
 write_bitstream -force [file join $out system.bit]

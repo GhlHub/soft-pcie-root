@@ -82,7 +82,10 @@ module test_tx_throughput;
         ol,
         pcsready,
         submit,
-        pfault,
+        pfault
+        ,,
+        32'b0,
+        1'b0
     );
     always @(posedge clk)
         if (!reset) begin

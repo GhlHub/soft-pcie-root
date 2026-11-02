@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/'experiments/gen3'
 OUT=Path(tempfile.mkdtemp(prefix='gen3_eq_bringup_',dir=ROOT/'build'))
 files=[SRC/f'{n}.sv' for n in ('gen3_eq_bringup','gen3_legacy_training',
-    'gen3_startup_ltssm','gen3_training_tx','gen3_training_rx','gen3_recovery_tx','gen3_native_rx','gen3_data_rx','gen3_stream_rx','gen3_stream_buffered_rx','gen3_packet_gate','gen3_eq_phase1')]
+    'gen3_startup_ltssm','gen3_training_tx','gen3_training_rx','gen3_recovery_tx','gen3_native_rx','gen3_data_rx','gen3_stream_rx','gen3_stream_buffered_rx','gen3_packet_gate','gen3_eq_phase1','gen3_eq_adapt')]
 files.extend(SRC/(n+'.sv') for n in ('gen3_dllp_source','gen3_link_layer','gen3_link_profile','gen3_replay_tx','gen3_tx_window','gen3_tlp_source','gen3_stp'))
 files.extend(ROOT/('ip/soft_pcie_root/rtl/pcie_soft/'+n+'.sv') for n in ('pcie_soft_requester','pcie_soft_replay','pcie_soft_ack_capture'))
 files.append(ROOT/'ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv')

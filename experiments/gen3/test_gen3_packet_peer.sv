@@ -81,6 +81,7 @@ module test_gen3_packet_peer;
         .clk                (clk),
         .reset_i            (reset),
         .link_up_i          (1'b1),
+        .recovery_i         (1'b0),
         .enable_i           (link_enable),
         .rx_data_i          (tlp_data),
         .rx_valid_i         (tlp_valid),

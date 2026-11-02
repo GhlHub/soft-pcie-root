@@ -6,16 +6,31 @@ based on source revision `c835607`. This records functional verification, not
 PCI-SIG certification. Existing hardware evidence applies only to its exact
 images; no new synthesis, routing or hardware test is included here.
 
-Latest full regression: **1,663 passed** (157.92 seconds), including **994 new
+Latest full regression: **1,711 passed** (248.25 seconds, final SD-deployment/commit check), including **994 new
 Gen3 peer cases** across four campaigns. Counts below describe their individual
-checkpoints. All campaigns are simulation-only; production RTL is unchanged.
+checkpoints. Those four campaigns were simulation-only and did not change
+production RTL. The subsequent review follow-up changes RTL and adds 28 tests.
 The earlier packet harness hash predates its documented watchdog extension;
-latest source hashes are in [TX ownership evidence](evidence/gen3_tx_ownership_v1/completion.json).
+that campaign's source hashes are in [TX ownership evidence](evidence/gen3_tx_ownership_v1/completion.json).
 
 The same requester-fix source subsequently passed a separate
 [Gen3 hardware campaign](evidence/requester_fix_v1/completion.json): fresh
 route/audit, 28,000 configuration reads and NVMe I/O/CRC. It does not turn the
 peer campaigns into physical protocol qualification or close full Recovery.
+
+## Subsequent Recovery development
+
+The [review follow-up](review-followup.md) adds bounded same-rate Recovery,
+configurable fixed TX presets and early configuration-fault reporting. New
+integration cases retain replay/requester/DDR ownership across retraining;
+a separate independent PCS-output checker exercises atomic packet exit.
+These are additional directed checks. The outer partner still uses production
+TX and state-aware startup. Subsequent [adaptive equalization and startup
+fallback](adaptive-equalization.md) add directed coverage. A full independent LTSSM
+model remains open; live rate migration remains unsupported. The adaptive image passed fresh route/audit,
+three controlled Gen3 startups, normal NVMe I/O and SD-default warm boot;
+physical fallback, injected Recovery and electrical qualification remain open. Historical
+campaign counts and hashes below remain unchanged.
 
 ## Reference basis
 
@@ -69,9 +84,9 @@ alone; open work remains until independently checked and recorded.
 | G3-LT-02 | Preset acknowledgement and stable advertised coefficients | AMD, BASE | Directed: `check_equalization.py`; new peer | Wire-level checks of local advertisement and delayed/failed PHY handshakes at exact limits. |
 | G3-LT-03 | Phase 1 matching TS qualification | BASE | Directed: `check_equalization.py`; new peer | Final clause audit and broader field combinations. New peer connects decoder to controller without using production TX. |
 | G3-LT-04 | Phase 1 failure, cancellation and re-entry | BASE, AMD | Partial: `check_equalization.py`; new peer | Exact timeout/settle-edge integration and repeated independent attempts through the outer LTSSM. |
-| G3-LT-05 | Phase 2/3 adaptation or explicit skip policy | BASE, AMD | Partial: Phase 1 handoff/skip tests | Full adaptive coefficient exchange and policy legality require review. A skip flag or handoff pulse does not verify adaptation. |
+| G3-LT-05 | Phase 2/3 adaptation or explicit skip policy | BASE, AMD | Partial: directed tests and three physical Gen3 startups | Preset/coefficient handshakes, rejection and bounded retries are simulated; the adaptive image passed normal SSD startup/I/O. Electrical adaptation quality, response timing and final normative review remain open. |
 | G3-LT-06 | Recovery with active traffic and retained ownership | BASE, LL | Partial: `check_recovery_bringup.py`, `check_native_link.py`; packet peer PCS reacquisition and replay pause | Independent peer drives complete Recovery with pending credits, replay and AXI owners. |
-| G3-LT-07 | Failed Gen3 negotiation and lower-speed handling | BASE | Gap: native backend does not claim runtime Gen2 fallback | Define supported failure/quarantine behavior; test no silent resume at an unsupported rate. Runtime fallback needs implementation before qualification. |
+| G3-LT-07 | Failed Gen3 negotiation and lower-speed handling | BASE | Partial: startup-only fallback implemented and simulated | Gen1/Gen2 packet traffic and rate-ack faults tested. Backend migration after Gen3 L0 is prohibited; physical downgrade remains unqualified. |
 | G3-PHY-01 | Rate, clocks, electrical idle and PHY status sequencing | PIPE, AMD | Partial: `check_sequencing.py`, `check_phy_startup.py`, startup fault benches | Stale/late/missing status pulses, exact boundaries and actual PHY model integration. No stopped-reference recovery claim. |
 | G3-PHY-02 | Transmit cadence, atomic drain and underflow handling | PIPE, BASE | Directed: `check_sequencing.py`, `check_integration.py`, `check_recovery_tx.py` | Sustained randomized congestion and independent wire-time checks across control/data transitions. |
 | G3-DL-01 | CRC, duplicate/sequence rejection and ACK/NAK | BASE, LL | Partial: `check_dllp_oracle.py`, `check_native_link.py`; packet peer CRC bit sweeps, duplicate/future sequences and RX rollover | Extend sequence coverage to half-range boundaries, malformed lengths and broader packet/error combinations. Both RX and TX rollover now have independent checks. |
@@ -245,6 +260,6 @@ No design RTL bug was found in this extension; no hardware test was performed.
 3. Adapt an independent endpoint transaction model to the native TLP boundary;
    test the wide DDR path, configuration policy and MSI ordering end to end.
 4. Establish final-spec clause references and exact production timer assertions.
-   Keep unsupported adaptive/fallback behavior visibly open.
+   Qualify adaptive response timing and startup fallback physically; keep live rate migration visibly unsupported.
 5. Run a separately authorized, source-matched hardware campaign after the
    simulation work; preserve existing physical evidence and project waivers.

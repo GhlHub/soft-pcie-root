@@ -77,7 +77,10 @@ image improved it to +0.136 ns and passed NVMe CRC/performance and SD-default
 warm-boot checks ([evidence](../../docs/evidence/rx_metadata_v1/completion.json)).
 The subsequent requester timeout fix passed a fresh Gen3 build and temporary
 board validation ([evidence](../../docs/evidence/requester_fix_v1/completion.json));
-SD remains on RX metadata. Broader qualification remains incomplete; see the
+The subsequent adaptive-EQ image passed fresh route/audit, three controlled
+Gen3 startups and NVMe I/O; it is now the [verified SD default](../../docs/evidence/adaptive_eq_v2/default-boot.json).
+No QSPI update was needed. The installed Linux driver remains unchanged.
+Physical fallback and injected Recovery remain open; see the
 [Gen3 coverage matrix](../../docs/gen3-verification-matrix.md).
 
 ## Linux and first boot

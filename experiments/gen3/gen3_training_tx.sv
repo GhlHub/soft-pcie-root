@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // x1 32-bit Gen3 training-only PIPE source. No packet ownership or Data stream.
 // Configuration changes take effect at TS boundaries. stop emits one full EIOS.
-module gen3_training_tx (
+module gen3_training_tx #(
+    parameter integer EXTERNAL_EQ = 0
+) (
     input wire clk, reset_i, enable_i, stop_i,
     input wire [1:0] ec_i,
     input wire [3:0] preset_i,
@@ -9,19 +11,23 @@ module gen3_training_tx (
     output reg [31:0] data_o,
     output reg valid_o, start_o, ts_done_o, stopped_o,
     output wire [1:0] header_o,
-    output reg signed [10:0] balance_o
+    output reg signed [10:0] balance_o,
+    input wire [31:0] eq_fields_i,
+    input wire reset_interval_i
 );
     localparam [1:0] EIEOS = 0, TS1 = 1, SKP = 2, EIOS = 3;
     reg [1:0] kind, word_index;
-    reg  [ 6:0] cadence;
-    reg  [ 5:0] ts_count;
-    reg  [ 8:0] skp_count;
-    reg         running;
-    reg  [22:0] lfsr;
-    reg  [31:0] fields;
-    wire [ 7:0] symbol6 = {1'b0, preset_i, 1'b0, ec_i};
+    reg [6:0] cadence;
+    reg [5:0] ts_count;
+    reg [15:0] total_ts;
+    reg [8:0] skp_count;
+    reg running;
+    reg [22:0] lfsr;
+    reg [31:0] fields;
+    wire [7:0] symbol6 = {1'b0, preset_i, 1'b0, ec_i};
     wire [23:0] low_fields = {2'b0, second_i, 2'b0, first_i, symbol6};
-    wire [31:0] new_fields = {^{1'b0, post_i, low_fields}, 1'b0, post_i, low_fields};
+    wire [31:0] new_fields = EXTERNAL_EQ != 0 ?
+        eq_fields_i : {^{1'b0, post_i, low_fields}, 1'b0, post_i, low_fields};
     wire [31:0] use_fields = word_index == 0 ? new_fields : fields;
     reg [31:0] plain, encoded;
     reg        [22:0] next_lfsr;
@@ -86,6 +92,7 @@ module gen3_training_tx (
     end
     always @(posedge clk) begin
         if (reset_i) begin
+            total_ts   <= 0;
             running    <= 0;
             kind       <= EIEOS;
             word_index <= 0;
@@ -135,7 +142,10 @@ module gen3_training_tx (
                         ts_count  <= ts_count + 1'b1;
                         ts_done_o <= 1;
                     end
-                    if (kind == EIEOS) ts_count <= 0;
+                    if (kind == EIEOS) begin
+                        ts_count <= 0;
+                        total_ts <= 0;
+                    end else if (kind == TS1) total_ts <= total_ts + 1'b1;
                     if (kind == SKP) skp_count <= 0;
                     else if (skp_count < 371) skp_count <= skp_count + 1'b1;
                     if (kind == EIOS) begin
@@ -143,11 +153,13 @@ module gen3_training_tx (
                         stopped_o <= 1;
                     end else if (stop_i || !enable_i) kind <= EIOS;
                     else if (skp_count == 371 && kind != SKP) kind <= SKP;
-                    else if (kind != EIEOS && (ts_count == 32 || (ts_count == 31 && kind == TS1)))
+                    else if (kind != EIEOS && (total_ts == 65535 || ts_count == 32 ||
+                                               (ts_count == 31 && kind == TS1)))
                         kind <= EIEOS;
                     else kind <= TS1;
                 end
             end
+            if (EXTERNAL_EQ != 0 && reset_interval_i) ts_count <= 0;
         end
     end
 endmodule

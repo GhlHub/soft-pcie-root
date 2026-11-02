@@ -132,3 +132,12 @@ The local deployed image also has SSH enabled at boot, with persistent host keys
 and user-provisioned root password authentication. Credentials, keys and private
 network addresses are not included in this repository. Rebuilt source images
 retain opt-in SSH and key-only defaults until explicitly provisioned.
+
+## Current SD boot selection
+
+The 2026-11-02 deployment selects the audited adaptive-EQ Gen3 image from
+`/adaptive-eq-v2/system.bit`, with boot marker `soft_pcie.image=adaptive_eq_v2`.
+SD file readback, unattended warm boot, Gen3 enumeration and 256 MiB read-only
+NVMe CRC passed. Bootloader, kernel, DTB and installed driver were unchanged;
+no QSPI update was needed. The newer early-quarantine driver source has not yet
+been deployed. See [boot evidence](../../docs/evidence/adaptive_eq_v2/default-boot.json).

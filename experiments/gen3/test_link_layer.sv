@@ -21,6 +21,7 @@ module test_link_layer;
         .clk                (clk),
         .reset_i            (reset),
         .link_up_i          (up),
+        .recovery_i         (1'b0),
         .enable_i           (enable),
         .rx_data_i          (rd),
         .rx_valid_i         (rv),

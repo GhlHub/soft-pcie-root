@@ -107,7 +107,9 @@ module test_eq_bringup;
         gen3_done,
         gen3_stop,
         gen3_header,
-        balance
+        balance,
+        32'b0,
+        1'b0
     );
     reg [5:0] eqdelay = 0, ratedelay = 0;
     reg eqdone = 0, phystatus = 0;

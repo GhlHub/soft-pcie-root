@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-02",
+  "source_revision": "a164fb216d82640b1d333392452fdbbfe93abb19",
+  "tool": "Vivado 2026.1",
+  "device": "xczu7ev-ffvc1156-2-e",
+  "ENABLE_GEN3": true,
+  "change": "Adaptive Phase 2/3 equalization, startup-only Gen2 fallback, bounded same-rate Recovery and early CSR fault reporting; register selected PHY rate before CDC",
+  "requester_sha256": "176fd51490f54ff403c3f8b2e670138f3cc4ccb212834ec81dbfc15a2d8471bf",
+  "regressions": {
+    "focused_controller_fallback_startup_passed": 65,
+    "focused_seconds": 154.27,
+    "previous_full_regression_passed": 1711
+  },
+  "implementation": {
+    "fresh_synthesis_route": "PASS",
+    "reopened_audit": "PASS",
+    "source_manifests": "PASS",
+    "gen3": {
+      "setup_ns": 0.101,
+      "hold_ns": 0.014,
+      "pulse_width_ns": 0.543
+    },
+    "gen1_startup": {
+      "setup_ns": 0.409,
+      "hold_ns": 0.014,
+      "pulse_width_ns": 0.543
+    },
+    "gen2_fallback": {
+      "setup_ns": 0.101,
+      "hold_ns": 0.014,
+      "pulse_width_ns": 0.543
+    },
+    "unwaived_critical_CDC": 0,
+    "critical_or_error_DRC": 0,
+    "routing_errors": 0,
+    "bus_skew": "PASS",
+    "timing_coverage": "PASS",
+    "extra_postroute_optimization": false
+  },
+  "resources": {
+    "LUT": 16117,
+    "FF": 12367,
+    "control_sets": 675,
+    "BRAM36_equivalents": 3,
+    "GTHE4_CHANNEL": 1,
+    "hard_PCIE": 0
+  },
+  "physical": {
+    "board": "ZCU104",
+    "adapter": "OP047 Rev D SSD1",
+    "ssd_model": "Samsung SSD 990 EVO 1TB",
+    "link": "Gen3 x1",
+    "startup_attempts": 3,
+    "startup_successes": 3,
+    "physical_fallback_observed": false,
+    "deployment": "Clean Linux halt; independently verified kernel-entry stop; temporary JTAG programming; resume",
+    "configuration_reads": {
+      "before-io": {
+        "config_read_operations": 14000,
+        "seconds": 0.2819990560000001,
+        "root_status": {
+          "0x8": "0x93",
+          "0x34": "0x2"
+        },
+        "passed": true,
+        "exact_timeout_edge_injection": false
+      },
+      "after-io": {
+        "config_read_operations": 14000,
+        "seconds": 0.2833299349999834,
+        "root_status": {
+          "0x8": "0x93",
+          "0x34": "0x2"
+        },
+        "passed": true,
+        "exact_timeout_edge_injection": false
+      }
+    },
+    "performance_integrity_jobs_passed": 8,
+    "ssd_written_bytes": 27397193728,
+    "write_accounting": "Exact match",
+    "existing_crc_bytes": 268435456,
+    "fresh_crc_bytes": 268435456,
+    "sector_offset_crc_bytes": 33554432,
+    "postflush_crc": "PASS",
+    "final_readonly_crc": "PASS",
+    "final_root_status": "0x93",
+    "final_dma_status": "0xc",
+    "final_nvme_state": "live",
+    "sd_or_flash_updated": false,
+    "smart_before": {
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "smart_after": {
+      "critical_warning": 0,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "unsafe_shutdowns": 26
+    },
+    "last_startup_root_status": "0x93",
+    "last_startup_dma_status": "0xc",
+    "last_startup_nvme_state": "live"
+  },
+  "benchmark": {
+    "block_size": "1 MiB",
+    "runtime_seconds": 30,
+    "direct": true,
+    "ioengine": "libaio",
+    "jobs": 1,
+    "MB_s": {
+      "read1": 589.330328,
+      "read8": 733.384766,
+      "write1": 340.19394,
+      "write8": 562.682916
+    }
+  },
+  "artifacts_sha256": {
+    "system.bit": "32fd8cc82bd10158106ff6413c3d40abd88102cc66bf502c3ef584ac1cee5ded",
+    "system.xsa": "871518bf53ace8ef721f825773a06d5a1452ff294d336b94a26463034552c53b",
+    "routed.dcp": "8ad6873c4a65bcd4116cae1d3b24d4db15201b353b18b4cf5a7d3adec194dbe3",
+    "sources.json": "67b8f706d93453049f5cfb9fd23bda246a1d5e0d7379527746cd2146059e2fdb"
+  },
+  "audit_reports_sha256": {
+    "timing.rpt": "0e1c254ec027c485e9ecd085086ddcf43e1defab71799a1c58e38c519563a269",
+    "pcie_top100.rpt": "a62e886f4edd14d1157fa3434bef069f345a9cec2e9ff230976f5e1f28d37d39",
+    "clocks.rpt": "20329bb63b5e90bf881ae1dddb3380d424b868ef9aa99b3c4f10ff9a71ad7a09",
+    "cdc.rpt": "225e7de4c691e44f61be8091da33f76efb9739ade127a281330c1f0aae415c4a",
+    "bus_skew.rpt": "fd0caf5e1d83d48e3e8abe681a4d1a52bf60b7bd9308e69684a48ecabd1d9f8f",
+    "utilization.rpt": "973417f16d31e01a86a068bd56424114bd8ec9b9cb732acd16bffb31afcad5a7",
+    "utilization_hierarchical.rpt": "4f623a5d2f4cdf63a5bf55e2e8b573e621e4cff59963b48373a8384f84c84f8f",
+    "drc.rpt": "a3da74a0f1a3f97cc4baeed283f1c507cedabc3b9d9106365fa0da3e33ecab6f",
+    "route.rpt": "f31bec39b5fd5ac67f22f11e62c1902bee6972af8089c525df9d11ce329017d4",
+    "check_timing.rpt": "4d7ab254c9916857e4d55d3ba43dc87d5b7c89c3b96c628ff5692af60d6353ed",
+    "control_sets.rpt": "60bce1cb1640463c126639142f8a7e714b00c2eb22d69063126460a8579ef54f",
+    "gen1_timing.rpt": "1a06d67db14f2decac716236f567dfc8b9852947f5b3190c15ecbb960bd0f61c",
+    "gen2_timing.rpt": "6897c956dc88e9c0d2e89bd57caf83647400a1b2c3fb8c769e32755390ba991d"
+  },
+  "limitations": [
+    "Three controlled warm starts on one SSD/channel; no cold-cycle or endurance qualification",
+    "No physical Gen2 fallback, live same-rate Recovery fault injection, BER/eye or electrical compliance qualification",
+    "Existing board Linux driver retained; new early-quarantine driver branch remains simulation/source-tested",
+    "Temporary JTAG image only; SD default remains RX metadata"
+  ],
+  "source_worktree_dirty": true,
+  "build_findings": [
+    "First build withheld for two CDC-10 critical findings at combinational PHY rate mux; registered source fixed both without adding waivers"
+  ]
+}

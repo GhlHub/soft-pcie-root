@@ -31,6 +31,7 @@ change, not a reset, ownership, protocol, timing or logic redesign.
 
 Historical hardware source manifests intentionally retain the exact pre-format
 hashes used for those builds. The formatted working tree has different byte
-hashes and should not be represented as matching those manifests. No new
-synthesis, PNR or physical qualification is claimed for the formatted files.
+hashes and should not be represented as matching those manifests. The formatting-only checkpoint claimed no new synthesis, PNR or physical
+qualification. Later requester-fix and adaptive-EQ images have their own
+source-matched build/hardware evidence; see [verification](verification.md).
 See [formatting evidence](evidence/format_v1/completion.json).

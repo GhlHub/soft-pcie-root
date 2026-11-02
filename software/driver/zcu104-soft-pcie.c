@@ -33,6 +33,8 @@
 #define MSI_ADDRESS 0xfee00000U
 #define VECTORS 32
 
+#define CFG_POLL_TIMEOUT_US 400000
+
 struct soft_pcie {
  struct device *dev;
  void __iomem *cfg, *host;
@@ -48,7 +50,10 @@ struct soft_pcie {
 /* PCI core serializes config accesses; use an explicit lock for the physical
  * single-command mailbox too. Atomic polling is necessary under PCI locks.
  * Hardware's requester times out after 50ms; mailbox at 335ms. The 400ms
- * guard quarantines all subsequent config traffic, never cancels DMA/TLPs.
+ * default guard quarantines all subsequent config traffic, never cancels
+ * DMA/TLPs. New SRP1 RTL reports observed link/fatal errors immediately while
+ * retaining the core owner for drain. Do not sleep here: PCI core may hold its
+ * own raw lock as well as cfg_lock. The 50ms requester allowance is unchanged.
  */
 static int soft_config(struct soft_pcie *p, bool write, int where, int size, u32 *value)
 {
@@ -78,12 +83,17 @@ static int soft_config(struct soft_pcie *p, bool write, int where, int size, u32
  if (write) writel(data << (8 * (where & 3)), p->cfg + CFG_DATA);
  writel(0x01000000 | (be << 4) | (write ? 3 : 2), p->cfg + CFG_COMMAND);
  writel(1, p->cfg + CFG_SUBMIT);
- if (readl_poll_timeout_atomic(p->cfg + CFG_RESULT, result, result & 2, 1, 400000)) {
+ if (readl_poll_timeout_atomic(p->cfg + CFG_RESULT, result, result & 6, 1, CFG_POLL_TIMEOUT_US)) {
   p->fault = true;
   ret = PCIBIOS_SET_FAILED;
   goto out;
  }
- if ((result & 4) || (((result >> 8) & 7) >= 3 && ((result >> 8) & 7) <= 6)) p->fault = true;
+ if (result & 4) {
+  p->fault = true;
+  ret = PCIBIOS_SET_FAILED;
+  goto out;
+ }
+ if (((result >> 8) & 7) >= 3 && ((result >> 8) & 7) <= 6) p->fault = true;
  if (((result >> 8) & 7) == 7) {
   /* CRS Software Visibility for the standard PCI vendor-ID retry loop. */
   if (!write && where == 0 && size == 4) *value = 0xffff0001;

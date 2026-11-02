@@ -1,12 +1,27 @@
 # Verification and release scope
 
+Current development includes [adaptive Phase 2/3 equalization and startup-only
+Gen2 fallback](adaptive-equalization.md). The 2026-11-02 fresh build passed
+route/audit, three controlled Gen3 startups, 28,000 configuration reads and all
+eight NVMe performance/integrity jobs. QD8 throughput was 733.38/562.68 MB/s
+read/write. See [recorded evidence](evidence/adaptive_eq_v2/completion.json).
+The image also passed unattended SD-default warm boot, file readback and
+256 MiB read-only CRC; [boot evidence](evidence/adaptive_eq_v2/default-boot.json).
+Physical fallback, injected Recovery and electrical qualification remain open.
+
+Earlier follow-up: [bounded same-rate Recovery, fixed-preset GUI
+selection and early mailbox fault reporting](review-followup.md). These changes
+are included in the latest RTL image, but their injected fault cases remain
+simulation-tested; the updated Linux driver was not deployed. Historical routed
+and physical results below retain their original source scope.
+
 The [Gen1/Gen2 compliance coverage matrix](gen1-gen2-compliance-matrix.md) maps
 existing tests to protocol topics, identifies missing coverage and separates
 functional evidence from compliance qualification. Its project-scope waivers
 exclude features unrelated to direct-attached NVMe operation while retaining
 protocol correctness, error containment and data-integrity coverage.
 
-The latest full regression passes **1,663 tests**, including 994 added Gen3
+The latest full regression passes **1,711 tests**, including 994 added Gen3
 peer cases across the four campaigns below. Earlier test totals and physical
 results are historical checkpoints, not measurements of the latest source.
 The shared requester timeout fix has now passed a fresh Gen3 build and temporary
@@ -648,7 +663,7 @@ passed. The 14,093,910,016 written bytes exactly match block-sector accounting;
 SMART media errors and error-log entries remain zero, with no increase in unsafe
 shutdowns. See [physical test evidence](evidence/ddr_banked_v1/completion.json).
 
-The banked image is now the SD default. Uninterrupted warm boot, SD hash
+The banked image subsequently became the SD default at that checkpoint. Uninterrupted warm boot, SD hash
 readback and a 256 MiB read-only CRC check passed. Obsolete FPGA images, rollback
 scripts and the unused legacy kernel/device tree were removed from the SD boot
 partition. See [default-boot evidence](evidence/ddr_banked_v1/default-boot.json).

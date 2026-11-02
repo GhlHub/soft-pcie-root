@@ -4,6 +4,7 @@
 // CONFIG_PROBE performs one bounded configuration read without PS/AXI effects.
 module gen3_eq_bringup #(
     // 100 ms at Gen1 PCLK; covers 12 ms Detect quiet + 24/48 ms polling.
+    parameter integer ADAPTIVE_EQ       = 0,
     parameter integer RECOVERY_ENABLE   = 0,
     parameter integer STARTUP_TIMEOUT   = 12500000,
     parameter integer HANDSHAKE_TIMEOUT = 6000000,
@@ -30,7 +31,8 @@ module gen3_eq_bringup #(
     output wire detect_o,
     output wire idle_o,
     output wire polarity_o,
-    output reg [1:0] rate_o, txeq_ctrl_o,
+    output reg [1:0] rate_o,
+    output wire [1:0] txeq_ctrl_o,
     output wire [3:0] txeq_preset_o,
     output wire [127:0] last_ts_o,
     output wire [127:0] status_o,
@@ -54,7 +56,13 @@ module gen3_eq_bringup #(
     output wire [31:0] app_rx_data_o,
     output wire app_rx_valid_o, app_rx_last_o,
     input wire app_rx_ready_i,
-    output wire dl_active_o, link_error_o
+    output wire dl_active_o, link_error_o,
+    input wire rxeq_done_i, rxeq_adapt_done_i, rxeq_preset_sel_i,
+    input wire [17:0] rxeq_proposal_i,
+    output wire [1:0] rxeq_ctrl_o,
+    output wire [3:0] rxeq_preset_o,
+    output wire [5:0] txeq_coeff_o,
+    output wire startup_failed_o
 );
     reg [9:0] skp_pairs;
     reg [1:0] skp_phase;
@@ -62,11 +70,18 @@ module gen3_eq_bringup #(
     wire tx_ready, tx_v, rx_ready, rx_v;
     localparam [4:0] LEGACY=0,LOCK=1,CONFIG=2,EIOS=3,EI=4,PRESET=5,
         QUERY_GAP=6,QUERY=7,RATE_ARM=8,RATE_WAIT=9,EQ_START=10,EQ=11,
-        OBSERVE=12,STOP=13,FINISHED=14,FAILED=15,RCFG=16,RIDLE=17,RL0=18;
+        OBSERVE=12,STOP=13,FINISHED=14,FAILED=15,RCFG=16,RIDLE=17,RL0=18,RLOCK=19,ADAPT=20;
     reg [4:0] state;
     reg reached_idle, reached_l0;
-    reg [23:0] timer;
-    reg [ 1:0] detect_phase;
+    // Same-rate Recovery retains the DL epoch and every accepted owner.
+    // A single deadline spans RcvrLock/Configuration/Idle; errors cannot
+    // restart this timer indefinitely. Rate changes remain unsupported.
+    reg         recovering;
+    reg  [23:0] recovery_timer;
+    wire        recovery_state = state == RLOCK || state == RCFG || state == RIDLE;
+    wire        terminal_state = state == STOP || state == FINISHED || state == FAILED;
+    reg  [23:0] timer;
+    reg  [ 1:0] detect_phase;
     reg detect_complete, detected_present;
     reg [10:0] tx_count;
     reg [ 3:0] good;
@@ -244,9 +259,78 @@ module gen3_eq_bringup #(
     wire [4:0] pcs_profile;
     wire dl_active, fc_error;
     wire tx_ts2_done, tx_eieos_done, tx_idle_word;
+    wire [127:0] native_last_ts;
+    wire         normal_rate = !native_last_ts[39] && native_last_ts[35];
+    reg  [  1:0] initial_txeq_ctrl;
+    wire [  1:0] adapt_ctrl;
+    wire [3:0] adapt_preset, adapt_applied_preset, adapt_reason, adapt_attempts;
+    wire [17:0] adapt_applied_coeff;
+    wire [31:0] adapt_fields;
+    wire adapt_done, adapt_failed, adapt_active, adapt_reset_interval;
+    wire [7:0] normal_symbol6 = {
+        1'b0, preset, 1'b0, (state == EQ || state == EQ_START) ? 2'b01 : 2'b00
+    };
+    wire [30:0] normal_fields = {
+        1'b0,
+        local_coeff[5:0],
+        2'b0,
+        (state == EQ || state == EQ_START) ? local_lf : local_coeff[11:6],
+        2'b0,
+        (state == EQ || state == EQ_START) ? local_fs : local_coeff[17:12],
+        normal_symbol6
+    };
+    wire [31:0] training_fields = state == ADAPT ? adapt_fields : {^normal_fields, normal_fields};
+    generate
+        if (ADAPTIVE_EQ != 0) begin : adaptive
+            gen3_eq_adapt adapt (
+                .clk              (clk),
+                .reset_i          (reset_i),
+                .enter_i          (eq_phase2),
+                .cancel_i         (terminal_state),
+                .phy_ready_i      (phy_ready_i),
+                .ts_event_i       (event_ts),
+                .ts_valid_i       (valid_ts && normal_rate),
+                .aligned_i        (aligned),
+                .rx_error_i       (error_rx),
+                .rx_fields_i      (symbols),
+                .initial_preset_i (preset),
+                .initial_coeff_i  (local_coeff),
+                .local_fs_i       (local_fs),
+                .local_lf_i       (local_lf),
+                .peer_fs_i        (peer_fs),
+                .peer_lf_i        (peer_lf),
+                .txeq_done_i      (txeq_done_i),
+                .txeq_coeff_i     (txeq_coeff_i),
+                .rxeq_done_i      (rxeq_done_i),
+                .rxeq_adapt_done_i(rxeq_adapt_done_i),
+                .rxeq_preset_sel_i(rxeq_preset_sel_i),
+                .rxeq_proposal_i  (rxeq_proposal_i),
+                .txeq_ctrl_o      (adapt_ctrl),
+                .txeq_preset_o    (adapt_preset),
+                .txeq_coeff_o     (txeq_coeff_o),
+                .rxeq_ctrl_o      (rxeq_ctrl_o),
+                .rxeq_preset_o    (rxeq_preset_o),
+                .tx_fields_o      (adapt_fields),
+                .reset_interval_o (adapt_reset_interval),
+                .active_o         (adapt_active),
+                .done_o           (adapt_done),
+                .failed_o         (adapt_failed),
+                .reason_o         (adapt_reason),
+                .attempts_o       (adapt_attempts),
+                .applied_preset_o (adapt_applied_preset),
+                .applied_coeff_o  (adapt_applied_coeff)
+            );
+        end else begin : fixed_eq
+            assign {adapt_ctrl,adapt_preset,txeq_coeff_o,rxeq_ctrl_o,rxeq_preset_o,adapt_fields,
+            adapt_reset_interval,adapt_active,adapt_done,adapt_failed,adapt_reason,adapt_attempts,
+            adapt_applied_preset,adapt_applied_coeff} = 0;
+        end
+    endgenerate
     generate
         if (RECOVERY_ENABLE != 0) begin : recovery_tx
-            gen3_recovery_tx tx3 (
+            gen3_recovery_tx #(
+                .EXTERNAL_EQ(ADAPTIVE_EQ)
+            ) tx3 (
                 clk,
                 reset_i,
                 gen3_mode,
@@ -275,10 +359,14 @@ module gen3_eq_bringup #(
                 packet_tx_ready,
                 packet_submit,
                 packet_tx_fault,
-                pcs_profile
+                pcs_profile,
+                training_fields,
+                adapt_reset_interval
             );
         end else begin : eq_tx
-            gen3_training_tx tx3 (
+            gen3_training_tx #(
+                .EXTERNAL_EQ(ADAPTIVE_EQ)
+            ) tx3 (
                 clk,
                 reset_i,
                 gen3_mode,
@@ -294,7 +382,9 @@ module gen3_eq_bringup #(
                 gen3_done,
                 gen3_stopped,
                 gen3_header,
-                balance
+                balance,
+                training_fields,
+                adapt_reset_interval
             );
             assign tx_ts2_done     = 0;
             assign tx_eieos_done   = 0;
@@ -317,9 +407,8 @@ module gen3_eq_bringup #(
     end
     wire [3:0] packet_diagnostic;
     wire valid_ts2, stream_start, data_valid, rx_stream, parser_eds, parser_error;
-    wire [ 31:0] decoded_data;
-    wire [  1:0] data_position;
-    wire [127:0] native_last_ts;
+    wire [31:0] decoded_data;
+    wire [ 1:0] data_position;
     gen3_native_rx rx3 (
         clk,
         reset_i,
@@ -384,8 +473,9 @@ module gen3_eq_bringup #(
     reg probe_issued, probe_done;
     reg [31:0] probe_data;
     reg [ 2:0] probe_status;
-    assign dl_active_o  = dl_active && state == RL0 && !fc_error && !packet_tx_fault;
-    assign link_error_o = fc_error || packet_tx_fault;
+    assign dl_active_o  = dl_active && (state == RL0 || (recovering && recovery_state)) &&
+        !fc_error && !packet_tx_fault;
+    assign link_error_o = fc_error || packet_tx_fault || (terminal_state && failure != 0);
     always @(posedge clk) begin
         if (reset_i) begin
             probe_issued <= 0;
@@ -448,7 +538,8 @@ module gen3_eq_bringup #(
                 fc_error,
                 link_pending,
                 completion_debug,
-                pcs_profile
+                pcs_profile,
+                recovering && recovery_state
             );
         end else begin : no_data_link
             assign packet_tx_data   = 0;
@@ -572,7 +663,6 @@ module gen3_eq_bringup #(
     reg [7:0] rx_idle_symbols, tx_idle_symbols;
     reg  [7:0] matched_rate;
     wire       post_ts = (valid_ts && rx_ec == 0) || valid_ts2;
-    wire       normal_rate = !native_last_ts[39] && native_last_ts[35];
     assign last_ts_o=CONFIG_PROBE!=0 && probe_done?{32'h43464733,probe_data,completion_debug[31:0],28'b0,link_pending,probe_status}:reached_idle?{32'h52454333,dllp_count,receive_errors,last_dllp,
         rx_idle_symbols,{5'b0,rx_stream,reached_l0,reached_idle},ts2_count}:native_last_ts;
     always @(posedge clk) begin
@@ -618,7 +708,7 @@ module gen3_eq_bringup #(
         .rst             (reset_i),
         .enter           (state == EQ_START),
         .cancel          (state == FAILED),
-        .skip_phase23    (1'b1),
+        .skip_phase23    (ADAPTIVE_EQ == 0),
         .phy_gen3_ready  (phy_ready_i && gen3_mode),
         .preset_applied  (state == EQ),
         .applied_preset  (preset),
@@ -675,7 +765,9 @@ module gen3_eq_bringup #(
         end
     end
     assign idle_o = gen3_mode ? ((!gen3_seen || gen3_stopped) && !gen3_valid) : legacy_idle_q;
-    assign txeq_preset_o = preset;
+    assign txeq_preset_o = state == ADAPT ? adapt_preset : preset;
+    assign txeq_ctrl_o = state == ADAPT ? adapt_ctrl : initial_txeq_ctrl;
+    assign startup_failed_o = !reached_l0 && terminal_state && failure != 0;
     assign status_o = {
         16'h4551,
         eq_events,
@@ -744,23 +836,27 @@ module gen3_eq_bringup #(
         rx_control[4:0]==0 && rx_rate[7] && rx_rate[3:1]==3'b111;
     always @(posedge clk) begin
         if (reset_i) begin
-            state       <= LEGACY;
-            timer       <= 0;
-            tx_count    <= 0;
-            good        <= 0;
-            rate_o      <= 0;
-            txeq_ctrl_o <= 0;
-            preset      <= preset_i;
-            failure     <= 0;
-            peer_eios   <= 0;
-            previous_rx <= 0;
-            previous_k  <= 0;
-            last_rate   <= 0;
-            local_fs    <= 0;
-            local_lf    <= 0;
-            local_coeff <= 0;
+            state             <= LEGACY;
+            recovering        <= 0;
+            recovery_timer    <= 0;
+            timer             <= 0;
+            tx_count          <= 0;
+            good              <= 0;
+            rate_o            <= 0;
+            initial_txeq_ctrl <= 0;
+            preset            <= preset_i;
+            failure           <= 0;
+            peer_eios         <= 0;
+            previous_rx       <= 0;
+            previous_k        <= 0;
+            last_rate         <= 0;
+            local_fs          <= 0;
+            local_lf          <= 0;
+            local_coeff       <= 0;
         end else begin
             if (timer != 24'hffffff) timer <= timer + 1'b1;
+            if (recovering && recovery_timer != 24'hffffff) recovery_timer <= recovery_timer + 1'b1;
+            if (recovering && state == RL0) recovering <= 0;
             if (state < CONFIG) peer_eios <= 0;
             if (rx_valid_i && rate_o == 0) begin
                 previous_rx <= rx_data_i[15:0];
@@ -803,30 +899,30 @@ module gen3_eq_bringup #(
                 end
                 EI:
                 if (peer_idle_count >= 125) begin
-                    state       <= PRESET;
-                    timer       <= 0;
-                    txeq_ctrl_o <= 1;
+                    state             <= PRESET;
+                    timer             <= 0;
+                    initial_txeq_ctrl <= 1;
                 end
                 PRESET:
                 if (txeq_done_i) begin
-                    txeq_ctrl_o <= 0;
-                    state       <= QUERY_GAP;
-                    timer       <= 0;
+                    initial_txeq_ctrl <= 0;
+                    state             <= QUERY_GAP;
+                    timer             <= 0;
                 end
                 QUERY_GAP:
                 if (timer >= 16 && !txeq_done_i) begin
-                    txeq_ctrl_o <= 3;
-                    state       <= QUERY;
-                    timer       <= 0;
+                    initial_txeq_ctrl <= 3;
+                    state             <= QUERY;
+                    timer             <= 0;
                 end
                 QUERY:
                 if (txeq_done_i) begin
-                    txeq_ctrl_o <= 0;
-                    local_fs    <= txeq_fs_i;
-                    local_lf    <= txeq_lf_i;
-                    local_coeff <= txeq_coeff_i;
-                    state       <= RATE_ARM;
-                    timer       <= 0;
+                    initial_txeq_ctrl <= 0;
+                    local_fs          <= txeq_fs_i;
+                    local_lf          <= txeq_lf_i;
+                    local_coeff       <= txeq_coeff_i;
+                    state             <= RATE_ARM;
+                    timer             <= 0;
                 end
                 RATE_ARM:
                 if (timer >= 16 && !phystatus_i) begin
@@ -849,10 +945,27 @@ module gen3_eq_bringup #(
                     timer    <= 0;
                     good     <= 0;
                     tx_count <= 0;
+                end else if (eq_phase2 && ADAPTIVE_EQ != 0) begin
+                    state <= ADAPT;
+                    timer <= 0;
                 end else if (eq_speed || eq_failed) begin
                     state   <= STOP;
                     timer   <= 0;
                     failure <= 6;
+                end
+                ADAPT: begin
+                    if (adapt_done) begin
+                        preset      <= adapt_applied_preset;
+                        local_coeff <= adapt_applied_coeff;
+                        state       <= OBSERVE;
+                        timer       <= 0;
+                        good        <= 0;
+                        tx_count    <= 0;
+                    end else if (adapt_failed) begin
+                        state   <= STOP;
+                        timer   <= 0;
+                        failure <= 13;
+                    end
                 end
                 OBSERVE: begin
                     if (event_ts) begin
@@ -872,6 +985,26 @@ module gen3_eq_bringup #(
                     end else if (OBSERVE_CYCLES != 0 && int'(timer) >= OBSERVE_CYCLES) begin
                         state <= STOP;
                         timer <= 0;
+                    end
+                end
+                RLOCK: begin
+                    if (event_ts) begin
+                        if (post_ts && normal_rate && !native_last_ts[55] &&
+                            (good == 0 || matched_rate == native_last_ts[39:32])) begin
+                            if (good < 8) good <= good + 1'b1;
+                        end else good <= 0;
+                    end
+                    // Do not count a pair from before our transmitter exited
+                    // its old stream and established the new EIEOS epoch.
+                    if (tx_eieos_done) begin
+                        good     <= 0;
+                        tx_count <= 0;
+                    end else if (gen3_done && tx_count < 2047) tx_count <= tx_count + 1'b1;
+                    if (!tx_eieos_done && good == 8 && tx_count >= 8 && phy_ready_i) begin
+                        state    <= RCFG;
+                        timer    <= 0;
+                        good     <= 0;
+                        tx_count <= 0;
                     end
                 end
                 RCFG: begin
@@ -918,16 +1051,38 @@ module gen3_eq_bringup #(
                 default: begin
                 end
             endcase
-            if(RECOVERY_ENABLE!=0 && (state==RCFG || state==RIDLE || state==RL0) &&
-               (error_rx || (DATALINK_ENABLE!=0?packet_diagnostic[1]:parser_error) || packet_tx_fault || fc_error || !phy_ready_i || eios_rx))begin
-                state   <= STOP;
-                failure <= 11;
+            if (RECOVERY_ENABLE != 0 && (recovery_state || state == RL0)) begin
+                if (error_rx || (DATALINK_ENABLE != 0 ? packet_diagnostic[1] : parser_error) ||
+                    !phy_ready_i || (state == RL0 && event_ts)) begin
+                    if (reached_l0 && !fc_error && !packet_tx_fault) begin
+                        state      <= RLOCK;
+                        timer      <= 0;
+                        good       <= 0;
+                        tx_count   <= 0;
+                        recovering <= 1;
+                        if (!recovering || state == RL0) begin
+                            recovery_timer <= 0;
+                        end
+                    end else begin
+                        state   <= STOP;
+                        failure <= 11;
+                    end
+                end
+                // Same-rate Recovery cannot safely resume a reset peer or a
+                // different link epoch. Keep these cases visibly quarantined.
+                if (packet_tx_fault || fc_error || eios_rx ||
+                    (event_ts && (!normal_rate || native_last_ts[55] ||
+                                  (valid_ts && rx_ec != 0))) ||
+                    (recovering && int'(recovery_timer) >= HANDSHAKE_TIMEOUT)) begin
+                    state   <= STOP;
+                    failure <= 11;
+                end
             end
             if(state< EQ_START && int'(timer)>= (state==LEGACY?STARTUP_TIMEOUT:HANDSHAKE_TIMEOUT))begin
                 state <= FAILED;
                 failure<=state==LEGACY?4'd1:state<=CONFIG?4'd2:
                     state<=EI?4'd3:state<=QUERY?4'd4:4'd5;
-                txeq_ctrl_o <= 0;
+                initial_txeq_ctrl <= 0;
             end
             if (state == LEGACY && legacy_failed) begin
                 state   <= FAILED;
@@ -935,7 +1090,7 @@ module gen3_eq_bringup #(
             end
         end
     end
-    wire unused=^{pcs_profile,
+    wire unused=^{pcs_profile,adapt_active,adapt_reason,adapt_attempts, rxeq_done_i, rxeq_adapt_done_i, rxeq_preset_sel_i, rxeq_proposal_i,
         completion_debug[127:32],
         cmd_valid_i,
         cmd_op_i,

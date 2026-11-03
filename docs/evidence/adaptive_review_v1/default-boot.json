@@ -1,0 +1,31 @@
+{
+  "bit_sha256": "306802543532d61e977c806876ede1fff2a3490f211829c0f9d85f6b89817614",
+  "bit_size": 19311306,
+  "bit_crc32": "9e2b53d2",
+  "date": "2026-11-03",
+  "scope": "Audited adaptive review-fix image made the SD default",
+  "sd_image_path": "/adaptive-review-v1/system.bit",
+  "boot_script_sha256": "76feb06a26f4619e3c60a684c2ed9062ba3fe2ac83736cf67c81382fc11d9821",
+  "boot_command_sha256": "87e9cb8273c9249b37f595ee859c3c8ab4280c7ac202facdc1743c7947b1ff8d",
+  "sd_readback": "PASS after remount and after reboot",
+  "warm_boot": "PASS without JTAG or console input; new Linux boot ID and soft_pcie.image=adaptive_review_v1 command-line marker",
+  "observed_link": "Gen3 x1",
+  "root_filesystem": "Persistent read/write SD ext4",
+  "readonly_crc_bytes": 268435456,
+  "readonly_crc": "PASS",
+  "ssd_write_bytes": 0,
+  "smart_unchanged": true,
+  "bootloader_files_changed": false,
+  "kernel_and_dtb_changed": false,
+  "qspi_flash_written": false,
+  "final_state": "NVMe live and idle; SD boot partition unmounted",
+  "limitations": [
+    "Warm reboot only; no cold power-cycle test",
+    "No UART boot CRC observation claimed",
+    "Physical Gen2 fallback and injected live Recovery remain unverified",
+    "Existing Linux driver retained; early-quarantine software change not deployed",
+    "Gen3 remains experimental; electrical margin and compliance unqualified"
+  ],
+  "installed_driver_changed": false,
+  "source_revision": "3e75fc2e5f32577d47cfcee915e97355ec0353a8"
+}

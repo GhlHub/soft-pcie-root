@@ -10,7 +10,7 @@ It shows **737.37 MB/s read / 563.84 MB/s write**, sequential 1 MiB, QD8,
 direct/libaio, one job, 30 seconds per workload on ZCU104 with Samsung 990 EVO
 1 TB. These are separate read/write tests, not simultaneous aggregate bandwidth.
 The diagram is conceptual; it is not a photograph or an electrical schematic.
-The qualification note retains Gen3's experimental status. The image passed temporary programming; the previous adaptive-EQ image remains the SD default;
+The qualification note retains Gen3's experimental status. The image passed temporary programming and subsequently became the verified SD default;
 physical fallback and injected Recovery remain open.
 
 Alt text: A dark blue Gen3 x1 soft PCIe performance card shows 737.37 MB/s

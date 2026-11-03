@@ -30,7 +30,8 @@ and request-timeout retry ownership (`tests/test_gen3_adaptive_eq.py`, cases
 source passed the 1,718-test full run and a final 23-case focused run (one
 additional case), lint and real-XPM elaboration. It subsequently passed fresh
 synthesis, routing, reopened-checkpoint audit and temporary hardware validation
-as `adaptive_review_v1`; the SD default still uses the earlier image.
+as `adaptive_review_v1`; it subsequently became the verified SD default on
+2026-11-03, as recorded below.
 
 ### Review-fix hardware validation — 2026-11-02
 
@@ -38,7 +39,7 @@ All source manifests match. Three controlled warm startups negotiated Gen3 x1
 and passed 256 MiB read-only CRC checks. All eight matched benchmark/integrity
 jobs and 28,000 Linux-driver configuration reads passed. SMART error and
 unsafe-shutdown counters were unchanged; exactly 27,423,408,128 written bytes
-matched block accounting. The board remains running this temporary JTAG image.
+matched block accounting. This campaign initially used temporary JTAG programming.
 
 | Measurement | Previous SD image | Review fixes |
 | --- | ---: | ---: |
@@ -58,7 +59,8 @@ CDC, DRC, bus skew, routing and timing coverage passed the independent audit.
 See [exact evidence](evidence/adaptive_review_v1/completion.json) and
 [source hashes](evidence/adaptive_review_v1/sources.json). Physical fallback,
 injected Recovery, malformed-training/deadline-collision fault injection and
-cold-cycle/electrical qualification remain open. SD and flash were not updated;
+cold-cycle/electrical qualification remain open. SD and flash were not updated
+during this initial hardware campaign;
 the installed Linux driver was retained.
 
 Final pre-publication checks on 2026-11-03 passed all **1,719 tests in 233.25
@@ -257,3 +259,18 @@ observation is claimed. See [default-boot evidence](evidence/adaptive_eq_v2/defa
 Before committing the deployment, the full regression passed again: **1,711
 tests in 248.25 seconds**. Lint, real-XPM elaboration, all 131 HDL formatting
 checks, local documentation links and hardware source manifests passed.
+
+## Review-fix SD default deployment — 2026-11-03
+
+The audited review-fix bitstream is now selected by `/boot.scr` from
+`/adaptive-review-v1/system.bit`. The script retains FMC readiness gating and
+loads PL before Linux. SHA-256 readback passed after remount and after an
+unattended warm reboot. The new Linux boot ID and
+`soft_pcie.image=adaptive_review_v1` marker confirmed selection. Gen3 x1 and
+256 MiB read-only NVMe CRC passed with zero test writes and unchanged SMART
+counters across deployment/reboot. The persistent SD ext4 root remains read/write.
+
+Bootloader, kernel, device tree and installed driver were retained. No QSPI
+flash update was needed. The FAT boot partition was unmounted after verification.
+This does not add cold-power-cycle or injected-fault qualification.
+[Deployment evidence](evidence/adaptive_review_v1/default-boot.json).

@@ -21,11 +21,13 @@ Latest full regression: 1,719 passed (233.25 seconds, 2026-11-03); lint/XPM and
 131 HDL format checks pass. See docs/gen3-verification-matrix.md.
 Later fallback-ownership/evaluation-priority fixes passed fresh route/audit and
 three Gen3 startups plus I/O; see docs/evidence/adaptive_review_v1/completion.json.
-Exact fault injections remain simulation-only. These fixes are not in SD.
+Exact fault injections remain simulation-only. The review fixes became the SD
+default on 2026-11-03; unattended warm boot and CRC passed. See
+docs/evidence/adaptive_review_v1/default-boot.json.
 Current development adds adaptive Phase 2/3 and startup-only Gen2 fallback.
 Fresh route/audit and three controlled Gen3 startups/I/O passed 2026-11-02;
 physical fallback and injected Recovery remain open. See docs/adaptive-equalization.md.
-Adaptive EQ is now the SD default; unattended warm boot and CRC passed.
+The earlier adaptive-EQ SD deployment also passed warm boot and CRC.
 See docs/evidence/adaptive_eq_v2/default-boot.json. Existing Linux driver retained.
 No fallback after Gen3 L0.
 Cold-cycle, endurance, full Recovery and compliance qualification remain open.

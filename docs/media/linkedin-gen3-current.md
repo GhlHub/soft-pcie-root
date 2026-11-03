@@ -13,8 +13,8 @@ and its standard NVMe driver.
 The latest adaptive review-fix image passed fresh synthesis/route, an independent
 audit, 28,000 configuration reads and all eight NVMe performance/integrity jobs.
 It uses 16,116 LUTs and 12,367 FFs; routed Gen3 setup margin is +0.041 ns.
-Three controlled Gen3 startups passed. This image was temporarily programmed;
-the earlier adaptive-EQ image remains the SD default.
+Three controlled Gen3 startups passed. The image subsequently became the SD
+default; unattended warm boot and read-only CRC passed on 2026-11-03.
 Physical Gen2 fallback and injected Recovery remain open.
 
 Measurements: sequential 1 MiB, QD8, direct/libaio, one job, 30 seconds per

@@ -58,8 +58,8 @@ Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
 margin; the RX pipeline image achieves +0.073 ns and the later TX transform
 image achieves +0.090 ns. The later RX metadata image reaches +0.136 ns.
 The review-fix image has +0.041 ns Gen3 WNS and passed temporary JTAG testing.
-The preceding adaptive-EQ image remains the SD default; see
-[default-boot evidence](../../docs/evidence/adaptive_eq_v2/default-boot.json).
+The review-fix image subsequently became the SD default; see
+[default-boot evidence](../../docs/evidence/adaptive_review_v1/default-boot.json).
 
 ### RX ingress metadata and parallel pointer candidates
 

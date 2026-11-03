@@ -34,8 +34,8 @@ These events overlap. More DDR slots are not yet justified by these measurements
 
 The current image also implements bounded same-rate Recovery, adaptive Phase
 2/3 and startup-only Gen2 fallback. The review fixes passed three controlled
-Gen3 startups. The previous adaptive-EQ image passed unattended SD boot and
-remains the default. New PHY rate selection is registered before
+Gen3 startups, followed by unattended SD boot and CRC. The review-fix image
+is now the SD default. New PHY rate selection is registered before
 its CDC boundary. The new early-quarantine Linux driver branch still needs
 physical deployment validation; the 50 ms completion allowance is retained.
 

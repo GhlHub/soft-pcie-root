@@ -10,7 +10,7 @@ results, not projected speeds for other topologies.
 The frozen release remains Gen1/Gen2 x1. The current source tree also contains optional
 experimental Gen3 and changes to shared host/replay logic. The current default Gen2
 ACK-retirement configuration has now also passed its own fresh build, audit and physical
-I/O/CRC tests. The adaptive-EQ Gen3 image is now the SD boot default and has passed
+I/O/CRC tests. The adaptive review-fix Gen3 image is now the SD boot default and has passed
 an unattended warm reboot and read-only CRC check. The unified 1.1 catalog flow
 has passed full synthesis/PNR and physical performance tests with Gen3 enabled;
 see [current validation](verification.md). Gen3 remains experimental.
@@ -39,7 +39,8 @@ with 28,000 configuration reads and all eight NVMe jobs. QD8 read/write measured
 737.37/563.84 MB/s; this small difference is not an established performance gain.
 Gen3/Gen2 setup margin fell to +0.041 ns (Gen1 +0.204 ns); hold is +0.010 ns.
 Resources are 16,116 LUTs, 12,367 FFs, 671 control sets and three BRAM tiles.
-The review-fix image was temporarily programmed; SD remains adaptive EQ v2.
+The review-fix image was initially temporarily programmed, then became the
+[verified SD default](evidence/adaptive_review_v1/default-boot.json) on 2026-11-03.
 [Review-fix evidence](evidence/adaptive_review_v1/completion.json).
 
 ## Comparable physical benchmarks
@@ -67,8 +68,8 @@ small differences should not be treated as statistically established changes.
 | TX transform [11] | Gen3 x1 | 611.93 | 736.91 | 342.41 | 563.90 |
 | RX metadata [12] | Gen3 x1 | 595.24 | 734.84 | 339.91 | 564.79 |
 | Requester fix [13] | Gen3 x1 | 589.63 | 733.45 | 339.49 | 564.16 |
-| **Adaptive EQ, current SD default [14]** | **Gen3 x1** | **589.33** | **733.38** | **340.19** | **562.68** |
-| **Adaptive review fixes, latest [15]** | **Gen3 x1** | **591.48** | **737.37** | **339.90** | **563.84** |
+| **Adaptive EQ [14]** | **Gen3 x1** | **589.33** | **733.38** | **340.19** | **562.68** |
+| **Adaptive review fixes, current SD default [15]** | **Gen3 x1** | **591.48** | **737.37** | **339.90** | **563.84** |
 
 Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json), [2
 — repackaged example](evidence/repackaged_v1/completion.json), [3 — payload

@@ -10,12 +10,11 @@ training and gives failure priority over success. Exact fault injection remains
 simulation-only; physical fallback, injected Recovery and electrical qualification
 remain open.
 
-The review-fix image was temporarily programmed through JTAG. The previous
-adaptive-EQ image remains the SD default. That image measured 733.38/562.68 MB/s
-QD8 read/write and passed unattended warm boot, file readback and 256 MiB
-read-only CRC; see [build evidence](evidence/adaptive_eq_v2/completion.json) and
-[boot evidence](evidence/adaptive_eq_v2/default-boot.json). SD and flash were not
-updated during review-fix validation.
+The review-fix image subsequently became the SD default on 2026-11-03.
+Bitstream/script readback, unattended warm reboot, Gen3 x1 and 256 MiB read-only
+CRC passed with zero test writes and stable SMART counters. The persistent SD
+root remains read/write; no bootloader, kernel, DTB, driver or QSPI changes were
+needed. See [boot evidence](evidence/adaptive_review_v1/default-boot.json).
 
 Earlier follow-up: [bounded same-rate Recovery, fixed-preset GUI
 selection and early mailbox fault reporting](review-followup.md). These changes
@@ -34,7 +33,7 @@ The latest full regression passed **1,719 tests in 233.25 seconds** on
 includes 994 added Gen3 peer cases across the four campaigns below. Earlier test totals and physical
 results are historical checkpoints, not measurements of the latest source.
 The shared requester timeout fix has now passed a fresh Gen3 build and temporary
-hardware validation described below. The SD-default image is now adaptive EQ v2. Gen3 scope and remaining gaps are in the
+hardware validation described below. The SD-default image is now adaptive review v1. Gen3 scope and remaining gaps are in the
 [Gen3 verification matrix](gen3-verification-matrix.md).
 
 ## Requester timeout fix: Gen3 hardware validation

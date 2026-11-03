@@ -12,8 +12,8 @@ Current development adds bounded same-rate Recovery, adaptive Phase 2/3
 equalization, startup-only Gen2 fallback and prompt configuration-fault reporting.
 The latest review-fix image passed fresh route/audit and three controlled Gen3
 startups with NVMe I/O on 2026-11-02. It measured 737.37 MB/s read and 563.84 MB/s
-write at QD8 and was temporarily programmed through JTAG. The SD default remains
-the earlier adaptive-EQ image. Physical fallback and injected Recovery remain open.
+write at QD8. It became the verified SD boot default on 2026-11-03; unattended
+warm boot and CRC passed. Physical fallback and injected Recovery remain open.
 See [adaptive equalization and fallback](docs/adaptive-equalization.md) and the
 [design-review follow-up](docs/review-followup.md).
 
@@ -34,7 +34,7 @@ cover the complete ZCU104 PL example, including its AXI interconnects.
 | Workload | 1 MiB, direct/libaio, one job, 30 seconds per workload; decimal MB/s |
 | Resources | **16,116 LUTs, 12,367 FFs**, 3 BRAM tiles, one GTH; no DSP or URAM |
 | Routed Gen3 setup / hold slack | **+0.041 / +0.010 ns** |
-| Hardware checks | Three controlled Gen3 startups; 28,000 configuration reads; eight NVMe performance/integrity jobs; temporary JTAG image |
+| Hardware checks | Three controlled Gen3 startups; 28,000 configuration reads; eight NVMe performance/integrity jobs; SD warm boot and CRC |
 
 Existing and fresh data CRC, sector-offset CRC, post-flush verification and exact
 write accounting passed. SMART error and unsafe-shutdown counters were unchanged.
@@ -54,8 +54,8 @@ See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md).
 
 **Gen3 remains experimental.** Full Recovery, cold-cycle qualification, broader
 SSD interoperability and PCIe compliance are not established. The current image
-passed temporary JTAG testing. The previous image remains the
-[verified SD default](docs/evidence/adaptive_eq_v2/default-boot.json).
+passed temporary JTAG testing and subsequently became the
+[verified SD default](docs/evidence/adaptive_review_v1/default-boot.json).
 No QSPI update was needed. The existing Linux driver remains deployed; the new
 early-quarantine software branch has model coverage but has not been deployed.
 

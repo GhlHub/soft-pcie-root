@@ -79,7 +79,7 @@ a fresh Gen3 build and temporary board I/O/CRC validation. The later adaptive-EQ
 revision passed fresh route/audit, normal NVMe I/O and SD-default warm boot.
 The subsequent review fixes passed fresh route/audit and three Gen3 startups
 with NVMe I/O; see [hardware evidence](../../docs/evidence/adaptive_review_v1/completion.json).
-The SD default remains the earlier adaptive-EQ image.
+The review-fix image is now the [verified SD default](../../docs/evidence/adaptive_review_v1/default-boot.json).
 `GEN3_TX_PRESET` selects the initial preset 0–10 (default 4); adaptive Phase 2
 may change it. Startup fallback uses a separate legacy engine on the same PHY
 and is prohibited after Gen3 L0. Physical fallback and injected Recovery remain

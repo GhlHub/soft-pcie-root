@@ -1,6 +1,6 @@
 # Release boundary and further investigation
 
-The frozen release is Gen1/Gen2 x1. Current development adds optional experimental Gen3
+The frozen release is Gen1/Gen2 x1. Current development adds optional Gen3
 x1 and changes shared host/replay RTL. Separate Gen3 and historical default Gen2 builds
 passed short physical I/O/CRC tests; they do not imply broader qualification or support
 for other hardware. See [performance history](performance-history.md) for completed
@@ -15,7 +15,7 @@ improvements and [verification](verification.md) for evidence and remaining limi
 - Link-domain counters separating peer-credit, replay and formatter stalls.
 - Normal ACK retirement concurrent with later original packets, retaining
   exceptional-response drain barriers and immutable packet identities.
-- One version 1.1 Vivado catalog entry with a default-off experimental Gen3
+- One version 1.1 Vivado catalog entry with a default-off Gen3
   checkbox; customization and synthesis/CDC checks passed for both selections.
 - Startup-corrected unified Gen3 routing/audit and ten warm-start CRC trials.
 - RX/TX timing improvements culminating in +0.136 ns Gen3 WNS and a verified

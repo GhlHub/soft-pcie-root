@@ -6,9 +6,12 @@ passed fresh synthesis/route, independent audit, three controlled Gen3 startups,
 2026-11-02. QD8 read/write measured **737.37/563.84 MB/s**; Gen3 setup/hold is
 **+0.041/+0.010 ns**. See [recorded evidence](evidence/adaptive_review_v1/completion.json).
 It preserves fallback ownership across rate changes, rejects invalid evaluation
-training and gives failure priority over success. Exact fault injection remains
-simulation-only; physical fallback, injected Recovery and electrical qualification
-remain open.
+training and gives failure priority over success. The subsequent
+[hardware coverage campaign](hardware-coverage.md) passed 33 verified I/O jobs on
+the normal image, forced startup Gen2 fallback with eight I/O/integrity jobs,
+and one packet-active same-rate Recovery during CRC reads. The two diagnostic
+images passed fresh route/audit. Full Recovery and electrical qualification
+remain open; malformed-training/deadline collisions remain simulation-only.
 
 The review-fix image subsequently became the SD default on 2026-11-03.
 Bitstream/script readback, unattended warm reboot, Gen3 x1 and 256 MiB read-only
@@ -18,8 +21,8 @@ needed. See [boot evidence](evidence/adaptive_review_v1/default-boot.json).
 
 Earlier follow-up: [bounded same-rate Recovery, fixed-preset GUI
 selection and early mailbox fault reporting](review-followup.md). These changes
-are included in the latest RTL image, but their injected fault cases remain
-simulation-tested; the updated Linux driver was not deployed. Historical routed
+are included in the latest RTL image. The single physical Recovery event above
+extends their simulation coverage; the updated Linux driver was not deployed. Historical routed
 and physical results below retain their original source scope.
 
 The [Gen1/Gen2 compliance coverage matrix](gen1-gen2-compliance-matrix.md) maps
@@ -195,7 +198,7 @@ The random-I/O baseline was not remeasured.
 
 The board is healthy and idle on the RX metadata image; SD still defaults to the
 TX transform image. One controlled startup and short tests do not qualify cold
-cycles, endurance, full Recovery or compliance. Gen3 remains experimental.
+cycles, endurance, full Recovery or compliance.
 [Implementation and physical evidence](evidence/rx_metadata_v1/completion.json).
 [LinkedIn graphic](media/linkedin-rx-parser-timing-v2.png).
 
@@ -328,7 +331,7 @@ Gen3 setup margin and incomplete full Recovery remain limitations.
 ## Initial unified catalog development
 
 The current source now uses one version 1.1 catalog definition with a default-off
-**Enable experimental Gen3** checkbox. This packaging/elaboration change follows the
+**Gen3 (`ENABLE_GEN3`)** checkbox. This packaging/elaboration change follows the
 physical measurements below; those exact images have not been replaced. The common host
 derives 32-bit/two-slot or 64-bit/eight-slot dimensions from the same HDL parameter.
 Native generated helpers are namespaced, and native constraints are generated only for
@@ -494,7 +497,7 @@ All 47 repository tests passed, along with lint and focused Gen3 regressions.
 At completion of that earlier run, the board ran `build/link_profile_board_v1/system.bit`, healthy and
 idle, with SD boot files unchanged. Reports: `build/link_profile_audit_v1`.
 [Evidence](evidence/prefetch_v1/link-profile.json),
-[counter register contract](registers.md#experimental-gen3-link-profiling-lpr1),
+[counter register contract](registers.md#gen3-link-profiling-lpr1),
 and [investigation](../experiments/gen3/downstream-investigation.md).
 This diagnostic result does not qualify full Recovery, cold cycles, endurance
 or compliance. ACK optimization was implemented and tested subsequently above.
@@ -546,7 +549,7 @@ because of the startup drain bug; its earlier implementation record remains
 historical. Only the Gen3-enabled configuration received this new full build.
 
 The current package selector defaults to Gen1/Gen2 with 32-bit host RX/TX packet
-paths and two read slots. Enabling experimental Gen3 selects 64-bit host RX/TX,
+paths and two read slots. Enabling Gen3 selects 64-bit host RX/TX,
 eight 64-byte read slots and overlap between validated SSD memory-read requests.
 Both retain AXI64/125 MHz, two write owners, ordered completions, all-B-before-MSI
 and accepted-AXI drain. See [packaging](ip-guide.md#optional-gen3-packaging).
@@ -570,8 +573,7 @@ controlled simulation. Subsequent LPR1 physical captures, reported above, suppor
 attribution while preserving the old retirement policy. The later normal-ACK revision
 changed that policy and is recorded near the top of this document.
 
-Validation passed: 46 repository tests, lint/XPM elaboration, the experimental
-Gen3 regression, fresh packaging and full-shell RTL elaboration for both choices.
+Validation passed: 46 repository tests, lint/XPM elaboration, the Gen3 regression, fresh packaging and full-shell RTL elaboration for both choices.
 The new coverage includes 2/4/8/16 read-slot depths; separate request tags while
 completions stall; errors in later prefetched requests; held AR/link-loss drain;
 malformed RLAST; TX64 CDC ordering, credit metadata, odd lengths, stopped
@@ -603,7 +605,7 @@ No board or SD changes were made; frozen qualified-release manifests are intact.
 ## RX64 development builds and physical I/O tests
 
 The widened receive path passed fresh full synthesis, placement, routing and
-reopened structural audits for both the Gen2 example and experimental Gen3 host.
+reopened structural audits for both the Gen2 example and Gen3 host.
 Both retain the 64-bit/125 MHz DDR AXI interface and 128-bit PS HP0 connection.
 
 | Build | LUTs | FFs | BRAM tiles | Setup slack | Hold slack |
@@ -773,7 +775,7 @@ Those historical rollback files were later removed when the banked image became 
 
 ## Limits and reproducing measurements
 
-The frozen release scope is Gen1/Gen2 x1; experimental Gen3 physical I/O and
+The frozen release scope is Gen1/Gen2 x1; Gen3 physical I/O and
 performance evidence is recorded above. There is no PCI-SIG compliance, wider-link,
 hotplug, power-loss or endurance qualification. The historical stopping point
 did not repeat Gen1/cold-cycle qualification. Later packet-width, prefetch and

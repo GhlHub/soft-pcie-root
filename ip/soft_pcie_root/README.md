@@ -18,8 +18,8 @@ The packaged configuration fixes management 50 MHz, host 125 MHz, reference 100 
 one UltraScale+ GTH channel. Its supplied GT configuration selects X0Y15 on XCZU7EV,
 matching ZCU104. Other lane/device mappings need regenerated GT configuration and
 reviewed constraints. This release does not expose unverified GUI parameters for lane
-count or arbitrary AXI clocks. Version 1.1 provides one catalog entry with an **Enable
-experimental Gen3** checkbox, default off; see [optional Gen3
+count or arbitrary AXI clocks. Version 1.1 provides one catalog entry with a
+**Gen3 (`ENABLE_GEN3`)** checkbox, default off; see [optional Gen3
 packaging](../../docs/ip-guide.md#optional-gen3-packaging). Physical measurements by
 revision are in the [performance history](../../docs/performance-history.md).
 
@@ -32,7 +32,7 @@ revision are in the [performance history](../../docs/performance-history.md).
 | `host_clk_i` | Input | Stable 125 MHz host/DDR clock |
 | `core_clk_o`, `core_resetn_o` | Outputs | Host clock alias and synchronized host reset release |
 | `refclk_p_i/n_i` | Inputs | Differential 100 MHz GTH reference |
-| `rx_p_i/n_i`, `tx_p_o/n_o` | Serial | One PCIe lane; Gen1/Gen2 default or experimental Gen3 |
+| `rx_p_i/n_i`, `tx_p_o/n_o` | Serial | One PCIe lane; Gen1/Gen2 default or Gen3 |
 | `perst_a_o` | Output | FPGA-facing active-high reset; card inverts to PERST# |
 | `disable_ssd2_power_o` | Output | Fixed-high legacy example helper; not a second PCIe port |
 | `irq_o` | Output | Level-high aggregate MSI/MSI-X interrupt |

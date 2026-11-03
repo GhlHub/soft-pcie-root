@@ -24,8 +24,8 @@ flowchart LR
 
 ### Optional Gen3 packaging
 
-Vivado now has one catalog definition, `soft-pcie.org:user:soft_pcie_root:1.1`, with an
-**Enable experimental Gen3** checkbox. It defaults off. Generate a fresh local
+Vivado now has one catalog definition, `soft-pcie.org:user:soft_pcie_root:1.1`, with a
+**Gen3 (`ENABLE_GEN3`)** checkbox. It defaults off. Generate a fresh local
 repository once, containing both locally generated PHY backends:
 
 ```sh
@@ -33,8 +33,8 @@ vivado -mode batch -source ip/soft_pcie_root/package.tcl -tclargs build/package_
 ```
 
 In Vivado, add `build/package_next/core` under **Project Settings → IP → Repository**,
-then use **Add IP → Soft PCIe Root Port (optional experimental Gen3)**. Double-click the
-block, open **Configuration**, and select **Enable experimental Gen3** as needed. Apply
+then use **Add IP → Soft PCIe Root Port**. Double-click the
+block, open **Configuration**, and select **Gen3 (`ENABLE_GEN3`)** as needed. Apply
 the customization and regenerate output products before synthesis/implementation. This
 is not a runtime register. `GEN3_TX_PRESET` selects the initial preset from 0 to 10
 (default 4); its GUI field is enabled with Gen3. Phase 2 may change that setting.
@@ -65,15 +65,15 @@ emits no native constraints.
 The optional second packaging argument `0` or `1` now sets only the initial checkbox
 value; it no longer creates separate catalog identities. The historical
 `experiments/gen3/package_host.tcl` entry point delegates to the unified package with
-its initial checkbox on. Version 1.0 Gen2 and experimental 0.1 packages are historical
+its initial checkbox on. Version 1.0 Gen2 and 0.1 packages are historical
 artifacts; create a fresh 1.1 package rather than editing their XML. Remove the old
-experimental repository from the project's IP repository list to avoid retaining its
+repository from the project's IP repository list to avoid retaining its
 separate legacy catalog entry.
 
 Use the shared ZCU104 CDC entry point, `examples/zcu104/constraints/zcu104_cdc.tcl`; it
 dispatches to the reviewed constraint set for the elaborated backend. The two board
-build recipes explicitly select false/true on the same catalog core. Gen3 remains
-experimental and needs further stabilization. Prior physical results refer to their
+build recipes explicitly select false/true on the same catalog core. Gen3 x1 has passed
+the documented hardware validation campaign. Prior physical results refer to their
 exact pre-unification images. The unified Gen3-enabled package has now passed full
 synthesis, place-and-route, and an independent reopened checkpoint audit; see
 [initial implementation evidence](evidence/catalog_gen3_v1/implementation.json).
@@ -139,8 +139,9 @@ continue, and committed packet/replay/credit ownership is retained. A shared
 transitions still quarantine and invoke accepted-AXI drain. No ownership reset
 or live Gen2 fallback is introduced. Startup-only fallback before Gen3 L0 is
 described in [adaptive equalization](adaptive-equalization.md). The current RTL
-has passed route/audit and normal Gen3 NVMe I/O; live Recovery fault injection
-and physical fallback remain open. See the linked hardware campaign and
+has passed route/audit and normal Gen3 NVMe I/O. A subsequent
+[hardware campaign](hardware-coverage.md) passed forced startup fallback and one
+injected same-rate Recovery during CRC reads; full Recovery remains open. See
 [earlier simulation scope](review-followup.md).
 
 ### Normal ACK retirement

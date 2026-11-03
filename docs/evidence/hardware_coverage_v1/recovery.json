@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-03",
+  "scope": "Single diagnostic same-rate Gen3 Recovery during read-only CRC traffic",
+  "image": {
+    "mode": "recovery",
+    "bit_sha256": "60b8ec0fb9220d3b730b2f91fac02276ae1cfd07c9c434567457ca893702307d"
+  },
+  "implementation": "recovery-implementation.json",
+  "sources": "recovery-sources.json",
+  "test_script_sha256": "c61afdde3880e837673142f8bb243a093129ba2730bc2cbb7fb6c9beab6ea443",
+  "initial_registers": {
+    "0x8": "0x93",
+    "0x34": "0x2",
+    "0x40": "0x48575431",
+    "0x44": "0x0",
+    "0x48": "0x0",
+    "0x4c": "0x0",
+    "0x50": "0x8"
+  },
+  "final_registers": {
+    "0x8": "0x93",
+    "0x34": "0x2",
+    "0x40": "0x48575431",
+    "0x44": "0x1",
+    "0x48": "0x10001",
+    "0x4c": "0xe",
+    "0x50": "0x8"
+  },
+  "trigger_count": 1,
+  "recovery_entries": 1,
+  "recovery_returns": 1,
+  "trigger_flags": 14,
+  "fio_returncode": 0,
+  "fio_errors": 0,
+  "read_bytes": 7235174400,
+  "written_bytes": 0,
+  "crc32c_pass": true,
+  "workload": {
+    "runtime_seconds": 10,
+    "iodepth": 8,
+    "block_bytes": 1048576,
+    "offset_bytes": 17179869184,
+    "region_bytes": 268435456,
+    "verify_interval": 4096,
+    "readonly": true
+  },
+  "smart_before": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns": 26,
+    "data_units_written": 52014029
+  },
+  "smart_after": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns": 26,
+    "data_units_written": 52014029
+  },
+  "limitations": [
+    "One event on one SSD/channel, not full Recovery qualification",
+    "Trigger proves active RX packet and DL ownership, not an outstanding DDR AXI burst",
+    "No stopped-reference-clock or live reset test"
+  ]
+}

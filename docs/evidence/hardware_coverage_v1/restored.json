@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-03",
+  "restored_normal_sd_image": true,
+  "normal_bit_sha256": "306802543532d61e977c806876ede1fff2a3490f211829c0f9d85f6b89817614",
+  "new_linux_boot_verified": true,
+  "boot_marker": "soft_pcie.image=adaptive_review_v1",
+  "link_speed_gt_s": 8,
+  "link_width": 1,
+  "final_root_status": "0x93",
+  "final_ddr_status": "0xc",
+  "reference_crc_bytes": 268435456,
+  "reference_crc_pass": true,
+  "test_written_bytes": 0,
+  "smart_unchanged": true,
+  "nvme_live_idle": true,
+  "sd_flash_files_changed": false,
+  "normal_rtl_unchanged": true,
+  "normal_hardware_source_manifest_matches": true
+}

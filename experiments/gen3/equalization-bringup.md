@@ -9,7 +9,7 @@ enables the [Recovery diagnostic](recovery-bringup.md); new builds must be
 evaluated against that scope. The archived v12 source manifest and input
 snapshot identify the exact Phase 1-only implementation.
 
-This experimental image has no PS, AXI master, packet transport, Linux host
+This image has no PS, AXI master, packet transport, Linux host
 interface or NVMe data path. It is intended to measure whether the SSD and the
 ZCU104 can negotiate Gen3 and complete the short-channel Phase 1 equalization
 policy. It is not a complete Gen3 root port and must not be used with the Linux
@@ -63,7 +63,7 @@ upstream notices.
 1. JTAG VIO arms one attempt. The management clock is the buffered 100 MHz
    adapter reference. PHY reset is held for 1 ms and SSD PERST for 100 ms.
 2. A synchronous-reset copy of the legacy startup LTSSM performs receiver
-   detection and Gen1 x1 training. An experimental legacy codec handles EQ TS
+   detection and Gen1 x1 training. An legacy codec handles EQ TS
    symbol 6 and inserts SKP between training sequences.
 3. The experiment requests a directed speed change using EQ TS1/TS2. It waits
    for matching peer speed-change sequences and sends EIOS before idle.
@@ -161,7 +161,7 @@ hardware target. A temporary test does not replace the SD default.
 
 ## First physical trial — 2026-10-25
 
-The `gen3_eq_board_v4` build passed the full experimental regression, routed
+The `gen3_eq_board_v4` build passed the full regression, routed
 setup/hold checks and source-manifest verification. It uses 3,487 LUTs and
 4,656 flip-flops, with no BRAM, URAM or DSPs. Gen3 setup/hold slack is
 +0.041/+0.010 ns; Gen1 is +0.541/+0.010 ns. CDC has no critical findings;
@@ -237,7 +237,7 @@ to complete its power-on wait before releasing those same resets. The v8 build
 therefore passes `--startup-reference` to the local preparation script. It
 selects reference-clock output (`TXOUTCLKSEL=3`) during CPLL reset and restores
 the normal programmable-divider output (`5`) when CPLL reset deasserts. This
-is a local experimental adaptation, not a claim about all AMD PHY versions.
+is a local adaptation, not a claim about all AMD PHY versions.
 The qualified Gen1/Gen2 RTL is unchanged.
 
 A focused test uses the locally generated reset-controller RTL and a behavioral

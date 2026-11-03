@@ -67,7 +67,7 @@ DL-inactive/error status, without cancelling its accepted core command. A late
 response drains internally and cannot clear quarantine. The existing timeout
 values and ABI are unchanged. See [review follow-up](review-followup.md).
 
-### Experimental Gen1 startup diagnostics
+### Gen1 startup diagnostics
 
 In the startup-corrected Gen3 image, while the native PHY remains at Gen1,
 SRP1 0x40–0x4C reports an `LGS1` diagnostic record instead of the Gen3 training
@@ -127,7 +127,7 @@ mode `read_requests` counts issuance setup, `slot_empty_wait` counts an active
 read window awaiting its next complete slot, and `queued_blocked` describes
 parser occupancy rather than completion-sink occupancy.
 
-## Experimental Gen3 link profiling (LPR1)
+## Gen3 link profiling (LPR1)
 
 The diagnostic Gen3 revision adds **local command operation 7** through SRP1's
 existing command mailbox. It emits no PCIe request. Stage the local address in

@@ -28,7 +28,7 @@
 <text x="1109" y="624.24" font-family="DejaVu Sans,sans-serif" font-size="32" font-weight="400" fill="#59dfda">↔</text>
 <text x="80" y="732.68" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="700" fill="#ffffff">ZCU104 · OP047 Rev D · Samsung 990 EVO 1 TB · Linux 6.6.70</text>
 <text x="80" y="775.04" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="400" fill="#a5bacb">1 MiB · QD8 · direct/libaio · one job · 30 s per workload · decimal MB/s</text>
-<text x="80" y="817.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#e8c783">Experimental Gen3 · Full Recovery and broader qualification remain open</text>
+<text x="80" y="817.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#e8c783">Gen3 x1 · Full Recovery and broader qualification remain open</text>
 <text x="80" y="862.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#c8dae8">github.com/GhlHub/soft-pcie-root</text>
 <text x="1090" y="862.22" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#c8dae8">Measured 2026-11-02</text>
 </svg>

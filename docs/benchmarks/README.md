@@ -63,8 +63,7 @@ measurement may therefore include a CPU/software bottleneck and is not proof
 of the PCIe datapath's maximum random-I/O capacity. Approximate combined IOPS
 from one-second samples averaged 45,519, 40,850 and 39,919 across the three
 five-minute windows. Preserve the full-duration comparison rather than
-selecting the fastest opening interval. Gen3 remains experimental and pending
-further stabilization/qualification.
+selecting the fastest opening interval. Full Recovery and broader qualification remain open.
 
 [Sanitized run evidence](../evidence/tx_transform_v1/random-rw-15m.json). Raw
 fio reports and time-series logs are retained in the ignored local laboratory

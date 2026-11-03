@@ -11,7 +11,7 @@ pool from any other project is required.
 ZCU104 Rev C, XCZU7EV-2FFVC1156; Opsero OP047 Rev D; Samsung 990 EVO 1 TB MZ-V9E1T0.
 VADJ was physically checked at 1.8 V; U-Boot telemetry was 1.797 V. SSD2 remains empty.
 The original measured source baseline was `txdouble_v1`; subsequent Gen2 and
-experimental Gen3 builds are recorded in the
+Gen3 builds are recorded in the
 [performance history](../../docs/performance-history.md) and
 [validation](../../docs/verification.md).
 
@@ -39,7 +39,7 @@ ZCU104 LPC example uses only SSD1 lane 0. OP063 has not been tested here, and it
 EEPROM/power requirements must be reviewed. The supplied U-Boot initializer
 accepts exact OP047 identification and refuses other cards; do not bypass that
 check or rewrite an OP063 EEPROM to impersonate OP047. Extending that policy and
-qualifying OP063 is future work. Experimental Gen3 x1 has been tested with OP047;
+qualifying OP063 is future work. Gen3 x1 has been tested with OP047;
 wider links remain future work.
 [Current Opsero documentation](https://docs.opsero.com/op063/).
 
@@ -60,11 +60,11 @@ and sources.json. The full example's resource count includes management/DDR/CDC,
 not just the protocol engine.
 
 For optional Gen3 packaging and its separate board recipe, see the [integration
-guide](../../docs/ip-guide.md#optional-gen3-packaging) and [experimental build
+guide](../../docs/ip-guide.md#optional-gen3-packaging) and [build
 instructions](../../experiments/gen3/README.md#current-design-and-reproduction). The
 default commands above still select Gen1/Gen2. Both recipes instantiate
 `soft_pcie_root:1.1`; their `CONFIG.ENABLE_GEN3` value selects the backend. Manual GUI
-customization uses **Enable experimental Gen3**. The shared CDC entry point follows the
+customization uses **Gen3 (`ENABLE_GEN3`)**. The shared CDC entry point follows the
 elaborated backend automatically. Earlier separate Gen2/Gen3 packages have short
 physical I/O/CRC evidence. The unified 1.1 package has passed customization and
 synthesis/CDC checks for both selections. Its Gen3-enabled configuration also passed
@@ -83,7 +83,9 @@ The later ownership/equalization review fixes passed fresh route/audit and three
 Gen3 startups with NVMe I/O ([evidence](../../docs/evidence/adaptive_review_v1/completion.json)).
 The review-fix image subsequently became the [verified SD default](../../docs/evidence/adaptive_review_v1/default-boot.json) on 2026-11-03.
 No QSPI update was needed. The installed Linux driver remains unchanged.
-Physical fallback and injected Recovery remain open; see the
+A subsequent [hardware campaign](../../docs/hardware-coverage.md) passed forced
+startup fallback and one same-rate Recovery event during CRC reads. Full Recovery
+qualification remains open; see the
 [Gen3 coverage matrix](../../docs/gen3-verification-matrix.md).
 
 ## Linux and first boot

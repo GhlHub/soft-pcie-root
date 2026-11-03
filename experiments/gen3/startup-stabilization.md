@@ -12,8 +12,7 @@ errors, error-log entries and unsafe-shutdown counts did not increase.
 
 ## Failure and correction
 
-The failure occurred during initial Gen1 link negotiation in the experimental
-Gen3 backend, before the transition to Gen3 speed and equalization. Stabilizing
+The failure occurred during initial Gen1 link negotiation in the Gen3 backend, before the transition to Gen3 speed and equalization. Stabilizing
 this stage required preserving completed receive qualification while local
 transmission finished. This correction did not change equalization presets or
 extend training timeouts; the separate Gen1/Gen2 backend is unchanged.
@@ -24,7 +23,7 @@ counter was cleared when the peer started sending logical idle. If this coincide
 with the local transmit counter reaching sixteen, neither cycle satisfied both
 conditions together. The state subsequently timed out and returned to Detect.
 
-The corrected experimental startup LTSSM retains the completed receive
+The corrected startup LTSSM retains the completed receive
 qualification until it leaves Configuration.Complete. Before eight matching TS2s,
 malformed or mismatched sequences still clear the count. Unsupported control
 requests, PHY loss and synchronous reset retain their existing behavior. No
@@ -46,7 +45,7 @@ Run the 25 focused cases with:
 
 All 74 repository tests, lint and XPM elaboration passed. The native root also
 exposes passive `LGS1` legacy state history through the existing diagnostic CDC;
-see [register decoding](../../docs/registers.md#experimental-gen1-startup-diagnostics).
+see [register decoding](../../docs/registers.md#gen1-startup-diagnostics).
 
 ## Implementation and board test scope
 

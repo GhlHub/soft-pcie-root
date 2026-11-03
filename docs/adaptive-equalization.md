@@ -57,9 +57,10 @@ three BRAM tiles and one GTH. No additional postroute optimization was used.
 CDC, DRC, bus skew, routing and timing coverage passed the independent audit.
 
 See [exact evidence](evidence/adaptive_review_v1/completion.json) and
-[source hashes](evidence/adaptive_review_v1/sources.json). Physical fallback,
-injected Recovery, malformed-training/deadline-collision fault injection and
-cold-cycle/electrical qualification remain open. SD and flash were not updated
+[source hashes](evidence/adaptive_review_v1/sources.json). A subsequent
+[hardware campaign](hardware-coverage.md) passed forced startup fallback and one
+injected same-rate Recovery during CRC reads. Malformed-training/deadline-collision
+fault injection, full Recovery and cold-cycle/electrical qualification remain open. SD and flash were not updated
 during this initial hardware campaign;
 the installed Linux driver was retained.
 

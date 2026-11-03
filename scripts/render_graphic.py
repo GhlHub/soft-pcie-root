@@ -31,7 +31,7 @@ for x,w,title,sub in [(80,310,'Linux + DDR','Custom PCI host driver'),(450,360,'
 for x in [399,819,1109]: text(x,598,'↔',32,'#59dfda')
 text(80,713,'ZCU104 · OP047 Rev D · Samsung 990 EVO 1 TB · Linux 6.6.70',24,bold=True)
 text(80,757,'1 MiB · QD8 · direct/libaio · one job · 30 s per workload · decimal MB/s',22,'#a5bacb')
-text(80,800,'Experimental Gen3 · Full Recovery and broader qualification remain open',21,'#e8c783')
+text(80,800,'Gen3 x1 · Full Recovery and broader qualification remain open',21,'#e8c783')
 text(80,845,'github.com/GhlHub/soft-pcie-root',21,'#c8dae8')
 text(1090,845,'Measured '+evidence['date'],21,'#c8dae8')
 svg.append('</svg>');(out/'linkedin-soft-pcie.svg').write_text('\n'.join(svg)+'\n');im.save(out/'linkedin-soft-pcie.png')

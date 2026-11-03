@@ -13,7 +13,9 @@ equalization, startup-only Gen2 fallback and prompt configuration-fault reportin
 The latest review-fix image passed fresh route/audit and three controlled Gen3
 startups with NVMe I/O on 2026-11-02. It measured 737.37 MB/s read and 563.84 MB/s
 write at QD8. It became the verified SD boot default on 2026-11-03; unattended
-warm boot and CRC passed. Physical fallback and injected Recovery remain open.
+warm boot and CRC passed. A subsequent [hardware coverage campaign](docs/hardware-coverage.md)
+passed forced startup fallback, one injected same-rate Recovery under CRC reads,
+and 33 verified I/O matrix jobs. Full Recovery qualification remains open.
 See [adaptive equalization and fallback](docs/adaptive-equalization.md) and the
 [design-review follow-up](docs/review-followup.md).
 
@@ -52,7 +54,8 @@ The latest full regression passed **1,719 tests**, including 994 independent
 Gen3 training, packet, corruption, ownership and rollover cases.
 See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md).
 
-**Gen3 remains experimental.** Full Recovery, cold-cycle qualification, broader
+**Gen3 x1 is hardware-validated on the documented ZCU104/NVMe setup.**
+Full Recovery, cold-cycle qualification, broader
 SSD interoperability and PCIe compliance are not established. The current image
 passed temporary JTAG testing and subsequently became the
 [verified SD default](docs/evidence/adaptive_review_v1/default-boot.json).
@@ -61,7 +64,7 @@ early-quarantine software branch has model coverage but has not been deployed.
 
 ## Configuration and earlier results
 
-The unified Vivado **Enable experimental Gen3** checkbox selects Gen3 at build
+The unified Vivado **Gen3 (`ENABLE_GEN3`)** checkbox selects Gen3 at build
 time. It defaults off, selecting Gen1/Gen2 x1 with 32-bit host packet paths and
 two DDR read-prefetch slots. Both selections retain a 64-bit/125 MHz DDR AXI
 interface. See [packaging and integration](docs/ip-guide.md#optional-gen3-packaging).
@@ -107,12 +110,12 @@ make hardware-audit HARDWARE_OUTPUT=build/zcu104_v1 AUDIT_OUTPUT=build/audit_v1
 
 Outputs must be fresh. `make ip` creates a local IP repository with VLNV
 `soft-pcie.org:user:soft_pcie_root:1.1` (a local identifier, not a service URL). The
-example instantiates that packaged IP. Its **Enable experimental Gen3** checkbox selects
+example instantiates that packaged IP. Its **Gen3 (`ENABLE_GEN3`)** checkbox selects
 the backend at customization time (default off). The frozen source provenance is checked
 separately from generated build hashes. `make release-check` is a strict check of the
 frozen Gen1/Gen2 baseline and is expected to reject this development tree's shared RTL
 changes. Its historical manifests are preserved; do not regenerate them to label
-experimental Gen3 as a qualified release. See [IP
+Gen3 as a qualified release. See [IP
 integration](ip/soft_pcie_root/README.md) and [ZCU104 setup](examples/zcu104/README.md).
 Those hardware commands select the default Gen1/Gen2 backend. For the Gen3
 configuration featured above, use the same fresh IP package with:
@@ -132,7 +135,7 @@ One direct endpoint, function 0 only; up to 16 MiB of endpoint BAR space; noncoh
 DMA to lower 2 GiB DDR in the example; 32 MSI/MSI-X vectors. The DDR master is 64-bit
 AXI at 125 MHz; the ZCU104 interconnect converts to 128-bit PS HP0. Default
 Gen1/Gen2 packaging has two read and two write owners, with 128 bytes of read
-prefetch. Experimental Gen3 has eight read and two write owners, with 512 bytes.
+prefetch. Gen3 has eight read and two write owners, with 512 bytes.
 
 No PCIe compliance certification, switch topology, Type 1 routing, multifunction,
 INTx, hotplug, ASPM/AER or safe live PL replacement. Accepted AXI requests must

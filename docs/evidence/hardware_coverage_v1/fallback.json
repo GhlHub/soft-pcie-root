@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-03",
+  "scope": "One deliberately injected startup adaptive-EQ not-ready failure; automatic Gen2 x1 fallback on diagnostic image",
+  "image": {
+    "mode": "fallback",
+    "bit_sha256": "a5fec373282b7d73d8e4b26c85104afe5a4071436bf0d3ade3ea4239bd6407cd"
+  },
+  "implementation": "fallback-implementation.json",
+  "sources": "fallback-sources.json",
+  "first_attempt_pass": true,
+  "trigger_count": 1,
+  "gen3_failure_code": 13,
+  "gen3_terminal_state": 14,
+  "diagnostic_registers": {
+    "0x0": "0x53525031",
+    "0x4": "0x10000",
+    "0x8": "0x53",
+    "0xc": "0x100061",
+    "0x18": "0x17d",
+    "0x1c": "0x4c4b40",
+    "0x40": "0x48574631",
+    "0x44": "0xfc68782e",
+    "0x48": "0x1",
+    "0x4c": "0x1",
+    "0x50": "0xd"
+  },
+  "ddr_registers": {
+    "0x0": "0x44425231",
+    "0x4": "0x10000",
+    "0x14": "0xc",
+    "0x88": "0x50524632",
+    "0x90": "0x802"
+  },
+  "link_speed_gt_s": 5,
+  "link_width": 1,
+  "host_packet_bits": 64,
+  "ddr_read_slots": 8,
+  "config_reads_passed": 14000,
+  "jobs_passed": 8,
+  "written_bytes": 18064867328,
+  "exact_write_accounting": true,
+  "healthy_idle_finish": true,
+  "performance_MB_s": {
+    "read1": 383.381558,
+    "read8": 428.68028,
+    "write1": 245.699929,
+    "write8": 346.114251
+  },
+  "smart_before": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns": 26
+  },
+  "smart_after": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns": 26
+  },
+  "limitations": [
+    "One controlled warm start, not cold-cycle qualification",
+    "Forced digital not-ready condition, not physical analog EQ failure",
+    "Temporary diagnostic image, not default Gen2 package or SD image"
+  ]
+}

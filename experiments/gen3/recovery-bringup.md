@@ -1,4 +1,4 @@
-# Experimental Gen3 Recovery and receive-path bring-up
+# Gen3 Recovery and receive-path bring-up
 
 This record describes its named historical investigation stage. For the latest
 full-host design and measured results, see [performance history](../../docs/performance-history.md).
@@ -13,7 +13,7 @@ described below. The qualified Gen1/Gen2 release and SD default are unchanged.
 The latest [Data Link configuration-read evidence](evidence/datalink-config-read.json)
 records three successful Gen3 configuration reads, InitFC1/2, UpdateFC and ACK
 exchange with valid packet CRCs. These trials contain no DMA. Current full-host
-integration status is maintained in the [experimental README](README.md#data-link-and-host-integration-status).
+integration status is maintained in the [README](README.md#data-link-and-host-integration-status).
 
 ## Physical result — 2026-10-26
 
@@ -34,7 +34,7 @@ Final routed timing was +0.041/+0.012 ns setup/hold at Gen3 and
 +0.610/+0.012 ns at Gen1. Utilization was 5,253 LUTs, 6,230 FFs and one GTH,
 with no BRAM, URAM, DSP or PCIe controller hard block. Critical CDC checks
 passed; reviewed Gray-counter and held-data crossings remain explicitly bounded.
-The full experimental regression passed with the final source.
+The full regression passed with the final source.
 
 Linux was flushed and halted before temporary JTAG programming. The qualified
 Gen2 image was restored afterward; Linux enumeration and a 16 MiB direct SSD
@@ -112,7 +112,7 @@ still does not explain the absence of peer InitFC under the specification rules.
 
 The larger trace exposed a tight TX population-count path. A balanced nibble
 count and adder tree preserved the simulated native TX trace byte-for-byte;
-the full experimental regression passed. Final Gen3 setup/hold was 0.000/0.011 ns,
+the full regression passed. Final Gen3 setup/hold was 0.000/0.011 ns,
 Gen1 0.199/0.011 ns. Reported Gen3 setup margin is effectively zero. The image
 uses 6,865 LUTs, 9,456 FFs and 93 RAMB36s, predominantly trace storage.
 

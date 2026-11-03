@@ -1,0 +1,467 @@
+{
+  "date": "2026-11-03",
+  "scope": "Verified I/O matrix on deployed normal Gen3 review-fix SD image; no fault injection in this matrix",
+  "image_bit_sha256": "306802543532d61e977c806876ede1fff2a3490f211829c0f9d85f6b89817614",
+  "board": "ZCU104",
+  "adapter": "OP047 Rev D SSD1",
+  "ssd_model": "Samsung SSD 990 EVO 1TB",
+  "jobs_passed": 33,
+  "written_bytes": 2131046400,
+  "exact_write_accounting": true,
+  "verification": "CRC32C and offset-tagged pattern; randomized writes with verification, 70/30 mixed I/O, namespace flush and full-region readback",
+  "random_generator": "lfsr",
+  "randseed": 20261103,
+  "separate_reference_crc_bytes": 268435456,
+  "reference_crc_pass": true,
+  "healthy_idle_finish": true,
+  "cases": [
+    {
+      "name": "random_4096_qd1",
+      "block_bytes": 4096,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_4096_qd1_postflush",
+      "block_bytes": 4096,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_4096_qd8",
+      "block_bytes": 4096,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_4096_qd8_postflush",
+      "block_bytes": 4096,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_4096_qd32",
+      "block_bytes": 4096,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_4096_qd32_postflush",
+      "block_bytes": 4096,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_8192_qd1",
+      "block_bytes": 8192,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_8192_qd1_postflush",
+      "block_bytes": 8192,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_8192_qd8",
+      "block_bytes": 8192,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_8192_qd8_postflush",
+      "block_bytes": 8192,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_8192_qd32",
+      "block_bytes": 8192,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_8192_qd32_postflush",
+      "block_bytes": 8192,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_131072_qd1",
+      "block_bytes": 131072,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_131072_qd1_postflush",
+      "block_bytes": 131072,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_131072_qd8",
+      "block_bytes": 131072,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_131072_qd8_postflush",
+      "block_bytes": 131072,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_131072_qd32",
+      "block_bytes": 131072,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_131072_qd32_postflush",
+      "block_bytes": 131072,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_1048576_qd1",
+      "block_bytes": 1048576,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_1048576_qd1_postflush",
+      "block_bytes": 1048576,
+      "iodepth": 1,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_1048576_qd8",
+      "block_bytes": 1048576,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_1048576_qd8_postflush",
+      "block_bytes": 1048576,
+      "iodepth": 8,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_1048576_qd32",
+      "block_bytes": 1048576,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "random_1048576_qd32_postflush",
+      "block_bytes": 1048576,
+      "iodepth": 32,
+      "offset_bytes": 8589935104,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd1_seed",
+      "block_bytes": 4096,
+      "iodepth": 1,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd1",
+      "block_bytes": 4096,
+      "iodepth": 1,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "randrw",
+      "read_bytes": 134217728,
+      "write_bytes": 39260160,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd1_postflush",
+      "block_bytes": 4096,
+      "iodepth": 1,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd8_seed",
+      "block_bytes": 4096,
+      "iodepth": 8,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd8",
+      "block_bytes": 4096,
+      "iodepth": 8,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "randrw",
+      "read_bytes": 134217728,
+      "write_bytes": 39260160,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd8_postflush",
+      "block_bytes": 4096,
+      "iodepth": 8,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd32_seed",
+      "block_bytes": 4096,
+      "iodepth": 32,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "randwrite",
+      "read_bytes": 134217728,
+      "write_bytes": 134217728,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd32",
+      "block_bytes": 4096,
+      "iodepth": 32,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "randrw",
+      "read_bytes": 134217728,
+      "write_bytes": 39260160,
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "mixed_4k_qd32_postflush",
+      "block_bytes": 4096,
+      "iodepth": 32,
+      "offset_bytes": 8589934592,
+      "region_bytes": 134217728,
+      "rw": "read",
+      "read_bytes": 134217728,
+      "write_bytes": 0,
+      "errors": [
+        0
+      ]
+    }
+  ],
+  "script_sha256": "c52c603a7c13dfb8e43189cdc0e6bc1a6ca78cd916e80c9b37b2d18aca6a83ab",
+  "limitations": [
+    "Finite 128 MiB regions, not endurance or steady-state throughput",
+    "Fixed per-case offset-tagged patterns do not prove stale-write detection for every mixed-I/O overwrite",
+    "Same-address concurrent-write races avoided using a random permutation",
+    "No physical Recovery or fallback exercised by these matrix jobs"
+  ],
+  "smart_before": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns": 26
+  },
+  "smart_after": {
+    "critical_warning": 0,
+    "media_errors": 0,
+    "num_err_log_entries": 0,
+    "unsafe_shutdowns": 26
+  }
+}

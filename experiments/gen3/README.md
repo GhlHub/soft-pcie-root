@@ -1,14 +1,15 @@
-# Experimental Gen3 x1 investigation
+# Gen3 x1 investigation
 
-This directory contains the optional experimental Gen3 x1 backend, its build
+This directory contains the optional Gen3 x1 backend, its build
 recipes, tests and chronological bring-up records. The frozen release remains
 Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 
 Current development beyond the historical measurements below includes
 [adaptive Phase 2/3 and startup-only Gen2 fallback](../../docs/adaptive-equalization.md).
 The 2026-11-02 adaptive review-fix image passed fresh route/audit, three controlled Gen3
-startups and NVMe tests at 737.37/563.84 MB/s QD8 read/write. Physical fallback
-and injected Recovery remain open. The chronological records retain their
+startups and NVMe tests at 737.37/563.84 MB/s QD8 read/write. Subsequent
+[diagnostic hardware tests](../../docs/hardware-coverage.md) passed forced startup
+fallback and one same-rate Recovery event during CRC reads. Full Recovery remains open. The chronological records retain their
 original scope and limitations.
 
 ## Current design and reproduction
@@ -38,7 +39,7 @@ python3 experiments/gen3/host_sources.py check build/gen3_board_next/sources.jso
 ```
 
 The unified package provides one `soft_pcie_root:1.1` catalog entry. In a manual block
-design, double-click it and select **Enable experimental Gen3**; the experimental board
+design, double-click it and select **Gen3 (`ENABLE_GEN3`)**; the board
 recipe sets `CONFIG.ENABLE_GEN3=true` explicitly. The default board recipe sets it
 false. The optional packaging argument `1` sets the initial checkbox value only. Earlier
 sections below describing separate native host packages refer to historical builds. The
@@ -368,7 +369,7 @@ Relevant sections:
 | 4.2.7.2 | SKP handling at 8 GT/s |
 | Appendix C.2, page 998 | Independent lane-0 scrambler vectors |
 
-`gen3_scrambler.sv` is an experimental 32-bit lane-0 scrambler/descrambler with
+`gen3_scrambler.sv` is a 32-bit lane-0 scrambler/descrambler with
 a synchronous control reset and one elastic output register. It handles
 per-byte advance/XOR selection and reseeding after an accepted word. The caller
 must classify ordered sets, select training DC-balance exceptions, and identify
@@ -546,7 +547,7 @@ No AMD controller or generated vendor source is included in the release.
 
 The local draft, section 4.2.6.4.2.1.1, explicitly permits a downstream port to
 skip phases 2 and 3 based on platform/channel characteristics. This remains a
-reasonable experimental policy for a short connection, not evidence that the
+reasonable policy for a short connection, not evidence that the
 channel works at 8 GT/s. Phase 1 and the subsequent Recovery states still apply.
 
 `gen3_eq_phase1.sv` implements downstream x1 Phase 1 with synchronous reset:
@@ -568,7 +569,7 @@ channel works at 8 GT/s. Phase 1 and the subsequent Recovery states still apply.
   successful-speed-negotiation and perform fallback; this component cannot
   declare L0 or reset packet/replay ownership.
 - If PHY readiness drops after preset acknowledgement, fails the attempt and
-  requests Recovery.Speed immediately. This experimental fail-closed policy
+  requests Recovery.Speed immediately. This fail-closed policy
   prevents reuse of an acknowledgement after the PHY loses readiness; a new
   attempt requires a new acknowledgement. It does not implement fallback itself.
 - Exposes sticky per-attempt `failure_reason` and a saturating 16-bit
@@ -587,7 +588,7 @@ only this attempt. No packet memory is reset by this controller.
 Tests cover fixed-preset advertisement, policy latching, mismatched symbols,
 invalid/nonconsecutive training sequences, alignment loss, stale entry events,
 cancellation, missing preset/PHY readiness, the exact timeout boundary and
-synchronous reset. Simulation, lint and the full experimental component
+synchronous reset. Simulation, lint and the full component
 regression pass with the final field-match check. No physical equalization
 has been performed.
 
@@ -599,8 +600,7 @@ cover a valid pair with an intervening gap, changed symbols, invalid TS1,
 alignment loss and reacquisition, PHY readiness loss, missing acknowledgement,
 persistent misalignment, absent TS1 and absent PHY readiness. It checks settings
 and policy latching, pulse acknowledgements, diagnostic clearing/persistence,
-and single-cycle handoff/fallback indications. The standard experimental
-regression now includes this runner, which saves source hashes and a result
+and single-cycle handoff/fallback indications. The standard regression now includes this runner, which saves source hashes and a result
 manifest in a fresh ignored build directory.
 
 The preset sweep uses synthetic acknowledged PHY fields. It exercises control
@@ -696,7 +696,7 @@ clock-frequency qualification, stopped clocks, bounded faults, delayed packet
 retirement, stop during collection, and retained partial packets on overflow.
 An independent Python decoder checks captured scrambled words, continuous packet
 data, EDS/SKP transitions, parity, LFSR state and cadence. Tests use both a short
-stress interval and the normal 372-block interval. The full experimental suite,
+stress interval and the normal 372-block interval. The full suite,
 focused simulations and module lint pass.
 
 Standalone Vivado 2026.1 synthesis on XCZU7EV-2 produced:
@@ -725,7 +725,7 @@ vivado -mode batch -source experiments/gen3/probe_native_gt.tcl \
 
 `gen3_tx_path.sv` now connects the Data-stream scheduler, tagged completion
 boundary, management rate controller and user-clock observer. It provides a
-single experimental transport top with separate management and user clocks.
+single transport top with separate management and user clocks.
 This is a fabric/PHY interface integration, not a complete native GTH wrapper
 or PCIe link. Packet input is still preframed, and the LTSSM must provide Data
 Stream permission only after training/equalization has completed.
@@ -768,7 +768,7 @@ delayed physical completion, final ordered-set drain, Gen3/Gen2/Gen1 changes,
 rapid successive management requests, packet identity and tokens retained
 across Recovery, and rejection of a stale completion for a subsequent packet.
 The latter retains the packet bank and ends in a drain timeout without forcing
-electrical idle. The full experimental regression and integrated lint pass.
+electrical idle. The full regression and integrated lint pass.
 
 Standalone synthesis with frozen, verified source hashes uses 471 LUTs and
 393 registers, including 40 LUTs used as memory. Estimated setup/hold slack is
@@ -803,7 +803,7 @@ decoding validated the transmitted request and received completion LCRCs.
 See [the sanitized evidence](evidence/datalink-config-read.json) for exact image
 hash, timing, source hashes, and limitations. That image exercised no DMA.
 
-The experimental implementation now includes:
+The implementation now includes:
 
 - Registered DLLP formatting, flow-control initialization and updates, and
   lossless ACK/NAK scheduling.
@@ -812,7 +812,7 @@ The experimental implementation now includes:
   timeout/NAK replay, and quarantine after retry exhaustion.
 - Native scrambled configuration transactions, with corrupted-LCRC injection
   demonstrating NAK/replay and exactly one accepted request in simulation.
-- A native PHY adapter and experimental package around the existing host, DDR,
+- A native PHY adapter and package around the existing host, DDR,
   command/packet CDC, and CSR shell. The generated shell changes only the top
   module name and root-port module type; qualified source files remain unchanged.
 
@@ -832,7 +832,7 @@ startup before Gen3/Data Link activation.
 This confirms that startup reliability remains an open issue even though the
 Gen3 data path operated successfully. See the [host evidence](evidence/nvme-host.json)
 for trial counts, exact image/source hashes, timings, throughput and limitations.
-This is experimental operation, not a qualified release.
+These historical results do not establish full qualification.
 
 Timing closure required separating training disparity from packet data, removing
 validation-dependent ingress/output-data enables, and simplifying the parser's
@@ -842,7 +842,7 @@ Final setup/hold slack is +0.067/+0.011 ns at Gen3 and +0.687/+0.011 ns at Gen1.
 Utilization is 11,201 LUTs, 9,979 FFs, one RAMB36, one RAMB18 and one GTH, with
 no URAM, DSP or PCIe hard controller.
 
-To reproduce the experimental host build, use fresh output directories:
+To reproduce the host build, use fresh output directories:
 
 ```sh
 vivado -mode batch -source experiments/gen3/package_host.tcl \
@@ -866,7 +866,7 @@ simulation or implementation does not establish electrical compliance.
 
 No Gen3 capability is advertised by the qualified core. Hardware tests use
 temporary JTAG programming and leave the SD default unchanged. Full-host testing halts Linux cleanly, catches the next boot at kernel
-entry, programs the experimental PL before Linux owns DMA, then resumes boot.
+entry, programs the PL before Linux owns DMA, then resumes boot.
 Never substitute an image under a running driver. Qualified Gen2 Linux/NVMe
 was restored and the 256 MiB CRC pattern reverified at 403 MB/s, with zero
 I/O in flight and unchanged SMART error counters. Details are in the host evidence.
@@ -930,7 +930,7 @@ change does not implement full Recovery or resolve intermittent startup.
 banks, cumulative ACK, partial NAK replay, timeout, ACK during a stalled replay,
 sequence wrap, partial-packet pause and invalid-ACK/retry-exhaustion quarantine.
 It independently checks 4,109 framed packets against zlib LCRC and expected
-payload/sequence values. Full experimental regression and six reused Gen2
+payload/sequence values. Full regression and six reused Gen2
 replay/ACK/serializer tests also pass. Historical performance tables above
 refer to the older single-outstanding image, not this new window.
 

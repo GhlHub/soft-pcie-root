@@ -8,7 +8,9 @@ images; no new synthesis, routing or hardware test is included here.
 
 Latest full regression: **1,719 passed** (233.25 seconds, 2026-11-03).
 Lint, real-XPM elaboration and all 131 HDL formatting checks passed. Review corrections subsequently passed fresh route/audit and normal
-Gen3 startup/I/O hardware tests; exact fault injections remain simulation-only. See
+Gen3 startup/I/O hardware tests. A subsequent [hardware campaign](hardware-coverage.md)
+adds forced startup fallback and one injected same-rate Recovery during CRC reads.
+Malformed-training/deadline collisions remain simulation-only. See
 [adaptive review corrections](adaptive-equalization.md#review-corrections-after-the-deployed-image).
 This includes **994 new Gen3 peer cases** across four campaigns. Counts below describe their individual
 checkpoints. Those four campaigns were simulation-only and did not change
@@ -32,7 +34,8 @@ TX and state-aware startup. Subsequent [adaptive equalization and startup
 fallback](adaptive-equalization.md) add directed coverage. A full independent LTSSM
 model remains open; live rate migration remains unsupported. The adaptive image passed fresh route/audit,
 three controlled Gen3 startups, normal NVMe I/O and SD-default warm boot;
-physical fallback, injected Recovery and electrical qualification remain open. Historical
+the subsequent diagnostic campaign passed forced startup fallback and one Recovery
+event. Full Recovery and electrical qualification remain open. Historical
 campaign counts and hashes below remain unchanged.
 
 ## Reference basis

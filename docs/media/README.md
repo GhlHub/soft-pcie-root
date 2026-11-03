@@ -10,8 +10,9 @@ It shows **737.37 MB/s read / 563.84 MB/s write**, sequential 1 MiB, QD8,
 direct/libaio, one job, 30 seconds per workload on ZCU104 with Samsung 990 EVO
 1 TB. These are separate read/write tests, not simultaneous aggregate bandwidth.
 The diagram is conceptual; it is not a photograph or an electrical schematic.
-The qualification note retains Gen3's experimental status. The image passed temporary programming and subsequently became the verified SD default;
-physical fallback and injected Recovery remain open.
+The qualification note identifies the remaining coverage limits. The image passed temporary programming and subsequently became the verified SD default;
+subsequent [hardware tests](../hardware-coverage.md) passed forced Gen2 fallback,
+one same-rate Recovery event and 33 verified I/O jobs.
 
 Alt text: A dark blue Gen3 x1 soft PCIe performance card shows 737.37 MB/s
 sequential read and 563.84 MB/s sequential write. Linux and DDR connect through
@@ -68,7 +69,7 @@ repository regression to 1,663 tests without changing that hardware evidence.
 ## Historical comparison alt text
 
 Three cards compare originally shared Gen2, Gen2 with ACK retirement, and
-experimental Gen3 with ACK retirement. Read/write figures are respectively
+Gen3 with ACK retirement. Read/write figures are respectively
 428.3/259.7, 428.3/260.2, and 745.4/567.7 MB/s. An amber banner says
 “Gen3 pending further stabilization.” Gen2 uses 32-bit host packet paths and two
 prefetch slots; Gen3 uses 64-bit paths and eight slots. The footer states that

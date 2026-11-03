@@ -116,7 +116,7 @@ LPR1 added counters for 32 link-clock events, including credit-versus-replay adm
 stalls, captured ACK waits, copy/formatter stalls, PCS waits, and error/replay
 activity. Local command operation 7 starts or freezes the bank and reads frozen
 words through the existing command/response CDC. No new live multibit CDC or
-packet/replay reset is introduced. See the [register contract](../../docs/registers.md#experimental-gen3-link-profiling-lpr1).
+packet/replay reset is introduced. See the [register contract](../../docs/registers.md#gen3-link-profiling-lpr1).
 That diagnostic revision kept the normal-ACK retirement barrier unchanged for
 physical attribution. LPR2 below implements concurrent normal retirement.
 

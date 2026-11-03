@@ -1,0 +1,26 @@
+{
+  "base_revision": "910ad024ee941a8224fe232494b1f90bd6df6683",
+  "mode": "fallback",
+  "generator_sha256": "c8ff925d3481d8b1bf0ad4d35cfde810bf3cb1da86ae0ea9e5d71810eb2dbcfe",
+  "warning": "Diagnostic injection image only; not a release or SD default",
+  "date": "2026-11-03",
+  "diagnostic_only": true,
+  "bit_sha256": "a5fec373282b7d73d8e4b26c85104afe5a4071436bf0d3ade3ea4239bd6407cd",
+  "independent_audit": "PASS",
+  "cdc_unwaived_critical": 0,
+  "existing_reset_waiver_endpoints": 12,
+  "timing_ns": {
+    "gen3": {
+      "setup": 0.073,
+      "hold": 0.011
+    },
+    "gen2": {
+      "setup": 0.073,
+      "hold": 0.011
+    },
+    "gen1": {
+      "setup": 0.515,
+      "hold": 0.011
+    }
+  }
+}

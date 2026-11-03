@@ -8,12 +8,12 @@ retirement produced the later write improvements. These are measured single-driv
 results, not projected speeds for other topologies.
 
 The frozen release remains Gen1/Gen2 x1. The current source tree also contains optional
-experimental Gen3 and changes to shared host/replay logic. The current default Gen2
+Gen3 and changes to shared host/replay logic. The current default Gen2
 ACK-retirement configuration has now also passed its own fresh build, audit and physical
 I/O/CRC tests. The adaptive review-fix Gen3 image is now the SD boot default and has passed
 an unattended warm reboot and read-only CRC check. The unified 1.1 catalog flow
 has passed full synthesis/PNR and physical performance tests with Gen3 enabled;
-see [current validation](verification.md). Gen3 remains experimental.
+see [current validation](verification.md). Full Recovery and broader qualification remain open.
 
 The earlier requester-timeout fix passed fresh Gen3 synthesis/route and
 temporary hardware validation. QD1/QD8 reads measured **589.63/733.45 MB/s**
@@ -147,8 +147,8 @@ byte enables, odd-length tails and ownership transfer remain enforced.
 
 ### Widening transmit transfers and adding read prefetch
 
-SSD writes require the endpoint to fetch data from host DDR. The experimental
-Gen3 package widened the host TX packet path to 64 bits, increased completion
+SSD writes require the endpoint to fetch data from host DDR. The Gen3 package
+widened the host TX packet path to 64 bits, increased completion
 prefetch from two to eight 64-byte slots, and overlapped issuance across validated
 endpoint read requests. QD8 writes increased from 260.30 to 454.74 MB/s, about
 75%, while reads stayed near their prior rates. This is the combined result of

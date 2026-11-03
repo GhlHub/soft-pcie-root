@@ -1,4 +1,4 @@
-# Open-source references for experimental Gen3
+# Open-source references for Gen3
 
 This record describes its named historical investigation stage. For the latest
 full-host design and measured results, see [performance history](../../docs/performance-history.md).

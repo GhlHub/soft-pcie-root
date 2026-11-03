@@ -17,7 +17,11 @@ Requester timeout fix subsequently passed a fresh Gen3 route/audit and temporary
 board validation (28,000 config reads and NVMe I/O/CRC); see
 docs/evidence/requester_fix_v1/completion.json. Exact
 timeout-edge injection is simulation-only; no new Gen2 backend hardware build.
-Latest regression: 1,711 passed; see docs/gen3-verification-matrix.md.
+Latest full regression: 1,719 passed (233.25 seconds, 2026-11-03); lint/XPM and
+131 HDL format checks pass. See docs/gen3-verification-matrix.md.
+Later fallback-ownership/evaluation-priority fixes passed fresh route/audit and
+three Gen3 startups plus I/O; see docs/evidence/adaptive_review_v1/completion.json.
+Exact fault injections remain simulation-only. These fixes are not in SD.
 Current development adds adaptive Phase 2/3 and startup-only Gen2 fallback.
 Fresh route/audit and three controlled Gen3 startups/I/O passed 2026-11-02;
 physical fallback and injected Recovery remain open. See docs/adaptive-equalization.md.

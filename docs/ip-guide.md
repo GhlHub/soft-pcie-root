@@ -93,7 +93,9 @@ not newly exposed AXI4-Stream ports. Gen3 uses a 64-bit whole-packet TX CDC and 
 to 32-bit DWORDs in the 250 MHz link domain. The link serializer and replay interfaces
 retain their existing width. The selected host width and buffering stay fixed throughout
 operation, including startup fallback to Gen2 or Gen1. Live migration after
-Gen3 L0 is not supported. Four packet CDC slots still hold up to 64 DWORDs each, and packet
+Gen3 L0 is not supported. Within the selected legacy fallback backend, bounded
+Gen1/Gen2 rate changes preserve the established ownership epoch while new
+configuration commands pause; failed switching still reports link loss. Four packet CDC slots still hold up to 64 DWORDs each, and packet
 credits/replay capacity do not change.
 
 In wide mode, AR issuance and completion transmission have independent ownership.

@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import pytest
 ROOT=Path(__file__).resolve().parents[1]
-@pytest.mark.parametrize('case', range(10))
+@pytest.mark.parametrize('case', range(18))
 def test_adaptation(tmp_path,case):
     exe=tmp_path/'eq'
     subprocess.run(['iverilog','-g2012','-s','test_eq_adapt',f'-Ptest_eq_adapt.CASE={case}','-o',str(exe),

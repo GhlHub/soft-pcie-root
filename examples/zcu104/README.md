@@ -79,6 +79,9 @@ The subsequent requester timeout fix passed a fresh Gen3 build and temporary
 board validation ([evidence](../../docs/evidence/requester_fix_v1/completion.json));
 The subsequent adaptive-EQ image passed fresh route/audit, three controlled
 Gen3 startups and NVMe I/O; it is now the [verified SD default](../../docs/evidence/adaptive_eq_v2/default-boot.json).
+The later ownership/equalization review fixes passed fresh route/audit and three
+Gen3 startups with NVMe I/O ([evidence](../../docs/evidence/adaptive_review_v1/completion.json)).
+That image was temporarily programmed; the SD default is unchanged.
 No QSPI update was needed. The installed Linux driver remains unchanged.
 Physical fallback and injected Recovery remain open; see the
 [Gen3 coverage matrix](../../docs/gen3-verification-matrix.md).

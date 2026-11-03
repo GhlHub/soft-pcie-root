@@ -47,7 +47,11 @@ interface.
 For current native startup fallback, bit 2 at 0x50 is sticky for the boot, and
 bit 0 distinguishes Gen2 from Gen1. State 20 identifies adaptive equalization;
 after fallback the state field uses legacy encoding, with adapter states 30
-(rate transition) and 31 (failed rate transition). See
+(rate transition) and 31 (failed rate transition). During a bounded fallback
+rate transition, the adapter preserves the legacy backend's link-up and
+DL-active indications while pausing new configuration command admission.
+State 30 alone does not mean ownership was lost. State 31 reports failure and
+deasserts those indications. See
 [adaptive startup](adaptive-equalization.md).
 
 ### Bounded Gen3 Recovery status

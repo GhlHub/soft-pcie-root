@@ -1,7 +1,7 @@
 # Release boundary and further investigation
 
 The frozen release is Gen1/Gen2 x1. Current development adds optional experimental Gen3
-x1 and changes shared host/replay RTL. Separate current Gen3 and default Gen2 builds
+x1 and changes shared host/replay RTL. Separate Gen3 and historical default Gen2 builds
 passed short physical I/O/CRC tests; they do not imply broader qualification or support
 for other hardware. See [performance history](performance-history.md) for completed
 improvements and [verification](verification.md) for evidence and remaining limits.
@@ -22,10 +22,10 @@ improvements and [verification](verification.md) for evidence and remaining limi
   RX metadata SD-default image.
 - Independent Gen3 training and packet peers: 994 added cases, including CRC
   corruption, retained ownership, full replay-store reuse and natural sequence
-  rollover. Full regression: 1,711 passed. See the
+  rollover. See the
   [Gen3 matrix](gen3-verification-matrix.md) for the remaining functional gaps.
 
-The latest adaptive-EQ image measured 733.38 MB/s read and 562.68 MB/s write
+The latest adaptive review-fix image measured 737.37 MB/s read and 563.84 MB/s write
 at QD8; it passed 28,000 configuration reads and NVMe I/O/CRC checks. The earlier
 ACK-retirement image measured 745.36/567.71 MB/s.
 Its five-second link profile recorded no peer-credit or normal-ACK blocking, but
@@ -33,8 +33,9 @@ replay admission blocked 27.62% of cycles and formatter output blocked 16.13%.
 These events overlap. More DDR slots are not yet justified by these measurements.
 
 The current image also implements bounded same-rate Recovery, adaptive Phase
-2/3 and startup-only Gen2 fallback. Three controlled Gen3 startups and an
-unattended SD-default reboot passed. New PHY rate selection is registered before
+2/3 and startup-only Gen2 fallback. The review fixes passed three controlled
+Gen3 startups. The previous adaptive-EQ image passed unattended SD boot and
+remains the default. New PHY rate selection is registered before
 its CDC boundary. The new early-quarantine Linux driver branch still needs
 physical deployment validation; the 50 ms completion allowance is retained.
 
@@ -48,7 +49,7 @@ physical deployment validation; the 50 ms completion allowance is retained.
   packaged block-design cell for AXI automation in the meantime.
 - Distinguish replay-window/peer ACK latency from PCS boundary, cadence and DLLP
   arbitration limits before changing capacity or scheduling.
-- Continue timing work from the adaptive-EQ image's +0.101 ns routed Gen3 WNS
+- Continue timing work from the review-fix image's +0.041 ns routed Gen3 WNS
   (RX metadata achieved +0.136 ns); verify changes in fresh source-matched builds.
 - Extend the corrected startup's ten warm-start CRC trials to cold cycles and
   broader SSD coverage; physically test adaptive response timing, startup

@@ -6,8 +6,11 @@ based on source revision `c835607`. This records functional verification, not
 PCI-SIG certification. Existing hardware evidence applies only to its exact
 images; no new synthesis, routing or hardware test is included here.
 
-Latest full regression: **1,711 passed** (248.25 seconds, final SD-deployment/commit check), including **994 new
-Gen3 peer cases** across four campaigns. Counts below describe their individual
+Latest full regression: **1,719 passed** (233.25 seconds, 2026-11-03).
+Lint, real-XPM elaboration and all 131 HDL formatting checks passed. Review corrections subsequently passed fresh route/audit and normal
+Gen3 startup/I/O hardware tests; exact fault injections remain simulation-only. See
+[adaptive review corrections](adaptive-equalization.md#review-corrections-after-the-deployed-image).
+This includes **994 new Gen3 peer cases** across four campaigns. Counts below describe their individual
 checkpoints. Those four campaigns were simulation-only and did not change
 production RTL. The subsequent review follow-up changes RTL and adds 28 tests.
 The earlier packet harness hash predates its documented watchdog extension;

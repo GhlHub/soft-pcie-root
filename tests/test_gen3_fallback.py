@@ -24,6 +24,10 @@ def test_fallback_packet_path(tmp_path,gen2,initial_rate,fault):
     source=source.replace(".initial_rate_i(2'd2)", f".initial_rate_i(2'd{initial_rate})")
     if initial_rate==0:
         source=source.replace('wait(dut.rate_o==0); cycles(4); phystatus=1; cycles(1); phystatus=0;', 'wait(dut.run);')
+    # The existing peer changes rate twice with a real configuration read pending.
+    source=source.replace('    integer before_packets,', "    reg preserve_epoch=0;\n    always @(posedge clk) if(preserve_epoch && (!active || !up))\n        $fatal(1, \"rate switch dropped accepted ownership epoch\");\n    integer before_packets,")
+    source=source.replace('            partner_speed(0);', '            preserve_epoch=1; partner_speed(0);')
+    source=source.replace('            partner_speed(1);', '            partner_speed(1); preserve_epoch=0;')
     if fault:
         source=source.replace('.IDLE_CYCLES(8),', '.IDLE_CYCLES(8), .SWITCH_TIMEOUT(64),')
         a=source.index('    initial begin\n        cycles(4);')

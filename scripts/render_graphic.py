@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from html import escape
 import json
 out=Path(__file__).resolve().parents[1] / 'docs/media'
-evidence=json.loads((out.parent/'evidence/adaptive_eq_v2/completion.json').read_text())
+evidence=json.loads((out.parent/'evidence/adaptive_review_v1/completion.json').read_text())
 read=evidence['benchmark']['MB_s']['read8']
 write=evidence['benchmark']['MB_s']['write8']
 im=Image.new('RGB',(1600,900),'#071827'); d=ImageDraw.Draw(im)

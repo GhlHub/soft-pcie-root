@@ -26,7 +26,7 @@ module test_eq_adapt;
         .PHASE3_CYCLES  (2500),
         .REQUEST_CYCLES (120),
         .SETTLE_CYCLES  (8),
-        .EVALUATE_CYCLES(24),
+        .EVALUATE_CYCLES(CASE >= 10 ? 100 : 24),
         .APPLY_CYCLES   (40)
     ) dut (
         clk,
@@ -101,6 +101,7 @@ module test_eq_adapt;
     integer rx_wait_cycles = 0;
     integer tx_count = 0, rx_count = 0, serial = 0, cycles = 0;
     reg [1:0] oldctrl = 0;
+    reg       injected = 0;
     always @(negedge clk) begin
         if (!reset) begin
             cycles = cycles + 1;
@@ -195,11 +196,53 @@ module test_eq_adapt;
                 adapted  = rx_count > 1;
                 rxdone   = 1;
             end else if (rxctrl == 0) rxdone = 0;
+            if (CASE >= 10 && dut.state == 9 && dut.clean_pairs >= 8 && !injected) begin
+                if (CASE == 10) valid = 0;
+                if (CASE == 11) rxfields = ts(2, 0, fields[6:3], coeff, 0, 0);
+                if (CASE == 12) rxfields = ts(3, 0, fields[6:3] + 1'b1, coeff, 0, 0);
+                if (CASE == 13) rxfields = ts(3, 0, fields[6:3], coeff, 1, 0);
+                if (CASE <= 13) begin
+                    step();
+                    if (done || dut.state != 10) $fatal(1, "bad TS did not invalidate evaluation");
+                    valid    = 1;
+                    injected = 1;
+                end else if (CASE == 14) begin
+                    event_ts = 0;
+                    repeat (105) begin
+                        step();
+                        if (done) $fatal(1, "evaluation succeeded without fresh training");
+                    end
+                    injected = 1;
+                end else if (dut.operation_timer >= 100) begin
+                    if (CASE == 17) begin
+                        force dut.request_timer = 119;
+                        force dut.extended_count = 2;
+                        step();
+                        if (done || failed || !active || dut.state != 10)
+                            $fatal(1, "request deadline lost retry ownership");
+                        release dut.request_timer;
+                        release dut.extended_count;
+                        injected = 1;
+                    end else begin
+                        if (CASE == 15) ready = 0;
+                        // Boundary injection: collide absolute deadline with a good pair.
+                        if (CASE == 16) force dut.phase_timer = 2499;
+                        step();
+                        if (done || !failed || active || reason != (CASE == 15 ? 1 : 2))
+                            $fatal(1, "failure did not dominate successful evaluation");
+                        if (CASE == 16) release dut.phase_timer;
+                        $display("PASS: completion/failure collision %0d", CASE);
+                        $finish;
+                    end
+                end
+            end
             step();
         end
         if (CASE == 8) begin
             if (!failed || reason != 4 || attempts != 11) $fatal(1, "retry bound");
-        end else if (!done || failed || attempts != 2 || rx_count != 2)
+        end else
+            if (!done || failed || attempts != ((CASE >= 10 && CASE <= 13) || CASE == 17 ? 3 : 2) ||
+                rx_count != ((CASE >= 10 && CASE <= 13) || CASE == 17 ? 3 : 2))
             $fatal(
                 1,
                 "adaptive completion done %b fail %b reason %d tries %d rx %d",

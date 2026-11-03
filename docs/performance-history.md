@@ -1,7 +1,7 @@
 # Performance improvements leading to the current design
 
-The latest adaptive-EQ Gen3 x1 image delivers **733.38 MB/s sequential read**
-and **562.68 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
+The latest adaptive review-fix Gen3 x1 image delivers **737.37 MB/s sequential read**
+and **563.84 MB/s sequential write** at queue depth 8 on ZCU104 with a Samsung
 990 EVO 1 TB. Widening the receive path produced the largest read improvement;
 wider transmit transfers with eight-slot DDR prefetch and concurrent normal ACK
 retirement produced the later write improvements. These are measured single-drive
@@ -32,6 +32,16 @@ Resources increased to 16,117 LUTs, 12,367 FFs and 3 BRAM tiles; Gen3 WNS is
 +0.101 ns. Physical fallback and injected Recovery remain open.
 [SD-default verification](evidence/adaptive_eq_v2/default-boot.json).
 
+The subsequent review fixes preserve fallback ownership during rate changes,
+reject invalid evaluation training and prioritize failure over EQ completion.
+Fresh synthesis/route/audit and three controlled Gen3 startups passed, together
+with 28,000 configuration reads and all eight NVMe jobs. QD8 read/write measured
+737.37/563.84 MB/s; this small difference is not an established performance gain.
+Gen3/Gen2 setup margin fell to +0.041 ns (Gen1 +0.204 ns); hold is +0.010 ns.
+Resources are 16,116 LUTs, 12,367 FFs, 671 control sets and three BRAM tiles.
+The review-fix image was temporarily programmed; SD remains adaptive EQ v2.
+[Review-fix evidence](evidence/adaptive_review_v1/completion.json).
+
 ## Comparable physical benchmarks
 
 All rows below use one job, sequential 1 MiB direct I/O through fio/libaio, QD1
@@ -58,6 +68,7 @@ small differences should not be treated as statistically established changes.
 | RX metadata [12] | Gen3 x1 | 595.24 | 734.84 | 339.91 | 564.79 |
 | Requester fix [13] | Gen3 x1 | 589.63 | 733.45 | 339.49 | 564.16 |
 | **Adaptive EQ, current SD default [14]** | **Gen3 x1** | **589.33** | **733.38** | **340.19** | **562.68** |
+| **Adaptive review fixes, latest [15]** | **Gen3 x1** | **591.48** | **737.37** | **339.90** | **563.84** |
 
 Evidence: [1 — transmit buffering](evidence/txdouble_v1/performance-comparison.json), [2
 — repackaged example](evidence/repackaged_v1/completion.json), [3 — payload
@@ -72,7 +83,8 @@ pipeline](evidence/rx_pipeline_v1/completion.json), [11 — TX
 transform](evidence/tx_transform_v1/completion.json), [12 — RX
 metadata](evidence/rx_metadata_v1/completion.json), [13 — requester
 fix](evidence/requester_fix_v1/completion.json), [14 — adaptive
-EQ](evidence/adaptive_eq_v2/completion.json).
+EQ](evidence/adaptive_eq_v2/completion.json), [15 — review
+fixes](evidence/adaptive_review_v1/completion.json).
 
 ## Mixed random I/O baseline — 2026-10-27
 

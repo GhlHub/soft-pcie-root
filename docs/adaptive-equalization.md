@@ -7,6 +7,64 @@ hardware testing. Three controlled warm startups reached Gen3 x1; normal NVMe
 I/O and CRC checks passed. Physical Gen2 fallback and injected live Recovery
 remain unqualified. The image subsequently became the verified SD default; no flash update was needed.
 
+## Review corrections after the deployed image
+
+The source now fixes three issues found after the `adaptive_eq_v2` SD image:
+
+- The fallback adapter preserves the backend's established link-up/DL-active
+  indication during bounded Gen1/Gen2 rate changes. It pauses new configuration
+  command admission, retains accepted owners and reports switch failure as inactive.
+- Evaluation rejects any invalid, wrong-EC, mismatched or rejected TS event,
+  including a single event that cannot form a pair. Completion requires a fresh
+  matching pair after the observation interval; silence cannot complete evaluation.
+- PHY loss and absolute phase deadlines override simultaneous success. The parent
+  handles failure first. An exhausted request deadline also overrides success and
+  leaves the controller active for its next bounded retry.
+
+Regressions reproduce the previous failures, check both fallback rate directions
+with a real configuration read pending (`tests/test_gen3_fallback.py`), and
+check clean retry after malformed
+training, silence followed by fresh training, PHY/deadline completion collisions
+and request-timeout retry ownership (`tests/test_gen3_adaptive_eq.py`, cases
+10–17). These are simulation results. The corrected
+source passed the 1,718-test full run and a final 23-case focused run (one
+additional case), lint and real-XPM elaboration. It subsequently passed fresh
+synthesis, routing, reopened-checkpoint audit and temporary hardware validation
+as `adaptive_review_v1`; the SD default still uses the earlier image.
+
+### Review-fix hardware validation — 2026-11-02
+
+All source manifests match. Three controlled warm startups negotiated Gen3 x1
+and passed 256 MiB read-only CRC checks. All eight matched benchmark/integrity
+jobs and 28,000 Linux-driver configuration reads passed. SMART error and
+unsafe-shutdown counters were unchanged; exactly 27,423,408,128 written bytes
+matched block accounting. The board remains running this temporary JTAG image.
+
+| Measurement | Previous SD image | Review fixes |
+| --- | ---: | ---: |
+| Gen3/Gen2 setup slack | +0.101 ns | +0.041 ns |
+| Gen1 setup slack | +0.409 ns | +0.204 ns |
+| Worst hold slack | +0.014 ns | +0.010 ns |
+| QD1 read | 589.33 MB/s | 591.48 MB/s |
+| QD8 read | 733.38 MB/s | 737.37 MB/s |
+| QD1 write | 340.19 MB/s | 339.90 MB/s |
+| QD8 write | 562.68 MB/s | 563.84 MB/s |
+
+Timing passes with less margin; these single-run throughput differences do not
+establish a performance gain. Resources: 16,116 LUTs, 12,367 FFs, 671 control sets,
+three BRAM tiles and one GTH. No additional postroute optimization was used.
+CDC, DRC, bus skew, routing and timing coverage passed the independent audit.
+
+See [exact evidence](evidence/adaptive_review_v1/completion.json) and
+[source hashes](evidence/adaptive_review_v1/sources.json). Physical fallback,
+injected Recovery, malformed-training/deadline-collision fault injection and
+cold-cycle/electrical qualification remain open. SD and flash were not updated;
+the installed Linux driver was retained.
+
+Final pre-publication checks on 2026-11-03 passed all **1,719 tests in 233.25
+seconds**, lint, real-XPM elaboration and all 131 HDL formatting checks.
+Hardware source manifests still match.
+
 ## Equalization behavior
 
 `GEN3_TX_PRESET` now selects the **initial** transmitter preset (default 4).
@@ -102,7 +160,7 @@ after Gen3 L0. The wrapper lockout tests mock the PHY and force only the startup
 status boundary; they do not model analog negotiation. The combined Gen3 peer
 uses production TX and state-aware stimulus, not an independent full LTSSM BFM.
 
-Local results: **1,711 tests passed in 237.37 seconds**, followed by a focused
+Initial adaptive-EQ checkpoint: **1,711 tests passed in 237.37 seconds**, followed by a focused
 backend/controller rerun after the final policy synchronizer addition. `make
 lint` and the standalone Recovery check passed. Fresh Vivado 2026.1 packaging
 passed integrity/source-hash checks; Gen3-enabled packaged RTL elaboration

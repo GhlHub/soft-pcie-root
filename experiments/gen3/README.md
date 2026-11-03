@@ -6,8 +6,8 @@ Gen1/Gen2 x1; current shared RTL changes are development beyond that baseline.
 
 Current development beyond the historical measurements below includes
 [adaptive Phase 2/3 and startup-only Gen2 fallback](../../docs/adaptive-equalization.md).
-The 2026-11-02 adaptive image passed fresh route/audit, three controlled Gen3
-startups and NVMe tests at 733.38/562.68 MB/s QD8 read/write. Physical fallback
+The 2026-11-02 adaptive review-fix image passed fresh route/audit, three controlled Gen3
+startups and NVMe tests at 737.37/563.84 MB/s QD8 read/write. Physical fallback
 and injected Recovery remain open. The chronological records retain their
 original scope and limitations.
 
@@ -16,9 +16,9 @@ original scope and limitations.
 The current Gen3 host uses 64-bit host packet transfers, eight 64-byte DDR read
 prefetch slots, an eight-entry shared replay store, two framing banks and normal
 ACK retirement concurrent with later original packets. The 30-second QD8
-throughput with adaptive EQ is **733.38 MB/s read / 562.68 MB/s write**.
+throughput with adaptive EQ is **737.37 MB/s read / 563.84 MB/s write**.
 That image passed fresh route/audit, 28,000 config reads and NVMe integrity checks;
-[hardware evidence](../../docs/evidence/adaptive_eq_v2/completion.json).
+[hardware evidence](../../docs/evidence/adaptive_review_v1/completion.json).
 The earlier RX metadata image measured 734.84/564.79 MB/s.
 The preceding ACK-retirement measurement was 745.36/567.71 MB/s. See the consolidated
 [performance history](../../docs/performance-history.md) and
@@ -57,7 +57,8 @@ The startup correction still needs cold-cycle and broader qualification. Full
 Recovery remains incomplete. The startup-tested image had +0.002 ns Gen3 setup
 margin; the RX pipeline image achieves +0.073 ns and the later TX transform
 image achieves +0.090 ns. The later RX metadata image reaches +0.136 ns.
-The adaptive-EQ image is now the SD default; see
+The review-fix image has +0.041 ns Gen3 WNS and passed temporary JTAG testing.
+The preceding adaptive-EQ image remains the SD default; see
 [default-boot evidence](../../docs/evidence/adaptive_eq_v2/default-boot.json).
 
 ### RX ingress metadata and parallel pointer candidates
@@ -991,7 +992,8 @@ hashes, results and limitations.
 ## Independent peer and verification matrix
 
 The independent-peer checkpoint passed **1,663 tests**; the later Recovery,
-adaptive-EQ and management work raises the full regression to **1,711**. The four independent-peer campaigns
+adaptive-EQ and management work raised the regression to **1,711** at that
+checkpoint. See the Gen3 matrix for the latest count. The four independent-peer campaigns
 add 994 cases in total (123 training/mutation, 652 packet, 202 sequence and
 17 TX ownership cases). No production RTL changed in these campaigns;
 [latest source evidence](../../docs/evidence/gen3_tx_ownership_v1/completion.json).

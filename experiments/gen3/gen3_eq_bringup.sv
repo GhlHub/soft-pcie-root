@@ -954,17 +954,17 @@ module gen3_eq_bringup #(
                     failure <= 6;
                 end
                 ADAPT: begin
-                    if (adapt_done) begin
+                    if (adapt_failed) begin
+                        state   <= STOP;
+                        timer   <= 0;
+                        failure <= 13;
+                    end else if (adapt_done) begin
                         preset      <= adapt_applied_preset;
                         local_coeff <= adapt_applied_coeff;
                         state       <= OBSERVE;
                         timer       <= 0;
                         good        <= 0;
                         tx_count    <= 0;
-                    end else if (adapt_failed) begin
-                        state   <= STOP;
-                        timer   <= 0;
-                        failure <= 13;
                     end
                 end
                 OBSERVE: begin

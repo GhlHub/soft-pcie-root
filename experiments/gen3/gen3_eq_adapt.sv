@@ -81,6 +81,7 @@ module gen3_eq_adapt #(
     task automatic fail(input [3:0] reason);
         begin
             active_o    <= 0;
+            done_o      <= 0;
             failed_o    <= 1;
             reason_o    <= reason;
             state       <= IDLE;
@@ -271,10 +272,12 @@ module gen3_eq_adapt #(
                             clean_pairs != 255)
                             clean_pairs <= clean_pairs + 1'b1;
                         if (rx_error_i || !aligned_i ||
-                            (pair && (ec != 3 || !matches_request || rx_fields_i[30])))
+                            (ts_event_i &&
+                             (!ts_valid_i || ec != 3 || !matches_request || rx_fields_i[30])))
                             state <= NEXT;
-                        else if (int'(operation_timer) >= EVALUATE_CYCLES && clean_pairs >= 8 &&
-                                 int'(request_timer) >= SETTLE_CYCLES) begin
+                        // Silence is not evidence of a clean link: finish on a fresh pair.
+                        else if (pair && int'(operation_timer) >= EVALUATE_CYCLES &&
+                                 clean_pairs >= 8 && int'(request_timer) >= SETTLE_CYCLES) begin
                             done_o   <= 1;
                             active_o <= 0;
                             state    <= IDLE;
@@ -305,6 +308,9 @@ module gen3_eq_adapt #(
                         extended_request <= 1;
                         extended_count   <= extended_count + 1'b1;
                     end else begin
+                        // A request deadline overrides a coincident evaluation success.
+                        done_o <= 0;
+                        if (state == EVALUATE) active_o <= 1;
                         rxeq_ctrl_o <= 0;
                         state       <= NEXT;
                     end

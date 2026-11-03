@@ -56,10 +56,15 @@ module gen3_gen2_fallback #(
     reg  [1:0] detect_phase;
     wire       run = state == RUN;
     assign selected_o = state != OFF;
-    assign state_o = state == RUN ? link_state : state == FAILED ? 5'd31 : 5'd30;
-    assign busy_o = state != RUN || !link_up;
-    assign link_up_o = run && link_up;
-    assign dl_active_o = run && dl_active;
+    assign state_o    = state == RUN ? link_state : state == FAILED ? 5'd31 : 5'd30;
+    assign busy_o     = state != RUN || !link_up;
+    // A bounded rate switch pauses the wire, not the accepted ownership epoch.
+    // The backend clears its epoch on real link loss; switch failure is terminal.
+    wire retained_epoch = !first_switch && state != FAILED;
+    wire link_cmd_ready;
+    assign link_up_o = retained_epoch && link_up;
+    assign dl_active_o = retained_epoch && dl_active;
+    assign cmd_ready_o = run && link_cmd_ready;
     assign error_o = state == FAILED || link_error;
     assign idle_o = !run || link_idle;
     assign powerdown_o = run && (link_state == 0 || (link_state == 1 && detect_phase == 0)) ?
@@ -166,8 +171,8 @@ module gen3_gen2_fallback #(
         .dl_active_o       (dl_active),
         .state_o           (link_state),
         .retrain_i         (retrain_i),
-        .cmd_valid_i       (cmd_valid_i),
-        .cmd_ready_o       (cmd_ready_o),
+        .cmd_valid_i       (cmd_valid_i && run),
+        .cmd_ready_o       (link_cmd_ready),
         .cmd_op_i          (cmd_op_i),
         .cmd_address_i     (cmd_address_i),
         .cmd_bdf_i         (cmd_bdf_i),

@@ -1,13 +1,21 @@
 # Verification and release scope
 
-Current development includes [adaptive Phase 2/3 equalization and startup-only
-Gen2 fallback](adaptive-equalization.md). The 2026-11-02 fresh build passed
-route/audit, three controlled Gen3 startups, 28,000 configuration reads and all
-eight NVMe performance/integrity jobs. QD8 throughput was 733.38/562.68 MB/s
-read/write. See [recorded evidence](evidence/adaptive_eq_v2/completion.json).
-The image also passed unattended SD-default warm boot, file readback and
-256 MiB read-only CRC; [boot evidence](evidence/adaptive_eq_v2/default-boot.json).
-Physical fallback, injected Recovery and electrical qualification remain open.
+The latest [adaptive review-fix image](adaptive-equalization.md#review-fix-hardware-validation--2026-11-02)
+passed fresh synthesis/route, independent audit, three controlled Gen3 startups,
+28,000 configuration reads and all eight NVMe performance/integrity jobs on
+2026-11-02. QD8 read/write measured **737.37/563.84 MB/s**; Gen3 setup/hold is
+**+0.041/+0.010 ns**. See [recorded evidence](evidence/adaptive_review_v1/completion.json).
+It preserves fallback ownership across rate changes, rejects invalid evaluation
+training and gives failure priority over success. Exact fault injection remains
+simulation-only; physical fallback, injected Recovery and electrical qualification
+remain open.
+
+The review-fix image was temporarily programmed through JTAG. The previous
+adaptive-EQ image remains the SD default. That image measured 733.38/562.68 MB/s
+QD8 read/write and passed unattended warm boot, file readback and 256 MiB
+read-only CRC; see [build evidence](evidence/adaptive_eq_v2/completion.json) and
+[boot evidence](evidence/adaptive_eq_v2/default-boot.json). SD and flash were not
+updated during review-fix validation.
 
 Earlier follow-up: [bounded same-rate Recovery, fixed-preset GUI
 selection and early mailbox fault reporting](review-followup.md). These changes
@@ -21,11 +29,12 @@ functional evidence from compliance qualification. Its project-scope waivers
 exclude features unrelated to direct-attached NVMe operation while retaining
 protocol correctness, error containment and data-integrity coverage.
 
-The latest full regression passes **1,711 tests**, including 994 added Gen3
-peer cases across the four campaigns below. Earlier test totals and physical
+The latest full regression passed **1,719 tests in 233.25 seconds** on
+2026-11-03. Lint and real-XPM elaboration passed; all 131 HDL files passed formatting/token checks. This
+includes 994 added Gen3 peer cases across the four campaigns below. Earlier test totals and physical
 results are historical checkpoints, not measurements of the latest source.
 The shared requester timeout fix has now passed a fresh Gen3 build and temporary
-hardware validation described below. The SD-default image is still RX metadata. Gen3 scope and remaining gaps are in the
+hardware validation described below. The SD-default image is now adaptive EQ v2. Gen3 scope and remaining gaps are in the
 [Gen3 verification matrix](gen3-verification-matrix.md).
 
 ## Requester timeout fix: Gen3 hardware validation

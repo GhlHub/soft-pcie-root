@@ -6,7 +6,7 @@ Local board/deployment handoff, when available, is in ignored build/lab/HANDOFF.
 frozen release stops at Gen1/Gen2 x1. Current development also includes optional
 Gen3 and shared RTL changes; see docs/performance-history.md and
 docs/verification.md. Do not rewrite frozen provenance manifests to qualify later
-code. Latest physical tests cover both Gen3 and a fresh default Gen2 ACK-retirement
+code. Historical physical tests cover both Gen3 and a default Gen2 ACK-retirement
 build; these are short I/O/CRC tests, not full qualification. The later unified 1.1
 catalog/checkbox packaging has now been routed; its startup-corrected Gen3 image
 passed ten controlled warm-start/read-only CRC trials. See
@@ -16,7 +16,9 @@ with +0.136 ns Gen3 WNS; see docs/evidence/rx_metadata_v1/completion.json.
 Requester timeout fix subsequently passed a fresh Gen3 route/audit and temporary
 board validation (28,000 config reads and NVMe I/O/CRC); see
 docs/evidence/requester_fix_v1/completion.json. Exact
-timeout-edge injection is simulation-only; no new Gen2 backend hardware build.
+timeout-edge injection is simulation-only. A fresh default Gen2 package build
+with this fix remains outstanding; later Gen2 fallback testing uses the
+Gen3-enabled package and its 64-bit/eight-slot host path.
 Latest full regression: 1,719 passed (233.25 seconds, 2026-11-03); lint/XPM and
 131 HDL format checks pass. See docs/gen3-verification-matrix.md.
 Later fallback-ownership/evaluation-priority fixes passed fresh route/audit and
@@ -55,3 +57,32 @@ Packaged example_zcu104_v1 subsequently passed physical Gen2 x1 I/O/CRC tests.
 See docs/verification.md and docs/evidence/repackaged_v1/completion.json.
 The image subsequently became the SD default; automatic warm boot and 256 MiB
 read-only CRC passed. See the default-boot.json evidence beside completion.json.
+
+## Session handoff — 2026-11-06
+
+- Latest published commit: `8aacfa4` on `main`, pushed to `origin/main`.
+  It includes hardware coverage tools/evidence and removes the experimental
+  label from documentation and the current performance graphic. Describe
+  Gen3 x1 as hardware-validated on the documented setup, retaining explicit
+  qualification limits. The existing Vivado GUI display strings were not
+  changed; documentation refers to the stable `ENABLE_GEN3` parameter.
+- Last observed board state (2026-11-03): normal `adaptive_review_v1` SD image
+  restored, Gen3 x1, healthy/idle, final 256 MiB read-only CRC passed. See
+  `docs/evidence/hardware_coverage_v1/restored.json`. This is historical state,
+  not a live availability check. Diagnostic images did not change SD/flash.
+- Additional coverage: 33 normal-image verified I/O jobs; forced startup
+  Gen2 fallback with eight I/O/integrity jobs and 14,000 configuration reads;
+  one same-rate Recovery entry/return during active CRC reads. Two new
+  overlay-control tests passed; the full regression count above is the
+  earlier checkpoint, not a rerun including these tests.
+- Gen3 x2 discussion was planning only; no implementation was requested or
+  started. Current DDR AXI and host packet paths are 64-bit/125 MHz (1 GB/s);
+  link packet processing is 32-bit/250 MHz (1 GB/s). Suggested x2 architecture:
+  128-bit/125 MHz host and DDR AXI paths plus 64-bit/250 MHz aggregate link
+  processing, each 2 GB/s. Existing PS HP0 is 128-bit/125 MHz; width conversion
+  alone cannot remove the upstream bottleneck. Gen3 x2 has about 1.97 GB/s
+  per direction before packet overhead. Reassess prefetch/replay bytes and
+  measure sustained DDR bandwidth; doubled buffering is an initial estimate,
+  not a verified requirement or throughput guarantee.
+- No ongoing task or hardware build was left by this session. This handoff
+  update is local and uncommitted unless a later session commits it.

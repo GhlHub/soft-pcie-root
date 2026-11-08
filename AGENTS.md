@@ -86,3 +86,18 @@ read-only CRC passed. See the default-boot.json evidence beside completion.json.
   not a verified requirement or throughput guarantee.
 - No ongoing task or hardware build was left by this session. This handoff
   update is local and uncommitted unless a later session commits it.
+
+## x2 development — 2026-11-08
+
+The x1 handoff was committed as `4d99851` and tagged
+`x1-hardware-validated-2026-11-08`; development is on `dev/pcie-x2`.
+Read `docs/x2-development.md` before continuing. Lane-aware Gen3 codecs and
+standalone striping/deskew components are simulation work, not an integrated
+x2 root port. GUI width selection, shared training/PHY, wide packet/AXI paths
+and end-to-end x2 peer simulation remain outstanding. Do not advertise x2
+operation from the component tests. The board reference is the companion
+ZU15EG workspace; extracted mapping is in `examples/zu15eg/README.md`.
+The user deferred implementation verification until board availability.
+Development checkpoint validation: 1,756 tests passed (250.07 s), including
+35 new component checks; lint/real-XPM and 133 HDL format checks passed.
+These results do not close the outstanding integrated x2 simulation work.

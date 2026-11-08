@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 `timescale 1ns / 1ps
 module test_recovery_tx;
-    parameter integer INITFC1 = 0, STOP_PHASE = -1;
+    parameter integer INITFC1 = 0, STOP_PHASE = -1, LANE_ID = 0;
     reg clk = 0;
     always #2 clk = ~clk;
     reg reset = 1, enable = 0, stop = 0, ts2 = 0, stream = 0;
@@ -10,7 +10,9 @@ module test_recovery_tx;
     wire unused_ready, unused_submit, unused_fault;
     wire        [ 1:0] header;
     wire signed [10:0] balance;
-    gen3_recovery_tx tx (
+    gen3_recovery_tx #(
+        .LANE_ID(LANE_ID)
+    ) tx (
         clk,
         reset,
         enable,

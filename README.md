@@ -62,6 +62,14 @@ passed temporary JTAG testing and subsequently became the
 No QSPI update was needed. The existing Linux driver remains deployed; the new
 early-quarantine software branch has model coverage but has not been deployed.
 
+## x2 development branch
+
+`dev/pcie-x2` contains lane-aware Gen3 codecs and standalone striping/deskew
+components with simulation coverage. It does **not yet provide an integrated
+x2 root port or an x1/x2 GUI build selector**. See the [remaining integration
+work](docs/x2-development.md) and [ZU15EG target](examples/zu15eg/README.md).
+The x1 baseline is tagged `x1-hardware-validated-2026-11-08`.
+
 ## Configuration and earlier results
 
 The unified Vivado **Gen3 (`ENABLE_GEN3`)** checkbox selects Gen3 at build

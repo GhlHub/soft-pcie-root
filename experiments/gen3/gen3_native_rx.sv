@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Native 32-bit PCS boundary. Packet bytes remain provisional downstream.
 // Local disable/error aborts only a candidate; committed packets are not reset.
-module gen3_native_rx (
+module gen3_native_rx #(
+    parameter integer LANE_ID = 0
+) (
     input wire clk, reset_i, enable_i,
     input wire [31:0] data_i,
     input wire valid_i, start_i,
@@ -18,6 +20,10 @@ module gen3_native_rx (
     output reg [1:0] position_o,
     output wire stream_o
 );
+
+    initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
+
+    localparam [22:0] LANE_SEED = LANE_ID == 0 ? 23'h1dbfbc : 23'h0607bb;
     // Classify each incoming DWORD ahead of the descrambler. Payload and
     // sidebands advance together; valid is synchronously flushed on disable.
     // Parser feedback stays at the consumer stage, relative to decoded output.
@@ -119,7 +125,7 @@ module gen3_native_rx (
             ts2_match       <= 0;
             ts_parity       <= 0;
             skip_words      <= 0;
-            lfsr            <= 23'h1dbfbc;
+            lfsr            <= LANE_SEED;
             ts_event_o      <= 0;
             ts1_valid_o     <= 0;
             ts2_valid_o     <= 0;
@@ -168,7 +174,7 @@ module gen3_native_rx (
                         eieos_match     <= rx_eieos_word;
                         sds_match       <= rx_sds_first;
                         eios_match      <= rx_eios_word;
-                        ts_common_match <= word_decoded[23:8] == 0;
+                        ts_common_match <= word_decoded[23:8] == {8'(LANE_ID), 8'h00};
                         ts1_match       <= 0;
                         ts2_match       <= 0;
                         ts_parity       <= 0;
@@ -217,7 +223,7 @@ module gen3_native_rx (
                         if (this_eieos && eieos_match && rx_eieos_word) begin
                             if (stream && !(eds_seen || eds_i)) fail();
                             else begin
-                                lfsr      <= 23'h1dbfbc;
+                                lfsr      <= LANE_SEED;
                                 aligned_o <= 1;
                                 stream    <= 0;
                             end

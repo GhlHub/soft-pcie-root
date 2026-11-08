@@ -8,13 +8,15 @@ import argparse
 parser=argparse.ArgumentParser()
 parser.add_argument("--initfc1",action="store_true")
 parser.add_argument("--stop-phase",type=int,default=-1)
+parser.add_argument("--lane", type=int, choices=(0, 1), default=0)
 args=parser.parse_args()
+seed = (0x1dbfbc, 0x0607bb)[args.lane]
 ROOT=Path(__file__).resolve().parents[2];SRC=ROOT/'experiments/gen3'
 OUT=Path(tempfile.mkdtemp(prefix='gen3_recovery_tx_',dir=ROOT/'build'))
 subprocess.run(['verilator','--lint-only','--Wall',str(SRC/'gen3_recovery_tx.sv')],check=True)
-subprocess.run(['iverilog','-g2012','-s','test_recovery_tx',f'-Ptest_recovery_tx.INITFC1={int(args.initfc1)}',f'-Ptest_recovery_tx.STOP_PHASE={args.stop_phase}','-o',str(OUT/'test'),str(SRC/'gen3_recovery_tx.sv'),str(SRC/'test_recovery_tx.sv')],check=True)
+subprocess.run(['iverilog','-g2012','-s','test_recovery_tx',f'-Ptest_recovery_tx.INITFC1={int(args.initfc1)}',f'-Ptest_recovery_tx.STOP_PHASE={args.stop_phase}',f'-Ptest_recovery_tx.LANE_ID={args.lane}','-o',str(OUT/'test'),str(SRC/'gen3_recovery_tx.sv'),str(SRC/'test_recovery_tx.sv')],check=True)
 subprocess.run(['vvp',str(OUT/'test'),f'+OUT={OUT}/trace.txt'],check=True)
-state=0x1dbfbc;parity=0;block=[];first=None;stream=False;closed=False;balance=0
+state=seed;parity=0;block=[];first=None;stream=False;closed=False;balance=0
 fc_packets=[];fc_cycles=[]
 counts=dict(ts1=0,ts2=0,sds=0,data=0,skp=0,eios=0)
 for line in (OUT/'trace.txt').read_text().splitlines():
@@ -50,13 +52,13 @@ for line in (OUT/'trace.txt').read_text().splitlines():
         closed=decoded[-4:]!=[0]*4
         parity^=sum(v.bit_count() for v in raw)&1;counts['data']+=1
     elif raw[0]==0:
-        assert not stream and raw==bytes([0,255])*8;state=0x1dbfbc
+        assert not stream and raw==bytes([0,255])*8;state=seed
     elif raw[0] in (0x1e,0x2d):
         assert not stream
         if raw[0]==0x1e:
-            assert decoded[:14]==list(bytes.fromhex('1e0000200e00200028804a4a4a4a'));counts['ts1']+=1
+            assert decoded[:14]==list(bytes.fromhex(f'1e00{args.lane:02x}200e00200028804a4a4a4a'));counts['ts1']+=1
         else:
-            assert decoded[:14]==list(bytes.fromhex('2d0000200e000045454545454545'));counts['ts2']+=1
+            assert decoded[:14]==list(bytes.fromhex(f'2d00{args.lane:02x}200e000045454545454545'));counts['ts2']+=1
     elif raw[0]==0xe1:
         assert not stream and raw==bytes([0xe1])+bytes([0x55])*15
         stream=True;parity=0;counts['sds']+=1

@@ -8,6 +8,9 @@ LINUX_OUTPUT ?= build/linux_host_next
 test:
 	$(PYTHON) -m pytest -q tests
 lint:
+	verilator --lint-only -Wall --top-module pcie_lane_stripe ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_stripe.sv
+	verilator --lint-only -Wall --top-module pcie_lane_stripe -GLANES=2 ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_stripe.sv
+	verilator --lint-only -Wall --top-module pcie_lane_deskew ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_deskew.sv
 	verilator --lint-only -Wall --top-module gen3_eq_adapt experiments/gen3/gen3_eq_adapt.sv
 	verilator --lint-only -Wall --top-module gen3_gen2_fallback experiments/gen3/gen3_gen2_fallback.sv $(filter-out ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv,$(wildcard ip/soft_pcie_root/rtl/pcie_soft/*.sv))
 	verilator --lint-only -Wall --top-module pcie_soft_link $(filter-out ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv,$(wildcard ip/soft_pcie_root/rtl/pcie_soft/*.sv))

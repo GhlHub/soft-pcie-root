@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-// Experimental x1 Gen3 scrambler/descrambler; DWORD bytes and bits LSB first.
+// Gen3 lane scrambler/descrambler; DWORD bytes and bits LSB first.
 // Only payload symbols enter here: sync headers do not clock the LFSR.
 // Caller classifies ordered sets. SKP: advance=0, xor=0; ordinary bypassed
 // ordered sets: advance=15, xor=0; data: advance=15, xor=15.
 // TS1/TS2 need per-byte XOR selection, including the DC-balance exception.
 // EIEOS final DWORD: reseed_after=1. This is not an ordered-set classifier.
-module gen3_scrambler (
+module gen3_scrambler #(
+    parameter integer LANE_ID = 0
+) (
     input wire clk, reset_i,
     input wire [31:0] s_data_i,
     input wire [3:0] advance_i, xor_i,
@@ -16,7 +18,9 @@ module gen3_scrambler (
     input wire m_ready_i,
     output wire [22:0] state_o
 );
-    localparam [22:0] SEED = 23'h1dbfbc;
+
+    initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
+    localparam [22:0] SEED = LANE_ID == 0 ? 23'h1dbfbc : 23'h0607bb;
     reg [22:0] state_q, next_state, byte_state;
     reg [31:0] next_data;
     integer octet, bit_no;

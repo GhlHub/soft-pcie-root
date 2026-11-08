@@ -164,7 +164,7 @@ def test_independent_training_peer(tmp_path, scenario, skip, gap, preset):
 @pytest.mark.parametrize('name,filename,pattern,replacement,scenario', [
     ('single-ts', 'gen3_eq_phase1.sv',
      r' && seen_ts &&\s*rx_symbols6_9 == previous_symbols6_9', '', 'pair'),
-    ('lane-check', 'gen3_training_rx.sv', r'assembled\[23:8\] == 0 &&',
+    ('lane-check', 'gen3_training_rx.sv', r"assembled\[23:8\] == \{8'\(LANE_ID\), 8'h00\} &&",
      "1'b1 &&", 'wrong-lane'),
     ('parity-check', 'gen3_training_rx.sv', r'!\(\^assembled\[79:48\]\)',
      "1'b1", 'bad-parity'),

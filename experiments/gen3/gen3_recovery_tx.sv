@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Experimental x1 recovery source: TS1/TS2, SDS, idle and an optional bounded InitFC1 probe.
+// Per-lane recovery source: TS1/TS2, SDS, idle and an optional bounded InitFC1 probe.
 // Configuration changes take effect at TS boundaries. stop emits one full EIOS.
 module gen3_recovery_tx #(
-    parameter integer EXTERNAL_EQ = 0
+    parameter integer EXTERNAL_EQ = 0,
+    parameter integer LANE_ID     = 0
 ) (
     input wire clk, reset_i, enable_i, stop_i,
     input wire ts2_i, stream_i,
@@ -25,6 +26,10 @@ module gen3_recovery_tx #(
     input wire [31:0] eq_fields_i,
     input wire reset_interval_i
 );
+
+    initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
+
+    localparam [22:0] LANE_SEED = LANE_ID == 0 ? 23'h1dbfbc : 23'h0607bb;
     localparam [2:0] EIEOS = 0, TS1 = 1, SKP = 2, EIOS = 3, SDS = 4, DATA = 5;
     reg [2:0] kind;
     reg [1:0] word_index;
@@ -117,7 +122,7 @@ module gen3_recovery_tx #(
                                        lfsr[22:16], 8'he1} : 32'haaaaaaaa;
         // Keep training disparity independent of the packet-data mux.
         case (word_index)
-            0: training_plain = ts2_i ? 32'h2000002d : 32'h2000001e;
+            0: training_plain = {8'h20, 8'(LANE_ID), 8'h00, (ts2_i ? 8'h2d : 8'h1e)};
             1: training_plain = ts2_block ? 32'h4500000e : {use_fields[15:0], 16'h000e};
             2: training_plain = ts2_block ? 32'h45454545 : {16'h4a4a, use_fields[31:16]};
             3: training_plain = ts2_block ? 32'h45454545 : 32'h4a4a4a4a;
@@ -170,7 +175,7 @@ module gen3_recovery_tx #(
             else if (dc_sum < -511) next_balance = -11'sd511;
             else next_balance = dc_sum[10:0];
         end
-        if (kind == EIEOS && word_index == 3) next_lfsr = 23'h1dbfbc;
+        if (kind == EIEOS && word_index == 3) next_lfsr = LANE_SEED;
     end
     always @(posedge clk) begin
         if (reset_i) begin
@@ -188,7 +193,7 @@ module gen3_recovery_tx #(
             cadence         <= 0;
             ts_count        <= 0;
             skp_count       <= 0;
-            lfsr            <= 23'h1dbfbc;
+            lfsr            <= LANE_SEED;
             balance_o       <= 0;
             valid_o         <= 0;
             start_o         <= 0;
@@ -222,7 +227,7 @@ module gen3_recovery_tx #(
                     ts_count   <= 0;
                     skp_count  <= 0;
                     balance_o  <= 0;
-                    lfsr       <= 23'h1dbfbc;
+                    lfsr       <= LANE_SEED;
                 end
             end else if (cadence == 64) cadence <= 0;
             else begin

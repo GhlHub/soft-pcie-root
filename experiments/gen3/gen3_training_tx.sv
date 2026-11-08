@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// x1 32-bit Gen3 training-only PIPE source. No packet ownership or Data stream.
+// Per-lane 32-bit Gen3 training-only PIPE source. No packet ownership or Data stream.
 // Configuration changes take effect at TS boundaries. stop emits one full EIOS.
 module gen3_training_tx #(
-    parameter integer EXTERNAL_EQ = 0
+    parameter integer EXTERNAL_EQ = 0,
+    parameter integer LANE_ID     = 0
 ) (
     input wire clk, reset_i, enable_i, stop_i,
     input wire [1:0] ec_i,
@@ -15,6 +16,10 @@ module gen3_training_tx #(
     input wire [31:0] eq_fields_i,
     input wire reset_interval_i
 );
+
+    initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
+
+    localparam [22:0] LANE_SEED = LANE_ID == 0 ? 23'h1dbfbc : 23'h0607bb;
     localparam [1:0] EIEOS = 0, TS1 = 1, SKP = 2, EIOS = 3;
     reg [1:0] kind, word_index;
     reg [6:0] cadence;
@@ -50,7 +55,7 @@ module gen3_training_tx #(
                 32'haaaaaaaa;
         if (kind == TS1) begin
             case (word_index)
-                0: plain = 32'h2000001e;
+                0: plain = {8'h20, 8'(LANE_ID), 8'h00, 8'h1e};
                 1: plain = {use_fields[15:0], 16'h000e};
                 2: plain = {16'h4a4a, use_fields[31:16]};
                 3: plain = 32'h4a4a4a4a;
@@ -88,7 +93,7 @@ module gen3_training_tx #(
             else if (dc_sum < -511) next_balance = -11'sd511;
             else next_balance = dc_sum[10:0];
         end
-        if (kind == EIEOS && word_index == 3) next_lfsr = 23'h1dbfbc;
+        if (kind == EIEOS && word_index == 3) next_lfsr = LANE_SEED;
     end
     always @(posedge clk) begin
         if (reset_i) begin
@@ -99,7 +104,7 @@ module gen3_training_tx #(
             cadence    <= 0;
             ts_count   <= 0;
             skp_count  <= 0;
-            lfsr       <= 23'h1dbfbc;
+            lfsr       <= LANE_SEED;
             balance_o  <= 0;
             valid_o    <= 0;
             start_o    <= 0;
@@ -120,7 +125,7 @@ module gen3_training_tx #(
                     ts_count   <= 0;
                     skp_count  <= 0;
                     balance_o  <= 0;
-                    lfsr       <= 23'h1dbfbc;
+                    lfsr       <= LANE_SEED;
                 end
             end else if (cadence == 64) cadence <= 0;
             else begin

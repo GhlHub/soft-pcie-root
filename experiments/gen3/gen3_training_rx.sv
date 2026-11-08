@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Native PIPE training decoder, lane/link zero. Acquires only on a full EIEOS.
+// Native PIPE training decoder, selected lane and link zero. Acquires only on a full EIEOS.
 // TS14/15 checks are intentionally omitted as permitted by the Base spec.
-module gen3_training_rx (
+module gen3_training_rx #(
+    parameter integer LANE_ID = 0
+) (
     input wire clk, reset_i, enable_i,
     input wire [31:0] data_i,
     input wire valid_i, start_i,
@@ -13,6 +15,10 @@ module gen3_training_rx (
     output reg error_o, eios_o,
     output reg [127:0] last_ts_o
 );
+
+    initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
+
+    localparam [22:0] LANE_SEED = LANE_ID == 0 ? 23'h1dbfbc : 23'h0607bb;
     reg [1:0] index;
     reg in_block, is_skip;
     reg  [  2:0] skip_words;
@@ -53,7 +59,7 @@ module gen3_training_rx (
             index       <= 0;
             kind        <= 0;
             skip_words  <= 0;
-            lfsr        <= 23'h1dbfbc;
+            lfsr        <= LANE_SEED;
             ts_event_o  <= 0;
             ts1_valid_o <= 0;
             error_o     <= 0;
@@ -103,7 +109,7 @@ module gen3_training_rx (
                         in_block <= 0;
                         if (this_kind == 0 &&
                             assembled == 128'hff00ff00ff00ff00ff00ff00ff00ff00) begin
-                            lfsr      <= 23'h1dbfbc;
+                            lfsr      <= LANE_SEED;
                             aligned_o <= 1;
                         end else if (this_kind == 8'h1e || this_kind == 8'h2d) begin
                             ts_event_o <= 1;
@@ -113,7 +119,7 @@ module gen3_training_rx (
                             fs_o <= assembled[61:56];
                             lf_o <= assembled[69:64];
                             ts1_valid_o <= aligned_o && this_kind == 8'h1e &&
-                                assembled[23:8] == 0 && assembled[42:40] == 0 &&
+                                assembled[23:8] == {8'(LANE_ID), 8'h00} && assembled[42:40] == 0 &&
                                 assembled[111:80] == 32'h4a4a4a4a && !(^assembled[79:48]);
                         end else if (this_kind == 8'h66 && assembled[31:0] == 32'h66666666) begin
                             eios_o    <= 1;

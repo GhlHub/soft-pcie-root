@@ -93,11 +93,18 @@ The x1 handoff was committed as `4d99851` and tagged
 `x1-hardware-validated-2026-11-08`; development is on `dev/pcie-x2`.
 Read `docs/x2-development.md` before continuing. Lane-aware Gen3 codecs and
 standalone striping/deskew components are simulation work, not an integrated
-x2 root port. GUI width selection, shared training/PHY, wide packet/AXI paths
-and end-to-end x2 peer simulation remain outstanding. Do not advertise x2
+x2 root port. GUI width selection and shared Gen1 startup/Gen3 equalization
+stages now have simulation coverage. The GUI defaults to x1; x2 requires Gen3
+and root elaboration explicitly rejects it until integration is complete.
+Two-lane PHY/rate-change integration, wide packet/AXI paths and end-to-end x2
+peer simulation remain outstanding. Do not advertise x2
 operation from the component tests. The board reference is the companion
 ZU15EG workspace; extracted mapping is in `examples/zu15eg/README.md`.
 The user deferred implementation verification until board availability.
 Development checkpoint validation: 1,756 tests passed (250.07 s), including
 35 new component checks; lint/real-XPM and 133 HDL format checks passed.
 These results do not close the outstanding integrated x2 simulation work.
+
+Latest shared-training checkpoint: 1,843 tests passed (260.68 s), including
+87 new training/GUI checks; lint/real-XPM, 135 HDL format checks and Vivado
+metadata-only parameter propagation passed. Integrated x2 remains blocked.

@@ -17,8 +17,11 @@ tool/device setup; it does not depend on the laboratory workspace.
 The packaged configuration fixes management 50 MHz, host 125 MHz, reference 100 MHz, and
 one UltraScale+ GTH channel. Its supplied GT configuration selects X0Y15 on XCZU7EV,
 matching ZCU104. Other lane/device mappings need regenerated GT configuration and
-reviewed constraints. This release does not expose unverified GUI parameters for lane
-count or arbitrary AXI clocks. Version 1.1 provides one catalog entry with a
+reviewed constraints. Development exposes `LINK_WIDTH=1/2`, default 1; choice 2
+requires Gen3 and is a training-development setting. The root explicitly rejects
+x2 elaboration until its PHY and packet/AXI backend is integrated. The functional
+package and interfaces below remain x1. Arbitrary AXI clocks are unsupported.
+Version 1.1 provides one catalog entry with a
 **Gen3 (`ENABLE_GEN3`)** checkbox, default off; see [optional Gen3
 packaging](../../docs/ip-guide.md#optional-gen3-packaging). Physical measurements by
 revision are in the [performance history](../../docs/performance-history.md).

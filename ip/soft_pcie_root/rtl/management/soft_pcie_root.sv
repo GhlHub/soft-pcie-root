@@ -1,7 +1,8 @@
 // ZCU104 SSD1 laboratory top; management is independent of the PCIe clock.
 module soft_pcie_root #(
     parameter integer ENABLE_GEN3    = 0,
-    parameter integer GEN3_TX_PRESET = 4
+    parameter integer GEN3_TX_PRESET = 4,
+    parameter integer LINK_WIDTH     = 1
 ) (
     (* X_INTERFACE_INFO="xilinx.com:signal:clock:1.0 aclk CLK",
     X_INTERFACE_PARAMETER="ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET aresetn, FREQ_HZ 50000000" *)
@@ -115,6 +116,22 @@ module soft_pcie_root #(
     input wire refclk_p_i, refclk_n_i, rx_p_i, rx_n_i,
     output wire tx_p_o, tx_n_o, perst_a_o, disable_ssd2_power_o
 );
+    // Width is an explicit catalog contract. The x2 training engines are tested
+    // separately; do not silently elaborate the x1 PHY/packet shell for x2.
+    generate
+        if (LINK_WIDTH != 1) begin : unsupported_integrated_width
+            initial begin
+                if (LINK_WIDTH != 2) $fatal(1, "LINK_WIDTH must be 1 or 2");
+                else
+                    $fatal(
+                        1,
+                        "LINK_WIDTH=2 root backend is not integrated; use the multilane training simulations"
+                    );
+            end
+            // Deliberately unresolved: synthesis must fail as well as simulation.
+            soft_pcie_x2_phy_packet_backend_not_integrated unavailable_backend ();
+        end
+    endgenerate
     // The catalog checkbox fixes backend and dimensions together at elaboration.
     // Link state never changes packet width or accepted-owner capacity.
     localparam integer PACKET_DWORDS = ENABLE_GEN3 ? 2 : 1;
@@ -125,8 +142,9 @@ module soft_pcie_root #(
     wire gen2, rate_busy, fallback;
     wire force_gen1;
     wire rx_cross_fault, tx_cross_fault;
-    wire core_clk = host_clk_i;
-    wire link_clk;
+    (* ASYNC_REG="TRUE" *)reg  [2:0] mailbox_release_q = 0;
+    wire       core_clk = host_clk_i;
+    wire       link_clk;
     (* ASYNC_REG="TRUE" *) reg [8:0]
         host_status_meta_q = 0, host_status_mid_q = 0, host_status_sync_q = 0;
     (* ASYNC_REG="TRUE", DONT_TOUCH="TRUE" *) reg [2:0] link_release_q = 0;
@@ -178,7 +196,6 @@ module soft_pcie_root #(
     wire [  3:0] be;
     wire [ 15:0] phy_diagnostic;
     wire [127:0] completion_debug;
-    (* ASYNC_REG="TRUE" *)reg  [  2:0] mailbox_release_q = 0;
     // Mailbox ownership persists through software PERST; only global reset clears
     // toggles. Otherwise re-enabling a link could replay the previous command.
     always @(posedge core_clk or negedge aresetn)

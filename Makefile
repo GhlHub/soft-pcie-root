@@ -8,6 +8,10 @@ LINUX_OUTPUT ?= build/linux_host_next
 test:
 	$(PYTHON) -m pytest -q tests
 lint:
+	verilator --lint-only -Wall --top-module gen3_multilane_startup -GLINK_WIDTH=1 experiments/gen3/gen3_multilane_startup.sv
+	verilator --lint-only -Wall --top-module gen3_multilane_eq -GLINK_WIDTH=1 experiments/gen3/gen3_multilane_eq.sv experiments/gen3/gen3_training_rx.sv experiments/gen3/gen3_training_tx.sv experiments/gen3/gen3_eq_phase1.sv experiments/gen3/gen3_eq_adapt.sv
+	verilator --lint-only -Wall --top-module gen3_multilane_startup -GLINK_WIDTH=2 experiments/gen3/gen3_multilane_startup.sv
+	verilator --lint-only -Wall --top-module gen3_multilane_eq -GLINK_WIDTH=2 experiments/gen3/gen3_multilane_eq.sv experiments/gen3/gen3_training_rx.sv experiments/gen3/gen3_training_tx.sv experiments/gen3/gen3_eq_phase1.sv experiments/gen3/gen3_eq_adapt.sv
 	verilator --lint-only -Wall --top-module pcie_lane_stripe ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_stripe.sv
 	verilator --lint-only -Wall --top-module pcie_lane_stripe -GLANES=2 ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_stripe.sv
 	verilator --lint-only -Wall --top-module pcie_lane_deskew ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_deskew.sv
@@ -67,3 +71,9 @@ format-hdl:
 	$(PYTHON) scripts/format_hdl.py --write
 format-hdl-check:
 	$(PYTHON) scripts/format_hdl.py
+
+WIDTH_METADATA_OUTPUT ?= build/width_metadata_next
+.PHONY: width-metadata
+width-metadata:
+	mkdir -p $(dir $(WIDTH_METADATA_OUTPUT))
+	$(VIVADO) -mode batch -log $(WIDTH_METADATA_OUTPUT).log -journal $(WIDTH_METADATA_OUTPUT).jou -source scripts/check_link_width_metadata.tcl -tclargs $(WIDTH_METADATA_OUTPUT)

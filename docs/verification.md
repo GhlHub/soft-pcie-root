@@ -1,5 +1,12 @@
 # Verification and release scope
 
+On `dev/pcie-x2`, the 2026-11-08 regression passed **1,843 tests in 260.68
+seconds**, with lint/real-XPM, 135 HDL formatting checks and metadata-only
+Vivado width validation passing. This includes shared x2 startup/equalization
+stage simulations and guarded GUI width selection, not an integrated x2 root
+port. See [scope and remaining work](x2-development.md). Implementation and
+physical x2 verification are deferred until ZU15EG board availability.
+
 The latest [adaptive review-fix image](adaptive-equalization.md#review-fix-hardware-validation--2026-11-02)
 passed fresh synthesis/route, independent audit, three controlled Gen3 startups,
 28,000 configuration reads and all eight NVMe performance/integrity jobs on
@@ -31,7 +38,7 @@ functional evidence from compliance qualification. Its project-scope waivers
 exclude features unrelated to direct-attached NVMe operation while retaining
 protocol correctness, error containment and data-integrity coverage.
 
-The latest full regression passed **1,719 tests in 233.25 seconds** on
+The x1 checkpoint full regression passed **1,719 tests in 233.25 seconds** on
 2026-11-03. Lint and real-XPM elaboration passed; all 131 HDL files passed formatting/token checks. This
 includes 994 added Gen3 peer cases across the four campaigns below. Earlier test totals and physical
 results are historical checkpoints, not measurements of the latest source.

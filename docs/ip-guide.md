@@ -24,6 +24,14 @@ flowchart LR
 
 ### Optional Gen3 packaging
 
+On `dev/pcie-x2`, Configuration also exposes **Link width (x2 training
+development)** (`LINK_WIDTH`): 1 or 2, default 1. The callback propagates the
+selected value to RTL and rejects x2 without `ENABLE_GEN3`. The current root
+explicitly fails x2 elaboration: two-lane PHY, rate-change and packet/AXI
+integration remain unfinished. Selecting 2 does not produce a working x2
+root port. See [x2 development](x2-development.md) for training-stage simulations
+and the metadata-only `make width-metadata` check.
+
 Vivado now has one catalog definition, `soft-pcie.org:user:soft_pcie_root:1.1`, with a
 **Gen3 (`ENABLE_GEN3`)** checkbox. It defaults off. Generate a fresh local
 repository once, containing both locally generated PHY backends:

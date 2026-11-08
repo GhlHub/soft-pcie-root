@@ -66,6 +66,10 @@ if {[llength $param]!=1} {error "Missing inferred ENABLE_GEN3 parameter"}
 set_property -dict [list value_format bool value_resolve_type user value [expr {$enable_gen3 ? "true" : "false"}] display_name {Enable experimental Gen3}] $param
 set model [ipx::get_hdl_parameters ENABLE_GEN3 -of_objects $core]
 set_property value $enable_gen3 $model
+set width [ipx::get_user_parameters LINK_WIDTH -of_objects $core]
+if {[llength $width]!=1} {error "Missing inferred LINK_WIDTH parameter"}
+set_property -dict [list value_format long value_resolve_type user value 1 display_name {Link width (x2 training development)} value_validation_type range_long value_validation_range_minimum 1 value_validation_range_maximum 2] $width
+set_property value 1 [ipx::get_hdl_parameters LINK_WIDTH -of_objects $core]
 set preset [ipx::get_user_parameters GEN3_TX_PRESET -of_objects $core]
 if {[llength $preset]!=1} {error "Missing inferred GEN3_TX_PRESET parameter"}
 set_property -dict [list value_format long value_resolve_type user value 4 display_name {Gen3 TX preset (0-10)} value_validation_type range_long value_validation_range_minimum 0 value_validation_range_maximum 10] $preset

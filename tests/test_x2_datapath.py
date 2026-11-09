@@ -352,7 +352,7 @@ def test_x2_replay_wrap_pause_exhaustion(tmp_path):
         assert words[-1]==zlib.crc32(seq.to_bytes(2,'big')+payload)
 
 
-def rx_trace(tmp_path,program):
+def rx_trace(tmp_path,program,words=64,slots=16):
     bench='''module tb;
 reg clk=0;always #2 clk=~clk;
 reg reset=1,start=0,abort_rx=0,valid=0,ready=1;reg [63:0] data;reg [1:0] pos;
@@ -370,7 +370,8 @@ initial begin repeat(4)@(negedge clk);reset=0;restart();
 PROGRAM
 wait_cycles(1500);$display("PASS");$finish;end
 initial begin #2000000;$fatal(1,"watchdog");end
-endmodule'''.replace('PROGRAM',program)
+endmodule'''.replace('PROGRAM',program).replace('gen3_data_rx_x2 dut',
+        f'gen3_data_rx_x2 #(.WORDS({words}),.SLOTS({slots})) dut')
     path=tmp_path/'trace_tb.sv';path.write_text(bench);exe=tmp_path/'sim'
     subprocess.run(['iverilog','-g2012','-s','tb','-o',str(exe),str(path),str(GEN3/'gen3_data_rx_x2.sv')],check=True,capture_output=True,text=True)
     result=subprocess.run(['vvp',str(exe)],capture_output=True,text=True,timeout=30)
@@ -441,3 +442,105 @@ def test_x2_rx_idle_lane_alignment(tmp_path,offset):
     p=body(1)
     got,responses,errors,eds,_=rx_trace(tmp_path,drive_stream(bytes(offset)+tlp(0,p)+bytes(16)))
     assert not got and not responses and errors==1 and eds==0
+
+
+@pytest.mark.parametrize('offset', [0, 2, 4, 6])
+@pytest.mark.parametrize('words', [1, 2, 31, 32])
+def test_x2_rx_sustained_nullified(tmp_path, offset, words):
+    packet = body(words)
+    null = bytearray(tlp(0, packet))
+    for i in range(1, 5):
+        null[-i] ^= 255
+    null += b'\xc0' * 4
+    # Continuous eight-byte input, including lengths that leave a four-byte
+    # final body beat. No sequence/queue ownership for nullified candidates.
+    stream = bytes(offset) + bytes(null) * 128 + tlp(0, packet) + bytes(16)
+    got, responses, errors, eds, dllps = rx_trace(tmp_path, drive_stream(stream))
+    assert got == [packet] and responses == [(0, 0)]
+    assert errors == eds == 0 and not dllps
+
+
+@pytest.mark.parametrize('offset', [0, 2, 4, 6])
+def test_x2_rx_sustained_minimum_packets(tmp_path, offset):
+    packet = bytes.fromhex('0000000101005aff00001000')
+    packets = [packet] * 256
+    stream = bytes(offset) + b''.join(tlp(i, p) for i, p in enumerate(packets)) + bytes(16)
+    got, responses, errors, eds, dllps = rx_trace(tmp_path, drive_stream(stream))
+    assert got == packets and responses == [(i, 0) for i in range(256)]
+    assert errors == eds == 0 and not dllps
+
+
+def test_x2_rx_eds_without_following_input(tmp_path):
+    # No padding after the block-tail EDS. The ingress parser must drain its
+    # final four buffered bytes even when valid_i stays low indefinitely.
+    got, responses, errors, eds, dllps = rx_trace(
+        tmp_path, drive_stream(bytes(28) + bytes.fromhex('1f809000')))
+    assert not got and not responses and not dllps and errors == 0 and eds == 1
+
+
+@pytest.mark.parametrize('cut', [8, 16, 24, 64, 128, 144])
+@pytest.mark.parametrize('delay', [0, 1, 2, 3])
+def test_x2_rx_abort_pipeline_preserves_committed(tmp_path, cut, delay):
+    first, second = body(1, 19), body(31, 23)
+    program = 'ready=0;' + drive_stream(tlp(0, first) + bytes(16))
+    program += 'wait_cycles(12);' + drive_stream(tlp(1, second)[:cut])
+    program += f'wait_cycles({delay});abort_rx=1;@(negedge clk);abort_rx=0;wait_cycles(4);restart();'
+    program += drive_stream(tlp(1, second) + bytes(16))
+    program += 'wait_cycles(12);ready=1;'
+    got, responses, errors, eds, dllps = rx_trace(tmp_path, program)
+    assert got == [first, second] and responses == [(0, 0), (1, 0)]
+    assert errors == eds == 0 and not dllps
+
+
+@pytest.mark.parametrize('offset', [0, 2, 4, 6])
+def test_x2_rx_bubbles_and_dllp_burst(tmp_path, offset):
+    packets = [body([1, 2, 3, 32][i % 4], i + 1) for i in range(80)]
+    stream = bytes(offset)
+    for i, packet in enumerate(packets):
+        stream += dllp(ack(i)) * 3 + tlp(i, packet)
+    stream += bytes(16)
+    rows = drive_stream(stream).splitlines()
+    program = '\n'.join(row + (f'wait_cycles({i % 3});' if i % 7 == 0 else '')
+                        for i, row in enumerate(rows))
+    got, responses, errors, eds, dllps = rx_trace(tmp_path, program)
+    assert got == packets and responses == [(i, 0) for i in range(80)]
+    assert errors == eds == 0 and len(dllps) == 240
+
+
+def test_x2_rx_committed_packet_has_no_read_bubbles(tmp_path):
+    packet = body(32)
+    rows = drive_stream(tlp(0, packet) + bytes(16))
+    bench = '''module tb;
+reg clk=0;always #2 clk=~clk;
+reg reset=1,start=0,valid=0,ready=0;reg [63:0] data;reg [1:0] pos;
+wire active,eds,v,last,response,nak,dv,error;wire [63:0] out;wire [1:0] nw,cl;
+wire [8:0] cost;wire [11:0] seq;wire [31:0] db;
+integer beats=0;reg opened=0;
+gen3_data_rx_x2 dut(clk,reset,start,1'b0,valid,data,pos,active,eds,out,nw,v,last,ready,cl,cost,response,nak,seq,dv,db,error);
+always @(posedge clk)if(!reset)begin
+ if(error||nak)$fatal(1,"unexpected packet rejection");
+ if(opened&&!v)$fatal(1,"synchronous packet RAM inserted a read bubble");
+ if(v&&ready)begin beats<=beats+1;opened<=!last;end
+end
+task drive(input [63:0] d,input [1:0] p);begin @(negedge clk);data=d;pos=p;valid=1;end endtask
+initial begin
+ repeat(4)@(negedge clk);reset=0;start=1;@(negedge clk);start=0;
+ROWS
+ @(negedge clk);valid=0;repeat(12)@(negedge clk);ready=1;
+ repeat(30)@(negedge clk);
+ if(beats!=18)$fatal(1,"wrong packet beat count");
+ $display("PASS read throughput");$finish;
+end
+endmodule'''.replace('ROWS', rows)
+    simulate(tmp_path, bench, [GEN3 / 'gen3_data_rx_x2.sv'])
+
+
+@pytest.mark.parametrize('words,slots', [(64, 2), (128, 4), (2048, 2)])
+def test_x2_rx_buffer_geometry(tmp_path, words, slots):
+    packets = [body(1, i + 1) for i in range(64)]
+    # Small geometries need service time; this checks storage/descriptor wrap.
+    stream = b''.join(tlp(i, p) + bytes(24) for i, p in enumerate(packets)) + bytes(16)
+    got, responses, errors, eds, dllps = rx_trace(
+        tmp_path, drive_stream(stream), words=words, slots=slots)
+    assert got == packets and responses == [(i, 0) for i in range(64)]
+    assert errors == eds == 0 and not dllps

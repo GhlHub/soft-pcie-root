@@ -131,3 +131,16 @@ tile, no DSPs. RX fails setup by 24.489 ns (register-expanded packet RAM and
 +1.025 ns, but CDC remains unqualified. No integrated root or board build.
 RTL is unchanged from cdaa0e4. See docs/x2-resource-measurement.md and its
 compact evidence before attempting timing fixes or making x2 readiness claims.
+
+RX timing repair — 2026-11-09: the byte-unrolled Gen3 x2 RX was replaced by
+a buffered word parser with ingress token metadata, registered packet events
+and synchronous packet BRAM. Final route uses 1,517 LUTs, 496 registers and one
+BRAM; internal setup/hold +0.081/+0.047 ns at 250 MHz on ZU15EG-2-e. Narrow
+margin, standalone OOC only. Reopened zero-delay port audit also meets setup
+but reports 338 input-origin hold violations (worst −0.135 ns); real PHY
+interface timing remains open. No internal hold violations. Whole-packet
+validation and committed ownership survive abort. x1 and other datapaths are
+unchanged, and the x2 root guard remains. Frozen-source regression: 2,153 passed
+(290.42 s), including 53 new RX tests; lint/XPM and 147 HDL format checks passed.
+See docs/x2-rx-timing-fix.md and docs/evidence/x2_rx_fix_v1/measurement.json.
+The earlier TX/link setup violation and host CDC audit remain outstanding.

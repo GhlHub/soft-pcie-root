@@ -2,7 +2,7 @@
 // Gen3 x2 aggregate stream: eight consecutive descrambled bytes per cycle.
 // Upstream must remove SKP and validate both lanes' block/ordered-set epochs.
 // position_i identifies the eight-byte group in the 32-byte aggregate block.
-// Byte-unrolled framing and CRC permit STP/body and finish/next-token overlap.
+// Buffered token decoder, registered packet events and single-port 64-bit RAM.
 // Abort discards only a candidate; committed packets and sequence survive.
 module gen3_data_rx_x2 #(
     parameter integer WORDS = 64,
@@ -24,47 +24,6 @@ module gen3_data_rx_x2 #(
     output reg [31:0] dllp_body_o,
     output reg error_o
 );
-    localparam W = $clog2(WORDS), S = $clog2(SLOTS);
-    localparam [2:0] TOKEN = 0,
-        TOKEN_BYTES = 1, DLLP_BYTES = 2, BODY = 3, AFTER = 4, NULL_BYTES = 5, IDLE_SECOND = 6;
-    reg [2:0] state_q, state_n;
-    reg [63:0] token_q, token_n;
-    reg [3:0] token_count_q, token_count_n;
-    reg [4:0] token_position_q, token_position_n;
-    reg [12:0] remaining_q, remaining_n, bytes_q, bytes_n;
-    reg [31:0] crc_q, crc_n, tail_q, tail_n, word_q, word_n, header_q, header_n;
-    reg [11:0] sequence_q, sequence_n, expected_q, expected_n;
-    reg drop_q, drop_n;
-    reg [S-1:0] wr_q, wr_n, rd_q;
-    reg [  W-1:0] rd_word_q;
-    reg [    S:0] occupied_q;
-    reg [   31:0] memory       [0:SLOTS*WORDS-1];
-    reg [    W:0] lengths      [      0:SLOTS-1];
-    reg [    1:0] classes      [      0:SLOTS-1];
-    reg [    8:0] costs        [      0:SLOTS-1];
-    reg [    1:0] store;
-    reg [S+W-1:0] store_address[            0:1];
-    reg [   31:0] store_data   [            0:1];
-    reg commit, response, nak, dllp, err, framing, eds;
-    reg [S-1:0] commit_slot;
-    reg [  W:0] commit_words;
-    reg [  1:0] commit_class;
-    reg [  8:0] commit_cost;
-    reg [ 11:0] response_sequence;
-    reg [ 31:0] dllp_body;
-    reg [  7:0] octet;
-    reg [ 10:0] token_length;
-    reg [  3:0] token_crc;
-    integer index, writes;
-    wire release_packet = tlp_valid_o && tlp_ready_i && tlp_last_o;
-    assign tlp_valid_o = occupied_q != 0;
-    assign tlp_last_o = {1'b0, rd_word_q} + 2 >= lengths[rd_q];
-    assign tlp_words_o = tlp_last_o ? 2'(lengths[rd_q] - {1'b0, rd_word_q}) : 2'd2;
-    assign tlp_data_o = {
-        tlp_words_o == 2 ? memory[{rd_q, W'(rd_word_q+1'b1)}] : 32'b0, memory[{rd_q, rd_word_q}]
-    };
-    assign tlp_class_o = classes[rd_q];
-    assign tlp_credits_o = costs[rd_q];
     function automatic [31:0] crc_byte(input [31:0] old, input [7:0] v);
         reg [31:0] c;
         begin
@@ -84,260 +43,376 @@ module gen3_data_rx_x2 #(
     function automatic [3:0] fcrc(input [10:0] v);
         fcrc = {^(v & 11'h1af), ^(v & 11'h35e), ^(v & 11'h6bc), ^(v & 11'h4d7)};
     endfunction
-    // Called only after the complete declared body and nullification decision.
-    task automatic finish_packet(input nullified);
-        reg [10:0] payload;
-        reg [12:0] expected_bytes;
-        reg [11:0] distance;
-        begin
-            payload = {header_n[17:16], header_n[31:24]} == 0 ?
-                11'd1024 : {1'b0, header_n[17:16], header_n[31:24]};
-            expected_bytes = 13'd16 + {10'b0, header_n[5], 2'b0} + {10'b0, header_n[23], 2'b0} +
-                (header_n[6] ? {payload, 2'b0} : 13'b0);
-            distance = expected_n - sequence_n;
-            if (nullified && tail_n == crc_n) begin
-            end else if (nullified || tail_n != ~crc_n || bytes_n != expected_bytes ||
-                         bytes_n < 16 || (header_n[6] && payload > 32)) begin
-                response = 1;
-                nak      = 1;
-                err      = 1;
-            end else if (sequence_n == expected_n) begin
-                response = 1;
-                if (drop_n) begin
-                    nak = 1;
-                    err = 1;
-                end else begin
-                    commit = 1;
-                    commit_slot = wr_n;
-                    commit_words = (W + 1)'((bytes_n - 13'd4) >> 2);
-                    commit_class = header_n[4:0] == 5'h0a ?
-                        2'd2 : ((header_n[4:0] == 0 && header_n[6]) ? 2'd0 : 2'd1);
-                    commit_cost = header_n[6] ? 9'((payload + 11'd3) >> 2) : 9'd0;
-                    response_sequence = sequence_n;
-                    expected_n = expected_n + 1'b1;
-                    wr_n = wr_n + 1'b1;
+    localparam W = $clog2(WORDS), S = $clog2(SLOTS);
+    localparam [1:0] TOKEN = 0, BODY = 1, AFTER = 2;
+    reg [1:0] mode_q, mode_n, ingress_wr;
+    reg [ 4:0] ingress_rd;
+    reg [ 5:0] count_q;
+    reg [63:0] ingress    [0:3];
+    reg [ 1:0] positions  [0:3];
+    // Classify each halfword at ingress, before the cursor/token feedback path.
+    reg [ 7:0] metadata   [0:3];
+    reg [12:0] remaining_q, remaining_n;
+    wire [1:0] row0 = ingress_rd[4:3], row1 = row0 + 2'd1, row2 = row0 + 2'd2, row3 = row0 + 2'd3;
+    wire [255:0] window = {ingress[row3], ingress[row2], ingress[row1], ingress[row0]} >>
+        (8 * ingress_rd[2:0]);
+    reg [3:0] prefix;
+    reg bad_idle;
+    reg [95:0] aligned;
+    wire [31:0] meta_window = {metadata[row3], metadata[row2], metadata[row1], metadata[row0]} >>
+        (2 * ingress_rd[2:1]);
+    wire null_prefix = mode_q == AFTER && meta_window[1];
+    wire [7:0] scan = null_prefix ? meta_window[11:4] : meta_window[7:0];
+    wire [4:0] token_pointer = ingress_rd + 5'(prefix);
+    wire [1:0] token_row0 = token_pointer[4:3], token_row1 = token_row0 + 2'd1,
+        token_row2 = token_row0 + 2'd2;
+    wire [191:0] token_window = {ingress[token_row2], ingress[token_row1], ingress[token_row0]} >>
+        (8 * token_pointer[2:0]);
+    reg [15:0] previous_input;
+    // Metadata: [64:63] initial body last/two-word flags, [62:57] token
+    // classification/validation, [56:25] CRC seed, [24:13] sequence,
+    // [12:0] declared body bytes. Control never reduces the length bus.
+    wire [64:0] token_info[0:3];
+    // Three positions are wholly in this input beat. Position 6 straddles
+    // beats and is filled on the next valid input, before four bytes can be
+    // consumed there. Metadata and payload share the same circular epoch.
+    for (genvar lane = 0; lane < 4; lane = lane + 1) begin : predecode
+        wire [31:0] raw_token;
+        if (lane == 3) begin : cross_beat
+            assign raw_token = {data_i[15:0], previous_input};
+        end else begin : in_beat
+            assign raw_token = data_i[16*lane+:32];
+        end
+        wire [10:0] len = {raw_token[14:8], raw_token[7:4]};
+        wire [3:0] check_crc = fcrc(len);
+        wire [31:0] seed = crc_byte(
+            crc_byte(32'hffffffff, {4'b0, raw_token[19:16]}), raw_token[31:24]
+        );
+        reg [64:0] info[0:3];
+        always @(posedge clk)
+            if (active_o && valid_i && !reset_i && !abort_i && !start_stream_i)
+                info[lane == 3 ? ingress_wr - 2'd1 : ingress_wr] <= {
+                    len <= 3,
+                    len >= 3,
+                    raw_token[7:0] == 0,
+                    raw_token[3:0] == 4'hf,
+                    raw_token[15:8] == 8'hac,
+                    raw_token[7:0] == 8'hf0,
+                    raw_token == 32'h0090801f,
+                    len >= 2 && len < 1152 && raw_token[23:20] == check_crc &&
+                        raw_token[15] == ^{len, check_crc},
+                    seed,
+                    {raw_token[19:16], raw_token[31:24]},
+                    ({2'b0, len} - 13'd1) << 2
+                };
+        assign token_info[lane] = info[token_pointer[4:3]];
+    end
+    wire [64:0] decoded = token_info[token_pointer[2:1]];
+    reg  [12:0] body_length;
+    reg  [ 5:0] consumed;
+    reg framing, eds, start, body_valid, body_last, finish, nullified, dllp;
+    reg [63:0] body_data;
+    reg        body_two;
+    // Registered event boundary: no token decode in the CRC or RAM write path.
+    reg ev_start, ev_body, ev_last, ev_two, ev_finish, ev_null, ev_dllp;
+    reg [63:0] ev_data;
+    reg [47:0] ev_dllp_data;
+    reg [11:0] ev_sequence;
+    reg [12:0] ev_length;
+    reg [31:0] ev_seed;
+
+    always @* begin
+        prefix = 0;
+        if (scan[0]) prefix = 2;
+        if (scan[0] && scan[2]) prefix = 4;
+        if (scan[0] && scan[2] && scan[4]) prefix = 6;
+        if (scan[0] && scan[2] && scan[4] && scan[6]) prefix = 8;
+        prefix = prefix + (null_prefix ? 4'd4 : 4'd0);
+    end
+    always @* begin
+        aligned     = token_window[95:0];
+        bad_idle    = decoded[62];
+        body_length = decoded[12:0];
+        mode_n      = mode_q;
+        remaining_n = remaining_q;
+        consumed    = 0;
+        framing     = 0;
+        eds         = 0;
+        start       = 0;
+        body_valid  = 0;
+        body_last   = 0;
+        finish      = 0;
+        nullified   = 0;
+        dllp        = 0;
+        body_data   = 0;
+        body_two    = 0;
+        if (active_o && count_q >= 4) begin
+            if (mode_q == BODY && (remaining_q <= 4 || count_q >= 8)) begin
+                body_valid  = 1;
+                body_data   = window[63:0];
+                body_two    = remaining_q >= 8;
+                body_last   = remaining_q <= 8;
+                consumed    = body_two ? 6'd8 : 6'd4;
+                remaining_n = remaining_q - 13'(consumed);
+                if (body_last) mode_n = AFTER;
+            end else if (mode_q != BODY) begin
+                if (mode_q == AFTER) begin
+                    finish = 1;
+                    mode_n = TOKEN;
                 end
-            end else begin
-                response = 1;
-                if (distance > 2048) begin
-                    nak = 1;
-                    err = 1;
+                if (null_prefix) begin
+                    nullified = 1;
+                    consumed  = 4;
+                    if (window[31:0] != 32'hc0c0c0c0) begin
+                        framing = 1;
+                        finish  = 0;
+                    end
                 end
+                if (6'(prefix) >= count_q) consumed = count_q;
+                else if (prefix == (null_prefix ? 12 : 8)) consumed = 6'(prefix);
+                else
+                if (count_q < 6'(prefix) + 4) begin
+                end else if (bad_idle) framing = 1;
+                else if (decoded[59]) begin
+                    if (count_q >= 6'(prefix) + 8) begin
+                        consumed = 6'(prefix) + 8;
+                        if (!decoded[60]) framing = 1;
+                        else dllp = 1;
+                    end
+                end else if (decoded[61]) begin
+                    if (count_q >= 6'(prefix) + 4) begin
+                        if (decoded[58]) begin
+                            consumed = 6'(prefix) + 4;
+                            if (token_pointer[2:0] != 4 || positions[token_pointer[4:3]] != 3)
+                                framing = 1;
+                            else eds = 1;
+                        end else if (!decoded[57]) framing = 1;
+                        else if (count_q >= 6'(prefix) + (decoded[63] ? 6'd12 : 6'd8)) begin
+                            start       = 1;
+                            body_valid  = 1;
+                            body_two    = decoded[63];
+                            body_last   = decoded[64];
+                            body_data   = aligned[95:32];
+                            consumed    = 6'(prefix) + (body_two ? 6'd12 : 6'd8);
+                            remaining_n = body_length - (body_two ? 13'd8 : 13'd4);
+                            mode_n      = body_last ? AFTER : BODY;
+                        end
+                    end
+                end else framing = 1;
             end
         end
-    endtask
-    always @* begin
-        state_n           = state_q;
-        token_n           = token_q;
-        token_count_n     = token_count_q;
-        token_position_n  = token_position_q;
-        remaining_n       = remaining_q;
-        bytes_n           = bytes_q;
-        crc_n             = crc_q;
-        tail_n            = tail_q;
-        word_n            = word_q;
-        header_n          = header_q;
-        sequence_n        = sequence_q;
-        expected_n        = expected_q;
-        drop_n            = drop_q;
-        wr_n              = wr_q;
-        store             = 0;
-        writes            = 0;
-        index             = 0;
-        commit            = 0;
-        response          = 0;
-        nak               = 0;
-        dllp              = 0;
-        err               = 0;
-        framing           = 0;
-        eds               = 0;
-        commit_slot       = 0;
-        commit_words      = 0;
-        commit_class      = 0;
-        commit_cost       = 0;
-        response_sequence = expected_q - 1'b1;
-        dllp_body         = 0;
-        octet             = 0;
-        token_length      = 0;
-        token_crc         = 0;
-        for (integer k = 0; k < 2; k = k + 1) begin
-            store_address[k] = 0;
-            store_data[k]    = 0;
-        end
-        for (integer b = 0; b < 8; b = b + 1) begin
-            octet = data_i[8*b+:8];
-            if (valid_i && active_o && !framing && !eds) begin
-                if (state_n == AFTER) begin
-                    if (octet == 8'hc0) begin
-                        state_n       = NULL_BYTES;
-                        token_count_n = 0;
-                    end else begin
-                        finish_packet(0);
-                        state_n = TOKEN;
-                    end
-                end
-                case (state_n)
-                    TOKEN: begin
-                        if (octet == 0) begin
-                            if (b % 2 == 0) state_n = IDLE_SECOND;
-                        end else if (octet == 8'hf0 || octet[3:0] == 4'hf) begin
-                            token_n          = {56'b0, octet};
-                            token_count_n    = 1;
-                            token_position_n = {position_i, 3'b0} + 5'(b);
-                            state_n          = octet == 8'hf0 ? DLLP_BYTES : TOKEN_BYTES;
-                        end else framing = 1;
-                    end
-                    IDLE_SECOND: begin
-                        if (octet != 0) framing = 1;
-                        state_n = TOKEN;
-                    end
-                    TOKEN_BYTES: begin
-                        token_n[8*token_count_n+:8] = octet;
-                        token_count_n               = token_count_n + 1'b1;
-                        if (token_count_n == 4) begin
-                            if (token_n[31:0] == 32'h0090801f) begin
-                                if (token_position_n != 28) framing = 1;
-                                else eds = 1;
-                                state_n = TOKEN;
-                            end else begin
-                                token_length = {token_n[14:8], token_n[7:4]};
-                                token_crc    = fcrc(token_length);
-                                if (token_length < 2 || token_length >= 1152 || token_n[23:20] !=
-                                    token_crc || token_n[15] != ^{token_length, token_crc})
-                                    framing = 1;
-                                else begin
-                                    state_n = BODY;
-                                    remaining_n = ({2'b0, token_length} - 1'b1) << 2;
-                                    sequence_n = {token_n[19:16], token_n[31:24]};
-                                    crc_n = crc_byte(
-                                        crc_byte(
-                                            32'hffffffff, {4'b0, sequence_n[11:8]}
-                                        ),
-                                        sequence_n[7:0]
-                                    );
-                                    bytes_n = 0;
-                                    tail_n = 0;
-                                    word_n = 0;
-                                    header_n = 0;
-                                    drop_n = int'(occupied_q) + int'(commit) >= SLOTS ||
-                                        int'(token_length) > WORDS + 2;
-                                end
-                            end
-                        end
-                    end
-                    DLLP_BYTES: begin
-                        token_n[8*token_count_n+:8] = octet;
-                        token_count_n               = token_count_n + 1'b1;
-                        if (token_count_n == 8) begin
-                            state_n = TOKEN;
-                            if (token_n[15:8] != 8'hac) framing = 1;
-                            else if (token_n[63:48] != crc16(token_n[47:16])) err = 1;
-                            else begin
-                                dllp      = 1;
-                                dllp_body = token_n[47:16];
-                            end
-                        end
-                    end
-                    BODY: begin
-                        if (bytes_n >= 4) begin
-                            crc_n                  = crc_byte(crc_n, tail_n[7:0]);
-                            index                  = int'(bytes_n) - 4;
-                            word_n[8*(index%4)+:8] = tail_n[7:0];
-                            if (index % 4 == 3) begin
-                                if (index == 3) header_n = word_n;
-                                if (index < WORDS * 4 && !drop_n) begin
-                                    store[writes]         = 1;
-                                    store_address[writes] = {wr_n, W'(index / 4)};
-                                    store_data[writes]    = word_n;
-                                    writes                = writes + 1;
-                                end else drop_n = 1;
-                            end
-                        end
-                        tail_n      = {octet, tail_n[31:8]};
-                        bytes_n     = bytes_n + 1'b1;
-                        remaining_n = remaining_n - 1'b1;
-                        if (remaining_n == 0) state_n = AFTER;
-                    end
-                    NULL_BYTES: begin
-                        if (octet != 8'hc0) framing = 1;
-                        token_count_n = token_count_n + 1'b1;
-                        if (token_count_n == 4 && !framing) begin
-                            finish_packet(1);
-                            state_n = TOKEN;
-                        end
-                    end
-                    default: framing = 1;
+        // Arrival is eight bytes; all cursors/occupancies are even. Keep
+        // overflow detection off a wide add/subtract/compare feedback chain.
+        if (active_o) begin
+            if (count_q > 32) framing = 1;
+            if (valid_i)
+                case (count_q)
+                    6'd26:   if (consumed < 2) framing = 1;
+                    6'd28:   if (consumed < 4) framing = 1;
+                    6'd30:   if (consumed < 6) framing = 1;
+                    6'd32:   if (consumed < 8) framing = 1;
+                    default: ;
                 endcase
+        end
+    end
+
+    always @(posedge clk) begin
+        // Ingress payload and metadata are deliberately unreset.
+        if (active_o && valid_i && !reset_i && !abort_i && !start_stream_i) begin
+            ingress[ingress_wr]   <= data_i;
+            positions[ingress_wr] <= position_i;
+            previous_input        <= data_i[63:48];
+            for (integer k = 0; k < 4; k = k + 1)
+            metadata[ingress_wr][2*k+:2] <= {data_i[16*k+:8] == 8'hc0, data_i[16*k+:16] == 0};
+        end
+        ev_data      <= body_data;
+        ev_sequence  <= decoded[24:13];
+        ev_length    <= body_length;
+        ev_seed      <= decoded[56:25];
+        ev_dllp_data <= aligned[63:16];
+        if (reset_i || abort_i || start_stream_i) begin
+            active_o    <= !reset_i && !abort_i && start_stream_i;
+            ingress_wr  <= 0;
+            ingress_rd  <= 0;
+            count_q     <= 0;
+            mode_q      <= TOKEN;
+            remaining_q <= 0;
+            ev_start    <= 0;
+            ev_body     <= 0;
+            ev_last     <= 0;
+            ev_two      <= 0;
+            ev_finish   <= 0;
+            ev_null     <= 0;
+            ev_dllp     <= 0;
+            eds_o       <= 0;
+        end else begin
+            ev_start  <= start && !framing;
+            ev_body   <= body_valid && !framing;
+            ev_last   <= body_last;
+            ev_two    <= body_two;
+            ev_finish <= finish;
+            ev_null   <= nullified;
+            ev_dllp   <= dllp && !framing;
+            eds_o     <= eds && !framing;
+            if (active_o) begin
+                if (valid_i) ingress_wr <= ingress_wr + 1'b1;
+                ingress_rd  <= {ingress_rd[4:1] + consumed[4:1], 1'b0};
+                count_q     <= count_q + (valid_i ? 6'd8 : 6'd0) - consumed;
+                mode_q      <= mode_n;
+                remaining_q <= remaining_n;
+                if (framing || eds) active_o <= 0;
             end
         end
     end
+
+    reg [31:0] crc_q, tail_q;
+    wire unused_metadata = ^{aligned[15:0], window[255:64], scan[7], scan[5], scan[3], scan[1],
+                             meta_window[31:12], token_window[191:96]};
+    reg [31:0] header_q;
+    wire unused_header = ^{header_q[22:18], header_q[15:7]};
+    reg [12:0] packet_length_q;
+    reg [11:0] sequence_q, expected_q;
+    reg       drop_q;
+    reg [W:0] written_q;
+    reg [S-1:0] wr_q, rd_q;
+    reg [  W-2:0] rd_beat_q;
+    reg [    S:0] occupied_q;
+    reg [    W:0] lengths     [          0:SLOTS-1];
+    reg [    1:0] classes     [          0:SLOTS-1];
+    reg [    8:0] costs       [          0:SLOTS-1];
+    // One write and one synchronous read: no reset on payload RAM.
+    reg [   63:0] memory      [0:SLOTS*(WORDS/2)-1];
+    reg           ram_write;
+    reg [S+W-2:0] ram_address;
+    reg [63:0] ram_data, read_data;
+    reg out_valid, out_last;
+    reg [1:0] out_words, out_class;
+    reg [8:0] out_cost;
+    assign tlp_valid_o   = out_valid;
+    assign tlp_last_o    = out_last;
+    assign tlp_words_o   = out_words;
+    assign tlp_data_o    = {out_words == 2 ? read_data[63:32] : 32'b0, read_data[31:0]};
+    assign tlp_class_o   = out_class;
+    assign tlp_credits_o = out_cost;
+    wire accepted = out_valid && tlp_ready_i;
+    wire release_packet = accepted && out_last;
+    wire [S-1:0] read_slot = rd_q + S'(release_packet);
+    wire [W-2:0] read_beat = release_packet ? {(W - 1) {1'b0}} : rd_beat_q + (W - 1)'(accepted);
+    wire can_read = !out_valid || tlp_ready_i;
+    wire read_available = occupied_q > (release_packet ? 1 : 0);
+    wire [W:0] read_words = lengths[read_slot] - {read_beat, 1'b0};
+
+    wire [10:0] payload = {header_q[17:16], header_q[31:24]} == 0 ?
+        11'd1024 : {1'b0, header_q[17:16], header_q[31:24]};
+    wire [12:0] expected_bytes = 13'd16 + {10'b0, header_q[5], 2'b0} + {10'b0, header_q[23], 2'b0} +
+        (header_q[6] ? {payload, 2'b0} : 13'b0);
+    wire [11:0] distance = expected_q - sequence_q;
+    wire good_null = ev_null && tail_q == crc_q;
+    wire bad_packet = ev_null || tail_q != ~crc_q || packet_length_q != expected_bytes ||
+        packet_length_q < 16 || (header_q[6] && payload > 32);
+    wire live = !reset_i && !abort_i && !start_stream_i;
+    wire commit = live && ev_finish && !good_null && !bad_packet && sequence_q == expected_q &&
+        !drop_q;
+    wire [S-1:0] candidate_slot = wr_q + S'(commit);
+    wire [31:0] crc_base = ev_start ? ev_seed : crc_q;
+    wire [W:0] write_index = ev_start ? {(W + 1) {1'b0}} : written_q;
+    wire [1:0] payload_words = ev_last ? (ev_two ? 2'd1 : 2'd0) : (ev_two ? 2'd2 : 2'd1);
+    wire [31:0] crc_one = crc_byte(
+        crc_byte(
+            crc_byte(crc_byte(crc_base, ev_data[7:0]), ev_data[15:8]), ev_data[23:16]
+        ),
+        ev_data[31:24]
+    );
+    wire [31:0] crc_two = crc_byte(
+        crc_byte(
+            crc_byte(crc_byte(crc_one, ev_data[39:32]), ev_data[47:40]), ev_data[55:48]
+        ),
+        ev_data[63:56]
+    );
+
     always @(posedge clk) begin
-        if (!reset_i && !abort_i && !start_stream_i) begin
-            for (integer k = 0; k < 2; k = k + 1)
-            if (store[k]) memory[store_address[k]] <= store_data[k];
-            if (commit) begin
-                lengths[commit_slot] <= commit_words;
-                classes[commit_slot] <= commit_class;
-                costs[commit_slot]   <= commit_cost;
-            end
+        if (ram_write && !reset_i) memory[ram_address] <= ram_data;
+        if (can_read) read_data <= memory[{read_slot, read_beat}];
+        ram_write <= live && ev_body && payload_words != 0 && write_index < (W + 1)'(WORDS) &&
+            (ev_start ? (occupied_q + {{(S) {1'b0}}, commit} < (S + 1)'(SLOTS) &&
+                         ev_length <= 13'(WORDS >= 2048 ? 8191 : WORDS * 4 + 4)) : !drop_q);
+        ram_address <= {candidate_slot, write_index[W-1:1]};
+        ram_data <= ev_data;
+        if (commit) begin
+            lengths[wr_q] <= written_q;
+            classes[wr_q] <= header_q[4:0] == 5'h0a ?
+                2'd2 : ((header_q[4:0] == 0 && header_q[6]) ? 2'd0 : 2'd1);
+            costs[wr_q] <= header_q[6] ? 9'((payload + 11'd3) >> 2) : 9'd0;
         end
         response_o <= 0;
         nak_o      <= 0;
         dllp_o     <= 0;
         error_o    <= 0;
-        eds_o      <= 0;
         if (reset_i) begin
-            active_o         <= 0;
-            state_q          <= TOKEN;
-            occupied_q       <= 0;
-            wr_q             <= 0;
-            rd_q             <= 0;
-            rd_word_q        <= 0;
-            expected_q       <= 0;
-            token_count_q    <= 0;
-            token_position_q <= 0;
-            remaining_q      <= 0;
-            bytes_q          <= 0;
-            drop_q           <= 0;
+            occupied_q <= 0;
+            wr_q       <= 0;
+            rd_q       <= 0;
+            rd_beat_q  <= 0;
+            expected_q <= 0;
+            out_valid  <= 0;
+            drop_q     <= 0;
+            written_q  <= 0;
+            ram_write  <= 0;
         end else begin
-            if (release_packet) begin
-                rd_q      <= rd_q + 1'b1;
-                rd_word_q <= 0;
-            end else if (tlp_valid_o && tlp_ready_i) rd_word_q <= rd_word_q + 2;
+            if (can_read) begin
+                out_valid <= read_available;
+                out_words <= read_words > 1 ? 2'd2 : 2'd1;
+                out_last  <= read_words <= 2;
+                out_class <= classes[read_slot];
+                out_cost  <= costs[read_slot];
+            end
+            if (accepted) begin
+                rd_q      <= read_slot;
+                rd_beat_q <= read_beat;
+            end
             case ({
-                !abort_i && !start_stream_i && commit, release_packet
+                commit, release_packet
             })
                 2'b10:   occupied_q <= occupied_q + 1'b1;
                 2'b01:   occupied_q <= occupied_q - 1'b1;
                 default: ;
             endcase
-            if (abort_i || start_stream_i) begin
-                active_o      <= start_stream_i && !abort_i;
-                state_q       <= TOKEN;
-                token_count_q <= 0;
-            end else begin
-                state_q             <= state_n;
-                token_q             <= token_n;
-                token_count_q       <= token_count_n;
-                token_position_q    <= token_position_n;
-                remaining_q         <= remaining_n;
-                bytes_q             <= bytes_n;
-                crc_q               <= crc_n;
-                tail_q              <= tail_n;
-                word_q              <= word_n;
-                header_q            <= header_n;
-                sequence_q          <= sequence_n;
-                expected_q          <= expected_n;
-                drop_q              <= drop_n;
-                wr_q                <= wr_n;
-                response_o          <= response;
-                nak_o               <= nak;
-                response_sequence_o <= response_sequence;
-                dllp_o              <= dllp;
-                dllp_body_o         <= dllp_body;
-                error_o             <= err || framing;
-                eds_o               <= eds;
-                if (framing || eds) active_o <= 0;
+            if (live) begin
+                error_o <= framing;
+                if (ev_dllp) begin
+                    if (ev_dllp_data[47:32] != crc16(ev_dllp_data[31:0])) error_o <= 1;
+                    else begin
+                        dllp_o      <= 1;
+                        dllp_body_o <= ev_dllp_data[31:0];
+                    end
+                end
+                if (ev_finish && !good_null) begin
+                    response_o          <= 1;
+                    response_sequence_o <= expected_q - 1'b1;
+                    if (bad_packet || (sequence_q == expected_q && drop_q) ||
+                        (sequence_q != expected_q && distance > 2048)) begin
+                        nak_o   <= 1;
+                        error_o <= 1;
+                    end else if (commit) begin
+                        expected_q          <= expected_q + 1'b1;
+                        response_sequence_o <= sequence_q;
+                        wr_q                <= wr_q + 1'b1;
+                    end
+                end
+                if (ev_body) begin
+                    if (payload_words == 2) crc_q <= crc_two;
+                    else if (payload_words == 1) crc_q <= crc_one;
+                    else crc_q <= crc_base;
+                    written_q <= write_index + (W + 1)'(payload_words);
+                    if (ev_last) tail_q <= ev_two ? ev_data[63:32] : ev_data[31:0];
+                    if (ev_start) begin
+                        header_q <= ev_data[31:0];
+                        sequence_q <= ev_sequence;
+                        packet_length_q <= ev_length;
+                        drop_q <= occupied_q + {{(S) {1'b0}}, commit} >= (S + 1)'(SLOTS) ||
+                            ev_length > 13'(WORDS >= 2048 ? 8191 : WORDS * 4 + 4);
+                    end
+                end
             end
         end
     end

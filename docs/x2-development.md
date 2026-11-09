@@ -89,8 +89,9 @@ modules only to exercise the guard; they are not root-port functional simulation
    framing/parser/formatter processes 64 bits per cycle. `gen3_data_rx_x2`
    validates complete packets before publication; `gen3_link_layer_x2` connects
    credit admission, requester arbitration, 64-bit replay and formatting. Only
-   Gen3 x2 will select these modules. The subsequent OOC route found severe
-   RX setup violations at 250 MHz; see [resource measurements](x2-resource-measurement.md).
+   Gen3 x2 will select these modules. The first OOC route found severe
+   RX setup violations. The [RX repair](x2-rx-timing-fix.md) now meets internal
+   250 MHz timing with narrow margin; TX/link still has its −0.013 ns violation.
 4. **Datapath implemented, root selection pending:** `pcie_x2_host_path` connects
    64-bit link beats through packet-preserving width adapters and whole-packet
    CDC to `pcie_ddr_bridge_x2`, with 128-bit packet and DDR AXI paths. It uses
@@ -176,9 +177,11 @@ in `pcie_soft_replay`; its ownership and ACK-retirement logic is unchanged.
 | Formatted TX stream | 64 bits | `words=1/2`; final unused DWORD is zero |
 | Host packet / DDR AXI | 128 bits | Packet `words=1..4`; AXI uses byte strobes |
 
-The receive parser consumes eight bytes each cycle, including token/body and
-finish/next-token transitions. It checks paired x2 idle symbols, framing
-CRC/parity, end-of-block EDS placement, DLLP CRC, TLP LCRC/shape and sequence.
+The receive parser accepts eight bytes per valid cycle into a circular buffer,
+with token/body and finish/next-token overlap. Predecoded token metadata,
+registered packet events and synchronous packet RAM replace the initial
+byte-unrolled implementation; see the [RX repair](x2-rx-timing-fix.md).
+It checks paired x2 idle symbols, framing CRC/parity, end-of-block EDS placement, DLLP CRC, TLP LCRC/shape and sequence.
 Nullification and candidate abort cannot discard committed packets. Its input
 must already be descrambled, deskewed and checked for per-lane block/ordered-set
 transitions; those PHY responsibilities remain in integration items 1/2.
@@ -198,8 +201,10 @@ two formatter banks also hold 256 bytes each. RX validation retains sixteen
 increases from the Gen3 x1 eight RCB64 slots to sixteen (1 KiB of payload).
 These capacities support the simulated traffic; measured DDR service latency
 and sustained bandwidth are still needed before claiming sufficient buffering
-or a throughput target. The subsequent OOC route confirms that byte-unrolled CRC/parser critical paths
-and RAM inference require restructuring; see [measurements](x2-resource-measurement.md).
+or a throughput target. The initial OOC route exposed byte-unrolled parser and
+RAM-inference problems. The subsequent [RX repair](x2-rx-timing-fix.md) closes
+standalone internal setup timing; integrated timing and interface hold closure
+remain outstanding.
 
 `pcie_ddr_bridge_x2` starts from the reviewed x1 ownership implementation and
 uses separate four-bank payload/read storage. Future ownership fixes must be

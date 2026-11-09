@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-09",
+  "scope": "Gen3 x2 RX standalone OOC; no integrated root or hardware validation",
+  "part": "xczu15eg-ffvb1156-2-e",
+  "tool": "Vivado 2026.1 build 6511674",
+  "clock_period_ns": 4.0,
+  "base_commit": "e718a902118359439a093fe85425c7ed68ab5f78",
+  "source_manifest": "source-manifest.json",
+  "rtl_sha256": "b701416db0b194ad66c8f840a0ea4b3ae5b75412051efee264ba88ec70c652c3",
+  "luts": 1517,
+  "lut_memory": 344,
+  "registers": 496,
+  "bram_tiles": 1.0,
+  "dsps": 0,
+  "internal_timing": {
+    "wns_ns": 0.081,
+    "tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "whs_ns": 0.047,
+    "ths_ns": 0.0,
+    "hold_failing_endpoints": 0
+  },
+  "routed_nets": 2078,
+  "routing_errors": 0,
+  "drc_errors": 0,
+  "drc_warnings": [
+    "RTSTAT-10: OOC nets with no routable loads"
+  ],
+  "worst_setup_path": {
+    "from": "ingress_rd_reg[4]/C",
+    "to": "ingress_rd_reg[2]/D",
+    "logic_levels": 14,
+    "data_delay_ns": 3.9
+  },
+  "ideal_boundary_audit": {
+    "input_delay_ns": 0.0,
+    "output_delay_ns": 0.0,
+    "timing": {
+      "wns_ns": 0.081,
+      "tns_ns": 0.0,
+      "setup_failing_endpoints": 0,
+      "whs_ns": -0.135,
+      "ths_ns": -38.746,
+      "hold_failing_endpoints": 338
+    },
+    "violating_hold_source_groups": {
+      "data_i": 330,
+      "position_i": 4,
+      "start_stream_i": 2,
+      "valid_i": 2
+    },
+    "violating_internal_hold_paths": 0,
+    "interface_hold_qualified": false,
+    "limit": "Zero-delay OOC input stubs omit real upstream clock-to-Q and route; integration must close interface hold timing."
+  },
+  "validation": {
+    "regression_passed": 2153,
+    "regression_seconds": 290.42,
+    "new_tests": 53,
+    "rx_focused_tests": 171,
+    "lint_xpm": "passed",
+    "hdl_format_files": 147,
+    "token_equivalence": "passed"
+  },
+  "report_sha256": {
+    "utilization.rpt": "36c2b34ebdcccacc8b39ebcb4a5e1c52a67cea06d3822d908343cda3431bb268",
+    "timing.rpt": "2d971d887e548a8d265c813eaec7eaedf56781f288bdacb1222ffc2438fd8d0d",
+    "worst_paths.rpt": "933e7264424028583a614eddf0af1f19c285d5c2f2cbdca88c2b0a018ece3fab",
+    "route_status.rpt": "324b33203c9dbf7db6ba104fb2ece1e1904fbdba5b03358c11a01fb27eb751ff",
+    "drc.rpt": "4f8836256230744e1ab2a063d19a0e26d28f8e7f456041ecc79db19676196bb7"
+  },
+  "audit_report_sha256": {
+    "timing.rpt": "02d5bf143c560956ea59d3dd05bddaa0f2ad466ed8d6f73567c090a102120f4f",
+    "worst_paths.rpt": "88492df0b426d293c3186cf696877dfee299431aced843be5e681207b8410aca",
+    "hold_paths.tsv": "bdfa692c34570f7d175a028e881a20be64f630f26fd313498d5d7af3143fbe21",
+    "route_status.rpt": "324b33203c9dbf7db6ba104fb2ece1e1904fbdba5b03358c11a01fb27eb751ff",
+    "drc.rpt": "252a124f737e828c8e462978ff7eb0f7e8c1ccad5d8a62de49ea8620d9658c29"
+  },
+  "verification_source_sha256": {
+    "tests/test_x2_datapath.py": "0d44d19a54ad92b3e964817c21d98f314fcbb00899f2c48f6c0fba829e44318c",
+    "scripts/audit_x2_rx.tcl": "1742b48af20cf1560db0f5068d4f983d10f05ad71690ad53950a651bb1a5697e"
+  },
+  "validation_log_sha256": {
+    "x2_rx_fix_frozen_regression.log": "181a05fa6abf363c1d79036bbb492ff9fbb964ed6f79e7cb8786e19d410790d9",
+    "x2_rx_fix_frozen_lint.log": "97ed47ee08b5c764cd29def7d2cc038b5295b0ed2978eec4dfdc115ca99330e4"
+  },
+  "physical_verification": false,
+  "integrated_x2_root": false,
+  "root_guard_retained": true
+}

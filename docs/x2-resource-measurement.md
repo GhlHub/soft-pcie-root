@@ -1,5 +1,9 @@
 # Gen3 x2 resource measurement — 2026-11-09
 
+The RX result below is the original baseline. A subsequent
+[RX repair](x2-rx-timing-fix.md) reduces it to 1,517 LUTs and one BRAM,
+with +0.081 ns internal setup slack. Historical measurements are retained.
+
 The user requested local place-and-route measurements after the simulated
 Gen3 x2 datapath checkpoint. These runs use Vivado 2026.1 and
 `xczu15eg-ffvb1156-2-e`, from the companion board mapping. The physical speed

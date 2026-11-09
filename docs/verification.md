@@ -1,11 +1,14 @@
 # Verification and release scope
 
-On `dev/pcie-x2`, the 2026-11-08 regression passed **1,843 tests in 260.68
-seconds**, with lint/real-XPM, 135 HDL formatting checks and metadata-only
-Vivado width validation passing. This includes shared x2 startup/equalization
-stage simulations and guarded GUI width selection, not an integrated x2 root
-port. See [scope and remaining work](x2-development.md). Implementation and
-physical x2 verification are deferred until ZU15EG board availability.
+On `dev/pcie-x2`, the 2026-11-08 regression passed **2,100 tests in 274.11
+seconds**, including 257 new Gen3 x2 packet/host datapath checks. Lint/real-XPM
+and all 147 HDL formatting checks passed. The previous checkpoint also passed
+metadata-only Vivado width validation. Shared x2 training stages and the separate
+64-bit packet / 128-bit host/DDR paths are simulated; the root still explicitly
+blocks x2 elaboration pending PHY/rate-change and root integration. Existing x1
+widths are unchanged. See [scope and remaining work](x2-development.md).
+Implementation and physical x2 verification are deferred until ZU15EG board
+availability.
 
 The latest [adaptive review-fix image](adaptive-equalization.md#review-fix-hardware-validation--2026-11-02)
 passed fresh synthesis/route, independent audit, three controlled Gen3 startups,

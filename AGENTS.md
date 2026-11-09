@@ -96,8 +96,9 @@ standalone striping/deskew components are simulation work, not an integrated
 x2 root port. GUI width selection and shared Gen1 startup/Gen3 equalization
 stages now have simulation coverage. The GUI defaults to x1; x2 requires Gen3
 and root elaboration explicitly rejects it until integration is complete.
-Two-lane PHY/rate-change integration, wide packet/AXI paths and end-to-end x2
-peer simulation remain outstanding. Do not advertise x2
+The separate Gen3 x2 64-bit packet/replay and 128-bit host/DDR datapaths now
+have simulation coverage. Two-lane PHY/rate-change integration, root selection
+and full end-to-end x2 peer simulation remain outstanding. Do not advertise x2
 operation from the component tests. The board reference is the companion
 ZU15EG workspace; extracted mapping is in `examples/zu15eg/README.md`.
 The user deferred implementation verification until board availability.
@@ -112,3 +113,11 @@ metadata-only parameter propagation passed. Integrated x2 remains blocked.
 User constraint: packet/host/DDR widening applies only to the Gen3 x2 build
 (`ENABLE_GEN3=1`, `LINK_WIDTH=2`). Preserve existing widths for all x1 builds.
 Interface widths are fixed at build time, including during lower-rate training.
+
+Gen3 x2 datapath checkpoint: 2,100 tests passed (274.11 s), including 257 new
+x2 tests; lint/real-XPM and 147 HDL formatting checks passed. Items 3/4 now
+provide separate 64-bit packet and 128-bit host/DDR datapaths. Existing x1
+widths remain unchanged; shared replay DATA_WIDTH defaults to 32. Root selection,
+two-lane PHY/rate-change integration and full startup-to-I/O simulation remain
+outstanding, so retain the x2 root elaboration guard. No implementation or
+physical verification was performed. See docs/x2-development.md for contracts.

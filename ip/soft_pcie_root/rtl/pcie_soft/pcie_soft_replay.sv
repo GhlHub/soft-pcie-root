@@ -1,5 +1,8 @@
 // Experimental packet-level transmit/replay store. This is not a PCIe port.
-// Input/output contain TLP DWORDs only; seq/LCRC/framing live outside this store.
+// Default input/output beats contain one TLP DWORD; seq/LCRC/framing live outside.
+// DATA_WIDTH changes only stored beat bits, including caller-owned occupancy
+// metadata. MAX_DWORDS is the number of stored beats (32 for x2 64-bit payloads).
+// Existing x1 instances retain DATA_WIDTH=32 and their original capacity.
 // ACK/NAK events MUST already have passed DLLP CRC/type validation. Sequence is
 // the last good received TLP for both ACK and NAK. Normal ACKs retire only
 // the already-sent prefix, concurrently with copying later originals. NAKs
@@ -9,17 +12,18 @@ module pcie_soft_replay #(
     parameter integer DEPTH                 = 8,
     parameter integer MAX_DWORDS            = 64,
     parameter integer REPLAY_TIMEOUT_CYCLES = 512,
-    parameter integer MAX_REPLAYS           = 3
+    parameter integer MAX_REPLAYS           = 3,
+    parameter integer DATA_WIDTH            = 32
 ) (
     input wire clk,
     input wire rst_n,
     input wire link_reset_i,
     input wire enable_i,
-    input wire [31:0] s_data_i,
+    input wire [DATA_WIDTH-1:0] s_data_i,
     input wire s_valid_i,
     input wire s_last_i,
     output wire s_ready_o,
-    output wire [31:0] m_data_o,
+    output wire [DATA_WIDTH-1:0] m_data_o,
     output wire m_valid_o,
     output wire m_last_o,
     output wire [11:0] m_sequence_o,
@@ -58,10 +62,10 @@ module pcie_soft_replay #(
     localparam [1:0] TX_IDLE = 0, TX_READ = 1, TX_SEND = 2, TX_WIRE = 3;
 
     // Payload and slot metadata have no reset/INIT validity contract.
-    (* ram_style = "block" *)reg [    31:0] payload  [0:DEPTH*MAX_DWORDS-1];
-    reg [WORD_W:0] words    [           0:DEPTH-1];
-    reg [    11:0] sequences[           0:DEPTH-1];
-    reg [31:0] read_data, output_data_q;
+    (* ram_style = "block" *)reg [DATA_WIDTH-1:0] payload  [0:DEPTH*MAX_DWORDS-1];
+    reg [      WORD_W:0] words    [           0:DEPTH-1];
+    reg [          11:0] sequences[           0:DEPTH-1];
+    reg [DATA_WIDTH-1:0] read_data, output_data_q;
     reg prefetch_valid_q, output_valid_q, prefetch_last_q, output_last_q;
     reg [WORD_W:0] fetch_word_q;
     reg [SLOT_W-1:0] head_q, write_slot_q, replay_slot_q, tx_slot_q;

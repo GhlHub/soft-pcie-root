@@ -77,3 +77,14 @@ WIDTH_METADATA_OUTPUT ?= build/width_metadata_next
 width-metadata:
 	mkdir -p $(dir $(WIDTH_METADATA_OUTPUT))
 	$(VIVADO) -mode batch -log $(WIDTH_METADATA_OUTPUT).log -journal $(WIDTH_METADATA_OUTPUT).jou -source scripts/check_link_width_metadata.tcl -tclargs $(WIDTH_METADATA_OUTPUT)
+
+# Packet/host datapaths for ENABLE_GEN3=1, LINK_WIDTH=2 only; no PHY generation.
+X2_LINK_RTL = experiments/gen3/gen3_link_layer_x2.sv experiments/gen3/gen3_link_profile.sv experiments/gen3/gen3_dllp_source_x2.sv experiments/gen3/gen3_tx_window_x2.sv experiments/gen3/gen3_tlp_source_x2.sv experiments/gen3/gen3_stp.sv ip/soft_pcie_root/rtl/host/pcie_packet_width.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_replay.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ack_capture.sv
+.PHONY: lint-x2 test-x2-datapath
+lint: lint-x2
+lint-x2:
+	verilator --lint-only -Wall --top-module gen3_data_rx_x2 experiments/gen3/gen3_data_rx_x2.sv
+	verilator --lint-only -Wall --top-module gen3_link_layer_x2 $(X2_LINK_RTL)
+	verilator --lint-only -Wall --top-module pcie_x2_host_path ip/soft_pcie_root/rtl/host/pcie_x2_host_path.sv ip/soft_pcie_root/rtl/host/pcie_ddr_bridge_x2.sv ip/soft_pcie_root/rtl/host/pcie_packet_width.sv ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv
+test-x2-datapath:
+	$(PYTHON) -m pytest -q tests/test_x2_datapath.py

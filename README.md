@@ -65,7 +65,9 @@ early-quarantine software branch has model coverage but has not been deployed.
 ## x2 development branch
 
 `dev/pcie-x2` contains lane-aware Gen3 codecs and standalone striping/deskew
-components, shared multi-lane startup/equalization and x2 training simulations.
+components, shared multi-lane startup/equalization, and separate 64-bit packet
+plus 128-bit host/DDR datapaths with simulation coverage. Widening applies only
+to the future Gen3 x2 build; existing x1 widths remain unchanged.
 The Add IP GUI exposes `LINK_WIDTH=1/2` (default 1); **x2 root elaboration is
 explicitly blocked until PHY and packet/AXI integration is complete**. See the [remaining integration
 work](docs/x2-development.md) and [ZU15EG target](examples/zu15eg/README.md).

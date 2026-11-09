@@ -108,3 +108,7 @@ These results do not close the outstanding integrated x2 simulation work.
 Latest shared-training checkpoint: 1,843 tests passed (260.68 s), including
 87 new training/GUI checks; lint/real-XPM, 135 HDL format checks and Vivado
 metadata-only parameter propagation passed. Integrated x2 remains blocked.
+
+User constraint: packet/host/DDR widening applies only to the Gen3 x2 build
+(`ENABLE_GEN3=1`, `LINK_WIDTH=2`). Preserve existing widths for all x1 builds.
+Interface widths are fixed at build time, including during lower-rate training.

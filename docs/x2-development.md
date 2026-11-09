@@ -83,11 +83,12 @@ modules only to exercise the guard; they are not root-port functional simulation
    per-lane PIPE/EQ interfaces and correct constraints. Connect classified
    records to deskew, including variable-length SKP removal and synchronized
    SDS/EDS handling. Verify bad/missing lanes, reversal policy and block loss.
-3. Widen the aggregate Gen3 framing/parser/formatter path to 64 bits at
-   250 MHz. Handle two DWORDs per cycle, all token/header positions, DLLP/TLP
+3. Only for the Gen3 x2 build (`ENABLE_GEN3=1`, `LINK_WIDTH=2`), widen
+   the aggregate framing/parser/formatter path to 64 bits at 250 MHz. Handle two DWORDs per cycle, all token/header positions, DLLP/TLP
    boundaries, CRC, packet validation, replay submission/completion and ACK
    retirement. A serializer into the existing DWORD parser cannot sustain x2.
-4. Widen host packet CDC and DDR AXI to 128 bits at 125 MHz for the x2 build.
+4. Only for that Gen3 x2 build, widen host packet CDC and DDR AXI to
+   128 bits at 125 MHz.
    Replace final-single-DWORD assumptions with explicit final-beat occupancy.
    Preserve byte enables, unaligned offsets, noncoherent DMA, accepted AR/AW/W
    drain, packet ownership and all-B-before-MSI. Evaluate prefetch and replay
@@ -104,6 +105,11 @@ modules only to exercise the guard; they are not root-port functional simulation
 7. After source freeze and board availability, perform fresh package generation,
    implementation, independent checkpoint/CDC audit and board validation.
    Establish actual negotiated x2 width before attributing throughput to x2.
+
+The widening in items 3 and 4 is a build-time choice, not a runtime response
+to negotiated speed. Existing Gen1/Gen2 x1 and Gen3 x1 builds retain their
+current packet, CDC and DDR AXI widths. Gen1 training or lower-rate operation
+within a Gen3 x2 build must preserve its fixed interface widths and ownership.
 
 The intended x2 capacities are 2 GB/s in each internal aggregate path and
 about 1.97 GB/s per direction on the Gen3 wire before packet overhead. They

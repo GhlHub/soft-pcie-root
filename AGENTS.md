@@ -101,7 +101,9 @@ have simulation coverage. Two-lane PHY/rate-change integration, root selection
 and full end-to-end x2 peer simulation remain outstanding. Do not advertise x2
 operation from the component tests. The board reference is the companion
 ZU15EG workspace; extracted mapping is in `examples/zu15eg/README.md`.
-The user deferred implementation verification until board availability.
+The user initially deferred implementation verification until board availability,
+then requested local PNR resource measurements on 2026-11-09. See
+`docs/x2-resource-measurement.md`; physical verification remains deferred.
 Development checkpoint validation: 1,756 tests passed (250.07 s), including
 35 new component checks; lint/real-XPM and 133 HDL format checks passed.
 These results do not close the outstanding integrated x2 simulation work.
@@ -121,3 +123,11 @@ widths remain unchanged; shared replay DATA_WIDTH defaults to 32. Root selection
 two-lane PHY/rate-change integration and full startup-to-I/O simulation remain
 outstanding, so retain the x2 root elaboration guard. No implementation or
 physical verification was performed. See docs/x2-development.md for contracts.
+
+Local OOC PNR checkpoint — 2026-11-09: six separate x2 blocks routed on
+xczu15eg-ffvb1156-2-e, totaling 115,054 LUTs and 51,710 registers, one BRAM
+tile, no DSPs. RX fails setup by 24.489 ns (register-expanded packet RAM and
+95-level parser path); TX/link fails by 0.013 ns. Host internal slack is
++1.025 ns, but CDC remains unqualified. No integrated root or board build.
+RTL is unchanged from cdaa0e4. See docs/x2-resource-measurement.md and its
+compact evidence before attempting timing fixes or making x2 readiness claims.

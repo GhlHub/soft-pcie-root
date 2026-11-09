@@ -1,0 +1,157 @@
+{
+  "date": "2026-11-09",
+  "tool": "Vivado 2026.1 build 6511674",
+  "part": "xczu15eg-ffvb1156-2-e",
+  "scope": "Six separately routed OOC blocks; not an integrated root/PHY/board",
+  "rtl_commit": "cdaa0e4ef45c57abd04d7c5095a87668855b4ed3",
+  "rtl_unchanged": true,
+  "external_port_timing_constrained": false,
+  "cdc_qualified": false,
+  "physical_verification": false,
+  "clocks_ns": {
+    "link": 4.0,
+    "host": 8.0
+  },
+  "host_run": "x2_ooc_host_route_v5 supersedes earlier host runs",
+  "blocks": [
+    {
+      "target": "gen3_data_rx_x2",
+      "run": "build/x2_ooc_route_v1",
+      "luts": 75320,
+      "registers": 33181,
+      "lut_memory": 10,
+      "bram_tiles": 0.0,
+      "dsps": 0,
+      "wns_ns": -24.489,
+      "tns_ns": -783448.688,
+      "setup_failing_endpoints": 33304,
+      "whs_ns": 0.042,
+      "routing_errors": 0,
+      "report_sha256": {
+        "utilization.rpt": "83ac4396c407fad1b4ca60b7b2c498566b9f50f4ce72dbb439c61c4a59ca3ff6",
+        "timing.rpt": "f31ba60503a674c759d242f13457dab7361d3c2c5e0e2cc7628f89d9c4dcfdf3",
+        "route_status.rpt": "311ba6dba007253cc43fbfd8bd0155e7728912dad8dd84919779a1e3dc84d32f",
+        "drc.rpt": "751e38d9df8e4b0ea444eb28a06f849da5cc1358952d3ca6e30052adb71db5a9",
+        "worst_paths.rpt": "b566d5b112c927ce50849ed219e211fb0772239d1bfd1b2581611a22290136c9"
+      }
+    },
+    {
+      "target": "gen3_link_layer_x2",
+      "run": "build/x2_ooc_route_v1",
+      "luts": 16095,
+      "registers": 6546,
+      "lut_memory": 56,
+      "bram_tiles": 1.0,
+      "dsps": 0,
+      "wns_ns": -0.013,
+      "tns_ns": -0.013,
+      "setup_failing_endpoints": 1,
+      "whs_ns": 0.039,
+      "routing_errors": 0,
+      "report_sha256": {
+        "utilization.rpt": "fe0fc21d9a531e3d58c80fcd2461e4d3619cb8e74312d179993d38ec37d7046c",
+        "timing.rpt": "cb7403039103188bce92c605b1b66b974369a57fcf6f2e2e231a57aa8c4aa4fa",
+        "route_status.rpt": "cc2ddafee9ca06162cff4cf0dd1e2f4648806ef39bd50033cbe0bf2d00f7608d",
+        "drc.rpt": "cd3036bdd1b1fde1dadafc81b304d9bd200dedd049e2bf419a19ab660b7bc625",
+        "worst_paths.rpt": "062da1b40dce0a0c5aa2949d79dff233b240cd136a7581b1373419dedfb95191"
+      }
+    },
+    {
+      "target": "pcie_x2_host_path",
+      "run": "build/x2_ooc_host_route_v5",
+      "luts": 20604,
+      "registers": 9882,
+      "lut_memory": 586,
+      "bram_tiles": 0.0,
+      "dsps": 0,
+      "wns_ns": 1.025,
+      "tns_ns": 0.0,
+      "setup_failing_endpoints": 0,
+      "whs_ns": 0.038,
+      "routing_errors": 0,
+      "report_sha256": {
+        "utilization.rpt": "071fb4a99fb76357509c903306f5ace5e5f59fb2dead412850b7ff9a617bcdd3",
+        "timing.rpt": "a31d9e248bea4b9d28f2200235a2c881952970189f6673275109ed8a04551599",
+        "route_status.rpt": "cc49e13dd73637de468532962a1742c0bcf9eba1a0e0a010a2483907662eb1c2",
+        "drc.rpt": "30b279584f10cd300cdaeef504e9b38b51bc897d0cebb97a5e70ae7c13ca4999",
+        "worst_paths.rpt": "c68a77b1888a3f977566714c4d9e4e97f60ce049bbd20f5b2737b0d1085bddc4"
+      }
+    },
+    {
+      "target": "gen3_multilane_startup",
+      "run": "build/x2_ooc_route_v1",
+      "luts": 209,
+      "registers": 135,
+      "lut_memory": 0,
+      "bram_tiles": 0.0,
+      "dsps": 0,
+      "wns_ns": 1.171,
+      "tns_ns": 0.0,
+      "setup_failing_endpoints": 0,
+      "whs_ns": 0.043,
+      "routing_errors": 0,
+      "report_sha256": {
+        "utilization.rpt": "6f0ebf31af93a3ebcf3899412292a62d7f919f7d0347a42d056d53d2a8875d21",
+        "timing.rpt": "5cacaa8d6f74073b64d3be1e24537d23043c80047689ee569ff397683f57116c",
+        "route_status.rpt": "5903d6ddbe71ce0331a987d837b41d6488a61fe6d309d5ad1a29568fd1479ce0",
+        "drc.rpt": "568d274e0eb8859d3cd2a7c42c10295f0b796d0fcc06625530a1c2be729acda7",
+        "worst_paths.rpt": "01695616346382c77bea1111c1dc5319a8547029d252e1d9191debcf4e522b29"
+      }
+    },
+    {
+      "target": "gen3_multilane_eq",
+      "run": "build/x2_ooc_route_v1",
+      "luts": 2624,
+      "registers": 1362,
+      "lut_memory": 0,
+      "bram_tiles": 0.0,
+      "dsps": 0,
+      "wns_ns": 0.045,
+      "tns_ns": 0.0,
+      "setup_failing_endpoints": 0,
+      "whs_ns": 0.044,
+      "routing_errors": 0,
+      "report_sha256": {
+        "utilization.rpt": "1e758e0471efc15c83a489a9c6de0ee4041ecaec2ac3f53c6b04d729582f0566",
+        "timing.rpt": "27e79dbe9680961bda1ac2e98c5e5667f774185ad8d3272a2dd23a14833b417a",
+        "route_status.rpt": "b613dff451a29f6666291f916f51599fafb677ba3ac338c5a007c8dd588ed169",
+        "drc.rpt": "3b94366035f4db8bfcf84c4072827ec27e69b8f8958768492ae73a8d9bfe6c7b",
+        "worst_paths.rpt": "3192e2f4c70b3ad08f8adf4a68c7864edaa8af1dacb10a36034d018e08928c2e"
+      }
+    },
+    {
+      "target": "pcie_lane_deskew",
+      "run": "build/x2_ooc_route_v1",
+      "luts": 202,
+      "registers": 604,
+      "lut_memory": 0,
+      "bram_tiles": 0.0,
+      "dsps": 0,
+      "wns_ns": 1.793,
+      "tns_ns": 0.0,
+      "setup_failing_endpoints": 0,
+      "whs_ns": 0.046,
+      "routing_errors": 0,
+      "report_sha256": {
+        "utilization.rpt": "065735e9f36709f1d1d7e0815568163a6e09c0430b0b1c7b4a7c01d22b39d1e7",
+        "timing.rpt": "6ee73baf1f9afea432efdcdfd4ec202f37c955541b0fd8efc81ddc71c27452a2",
+        "route_status.rpt": "9852e238c27b9113c9dc481741e2afa81ab879096cdc2ce53409215832d5d270",
+        "drc.rpt": "e9e1fc7078944bb2501e7720548ccec70ef054b149d345be6f8f41d8fcfe95f1",
+        "worst_paths.rpt": "d8ce3acdeb71ca5996408d7a12010cf85bf528f51d656e044ae79225e4fa7f6b"
+      }
+    }
+  ],
+  "subtotal": {
+    "luts": 115054,
+    "registers": 51710,
+    "lut_memory": 652,
+    "bram_tiles": 1.0,
+    "dsps": 0
+  },
+  "device_resources": {
+    "luts": 341280,
+    "registers": 682560,
+    "bram_tiles": 744,
+    "dsps": 3528
+  }
+}

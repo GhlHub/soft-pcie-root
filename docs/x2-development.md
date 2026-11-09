@@ -11,9 +11,10 @@ elaboration explicitly blocked. Shared x2 training stages are simulated;
 complete Gen1-to-Gen3 link startup and physical packet operation are not yet
 integrated. The separate 64-bit packet and 128-bit host/DDR datapaths now have
 functional simulation coverage; this is not a timing or throughput measurement.
-Implementation verification and physical testing are deferred until the
-ZU15EG board is available. No synthesis/place-and-route or board writes are
-part of this checkpoint.
+The user subsequently requested local place-and-route resource measurements.
+See [the OOC measurement report](x2-resource-measurement.md) for scope and
+results. Integrated implementation and physical testing remain outstanding;
+physical testing awaits the ZU15EG board.
 
 ## Implemented component work
 
@@ -88,13 +89,15 @@ modules only to exercise the guard; they are not root-port functional simulation
    framing/parser/formatter processes 64 bits per cycle. `gen3_data_rx_x2`
    validates complete packets before publication; `gen3_link_layer_x2` connects
    credit admission, requester arbitration, 64-bit replay and formatting. Only
-   Gen3 x2 will select these modules. Timing at 250 MHz remains unverified.
+   Gen3 x2 will select these modules. The subsequent OOC route found severe
+   RX setup violations at 250 MHz; see [resource measurements](x2-resource-measurement.md).
 4. **Datapath implemented, root selection pending:** `pcie_x2_host_path` connects
    64-bit link beats through packet-preserving width adapters and whole-packet
    CDC to `pcie_ddr_bridge_x2`, with 128-bit packet and DDR AXI paths. It uses
    explicit final occupancy and four RAM banks, preserving byte enables,
-   accepted AXI drain and all-B-before-MSI. Timing at 125 MHz and actual DDR
-   bandwidth remain unverified.
+   accepted AXI drain and all-B-before-MSI. The subsequent OOC host route met
+   its internal constraints; integrated timing, CDC and actual DDR bandwidth
+   remain unverified.
 5. Connect the existing GUI `LINK_WIDTH` to real serial port vectors, PHY
    selection, packet/AXI widths, interface metadata and constraints. Remove the
    explicit x2 elaboration guard only once the backend is connected and tested.
@@ -195,8 +198,8 @@ two formatter banks also hold 256 bytes each. RX validation retains sixteen
 increases from the Gen3 x1 eight RCB64 slots to sixteen (1 KiB of payload).
 These capacities support the simulated traffic; measured DDR service latency
 and sustained bandwidth are still needed before claiming sufficient buffering
-or a throughput target. The byte-unrolled CRC/parser critical paths and RAM
-inference require later implementation review.
+or a throughput target. The subsequent OOC route confirms that byte-unrolled CRC/parser critical paths
+and RAM inference require restructuring; see [measurements](x2-resource-measurement.md).
 
 `pcie_ddr_bridge_x2` starts from the reviewed x1 ownership implementation and
 uses separate four-bank payload/read storage. Future ownership fixes must be

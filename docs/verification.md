@@ -7,8 +7,9 @@ metadata-only Vivado width validation. Shared x2 training stages and the separat
 64-bit packet / 128-bit host/DDR paths are simulated; the root still explicitly
 blocks x2 elaboration pending PHY/rate-change and root integration. Existing x1
 widths are unchanged. See [scope and remaining work](x2-development.md).
-Implementation and physical x2 verification are deferred until ZU15EG board
-availability.
+The subsequent local [OOC resource measurement](x2-resource-measurement.md)
+routes separate x2 blocks. It does not qualify an integrated root or CDC.
+Physical x2 verification still awaits ZU15EG board availability.
 
 The latest [adaptive review-fix image](adaptive-equalization.md#review-fix-hardware-validation--2026-11-02)
 passed fresh synthesis/route, independent audit, three controlled Gen3 startups,

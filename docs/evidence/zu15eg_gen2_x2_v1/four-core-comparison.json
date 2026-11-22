@@ -1,0 +1,504 @@
+{
+  "date": "2026-11-22",
+  "board": "ZU15EG",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "adapter_profile": "DP0/DP1 passive FMC sidebands",
+  "ssd_model": "Samsung SSD 990 EVO 1TB",
+  "linux": "6.6.70, same volatile RAM image and PS initialization for both widths",
+  "ram_boot_artifacts_sha256": {
+    "Image.gz": "c29adf5866075437ab9ec289ef200e18fb1fd12401cd6c154def20b51c198372",
+    "system.dtb": "b29c525ea6468a6c0cc1492c939c470692b49a68c3f3f63a9e9a3ed1b4bbf9e8",
+    "rootfs.cpio.gz": "55a991b8b5e9a11b52bb4ba06a0ffee75cb1eddcc1e44342e05bf87c726f0e2c"
+  },
+  "workload": {
+    "fio_version": "3.38",
+    "rw": "sequential read",
+    "ioengine": "libaio",
+    "direct": true,
+    "read_only": true,
+    "bytes_per_request": 1048576,
+    "region_bytes_per_worker": 4294967296,
+    "offset_increment_bytes": 4294967296,
+    "seconds_per_trial": 30,
+    "running_cpu_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "one_fio_worker_pinned_per_cpu": true,
+    "aggregate_queue_depths": [
+      4,
+      8,
+      16
+    ]
+  },
+  "configurations": [
+    {
+      "link": {
+        "speed_GT_s": 5.0,
+        "width": 1,
+        "endpoint_pci_id": "144d:a80d"
+      },
+      "bitstream_sha256": "37f87f314401867b4711d8afb556d6d947b483e10edbe3374086bfc5fde01870",
+      "direct_read_sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+      "successful_direct_reads": 2,
+      "read_bytes_per_checksum": 268435456,
+      "trials": [
+        {
+          "name": "QD8_A",
+          "aggregate_queue_depth": 8,
+          "queue_depth_per_worker": 2,
+          "bytes_per_second": 427427634,
+          "cpu_busy_percent_by_id": [
+            10.5,
+            12.89,
+            13.14,
+            10.99
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            106.856,
+            106.873,
+            106.846,
+            106.853
+          ],
+          "job_runtime_ms": [
+            30018,
+            30013,
+            30011,
+            30009
+          ],
+          "job_read_bytes": [
+            3207593984,
+            3207593984,
+            3206545408,
+            3206545408
+          ],
+          "host_clock_cycles": 3800572280,
+          "host_cycle_percent": {
+            "rx_backpressure": 1.109,
+            "writer_busy": 50.173,
+            "write_outstanding": 90.418,
+            "check_fence": 0.849,
+            "rx_empty": 2.532
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        },
+        {
+          "name": "QD4",
+          "aggregate_queue_depth": 4,
+          "queue_depth_per_worker": 1,
+          "bytes_per_second": 426982452,
+          "cpu_busy_percent_by_id": [
+            9.93,
+            16.33,
+            13.55,
+            11.88
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            106.776,
+            106.731,
+            106.717,
+            106.759
+          ],
+          "job_runtime_ms": [
+            30001,
+            30004,
+            30008,
+            30006
+          ],
+          "job_read_bytes": [
+            3203399680,
+            3202351104,
+            3202351104,
+            3203399680
+          ],
+          "host_clock_cycles": 3800644595,
+          "host_cycle_percent": {
+            "rx_backpressure": 1.105,
+            "writer_busy": 50.107,
+            "write_outstanding": 90.313,
+            "check_fence": 0.848,
+            "rx_empty": 2.657
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        },
+        {
+          "name": "QD16",
+          "aggregate_queue_depth": 16,
+          "queue_depth_per_worker": 4,
+          "bytes_per_second": 426985558,
+          "cpu_busy_percent_by_id": [
+            10.79,
+            12.8,
+            14.4,
+            12.57
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            106.781,
+            106.743,
+            106.736,
+            106.725
+          ],
+          "job_runtime_ms": [
+            30039,
+            30030,
+            30032,
+            30035
+          ],
+          "job_read_bytes": [
+            3207593984,
+            3205496832,
+            3205496832,
+            3205496832
+          ],
+          "host_clock_cycles": 3800572535,
+          "host_cycle_percent": {
+            "rx_backpressure": 1.116,
+            "writer_busy": 50.157,
+            "write_outstanding": 90.398,
+            "check_fence": 0.849,
+            "rx_empty": 2.562
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        },
+        {
+          "name": "QD8_B",
+          "aggregate_queue_depth": 8,
+          "queue_depth_per_worker": 2,
+          "bytes_per_second": 426962150,
+          "cpu_busy_percent_by_id": [
+            10.65,
+            15.2,
+            16.01,
+            13.82
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            106.754,
+            106.762,
+            106.734,
+            106.712
+          ],
+          "job_runtime_ms": [
+            30017,
+            30015,
+            30013,
+            30019
+          ],
+          "job_read_bytes": [
+            3204448256,
+            3204448256,
+            3203399680,
+            3203399680
+          ],
+          "host_clock_cycles": 3800505880,
+          "host_cycle_percent": {
+            "rx_backpressure": 1.113,
+            "writer_busy": 50.125,
+            "write_outstanding": 90.349,
+            "check_fence": 0.849,
+            "rx_empty": 2.625
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        }
+      ]
+    },
+    {
+      "link": {
+        "speed_GT_s": 5.0,
+        "width": 2,
+        "endpoint_pci_id": "144d:a80d"
+      },
+      "bitstream_sha256": "28f9fcf096c31e694cbd411e49d5c82f40dff046f73efa40a7d763680f70e4a5",
+      "direct_read_sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+      "successful_direct_reads": 2,
+      "read_bytes_per_checksum": 268435456,
+      "trials": [
+        {
+          "name": "QD8_A",
+          "aggregate_queue_depth": 8,
+          "queue_depth_per_worker": 2,
+          "bytes_per_second": 591020169,
+          "cpu_busy_percent_by_id": [
+            13.84,
+            17.31,
+            16.44,
+            16.62
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            147.795,
+            147.715,
+            147.765,
+            147.745
+          ],
+          "job_runtime_ms": [
+            30011,
+            30013,
+            30010,
+            30007
+          ],
+          "job_read_bytes": [
+            4435476480,
+            4433379328,
+            4434427904,
+            4433379328
+          ],
+          "host_clock_cycles": 3801131473,
+          "host_cycle_percent": {
+            "rx_backpressure": 0.0,
+            "writer_busy": 32.851,
+            "write_outstanding": 81.243,
+            "check_fence": 1.846,
+            "rx_empty": 61.41
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        },
+        {
+          "name": "QD4",
+          "aggregate_queue_depth": 4,
+          "queue_depth_per_worker": 1,
+          "bytes_per_second": 590414282,
+          "cpu_busy_percent_by_id": [
+            15.25,
+            19.21,
+            20.39,
+            19.3
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            147.715,
+            147.58,
+            147.565,
+            147.555
+          ],
+          "job_runtime_ms": [
+            30006,
+            30005,
+            30001,
+            30003
+          ],
+          "job_read_bytes": [
+            4432330752,
+            4428136448,
+            4427087872,
+            4427087872
+          ],
+          "host_clock_cycles": 3800777418,
+          "host_cycle_percent": {
+            "rx_backpressure": 0.001,
+            "writer_busy": 32.814,
+            "write_outstanding": 81.162,
+            "check_fence": 1.864,
+            "rx_empty": 61.434
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        },
+        {
+          "name": "QD16",
+          "aggregate_queue_depth": 16,
+          "queue_depth_per_worker": 4,
+          "bytes_per_second": 590455350,
+          "cpu_busy_percent_by_id": [
+            16.24,
+            19.21,
+            18.18,
+            19.01
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            147.637,
+            147.612,
+            147.616,
+            147.591
+          ],
+          "job_runtime_ms": [
+            30029,
+            30027,
+            30019,
+            30024
+          ],
+          "job_read_bytes": [
+            4433379328,
+            4432330752,
+            4431282176,
+            4431282176
+          ],
+          "host_clock_cycles": 3800710063,
+          "host_cycle_percent": {
+            "rx_backpressure": 0.0,
+            "writer_busy": 32.839,
+            "write_outstanding": 81.262,
+            "check_fence": 1.859,
+            "rx_empty": 61.41
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        },
+        {
+          "name": "QD8_B",
+          "aggregate_queue_depth": 8,
+          "queue_depth_per_worker": 2,
+          "bytes_per_second": 590450778,
+          "cpu_busy_percent_by_id": [
+            17.93,
+            22.32,
+            22.58,
+            19.98
+          ],
+          "worker_cpu_ids_from_proc": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "job_read_mb_s": [
+            147.65,
+            147.606,
+            147.605,
+            147.59
+          ],
+          "job_runtime_ms": [
+            30005,
+            30014,
+            30007,
+            30010
+          ],
+          "job_read_bytes": [
+            4430233600,
+            4430233600,
+            4429185024,
+            4429185024
+          ],
+          "host_clock_cycles": 3801173863,
+          "host_cycle_percent": {
+            "rx_backpressure": 0.0,
+            "writer_busy": 32.818,
+            "write_outstanding": 81.187,
+            "check_fence": 1.861,
+            "rx_empty": 61.432
+          },
+          "host_write_counters": [
+            "0:0",
+            "0:0"
+          ],
+          "writes": 0
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "aggregate_queue_depth": 4,
+      "trials_per_width": 1,
+      "gen2_x1_median_bytes_per_second": 426982452,
+      "gen2_x2_median_bytes_per_second": 590414282,
+      "relative_gen2_x2_gain_percent": 38.28
+    },
+    {
+      "aggregate_queue_depth": 8,
+      "trials_per_width": 2,
+      "gen2_x1_median_bytes_per_second": 427194892.0,
+      "gen2_x2_median_bytes_per_second": 590735473.5,
+      "relative_gen2_x2_gain_percent": 38.28
+    },
+    {
+      "aggregate_queue_depth": 16,
+      "trials_per_width": 1,
+      "gen2_x1_median_bytes_per_second": 426985558,
+      "gen2_x2_median_bytes_per_second": 590455350,
+      "relative_gen2_x2_gain_percent": 38.28
+    }
+  ],
+  "scope": {
+    "profile_switch": "volatile warm reboot",
+    "compare_staged_implementations_including_their_host_datapaths": true,
+    "no_test_writes": true
+  },
+  "final_state": {
+    "link": {
+      "speed_GT_s": 5.0,
+      "width": 2
+    },
+    "online_cpu_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "healthy_idle": true,
+    "namespace_unmounted": true,
+    "namespace_inflight": [
+      0,
+      0
+    ],
+    "namespace_write_counters": "0:0",
+    "profiling_enabled": false
+  }
+}

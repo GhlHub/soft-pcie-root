@@ -137,6 +137,26 @@ constant, and the root and DDR bridge passed the final idle check. The
 reopened checkpoint passed with +0.076 ns setup and +0.016 ns hold slack.
 [Gen1 x2 hardware evidence](../../docs/evidence/zu15eg_gen1_x2_v1/completion.json)
 
+### Four-core Gen1 comparison
+
+The same board, SSD and RAM Linux image ran four fio/libaio workers at both
+widths, one pinned to each Cortex-A53 core. The 30-second trials used 1 MiB
+direct sequential reads with a separate 4 GiB range per worker. Linux
+confirmed 2.5 GT/s at each width.
+
+| Aggregate queue depth | Gen1 x1 | Gen1 x2 | x2 gain |
+| ---: | ---: | ---: | ---: |
+| 4 | 213.65 MB/s | 305.59 MB/s | 43.03% |
+| 8 | 213.76 MB/s | 305.74 MB/s | 43.03% |
+| 16 | 213.66 MB/s | 305.59 MB/s | 43.03% |
+
+QD8 reports the median of two runs at each width. The x2 result was within
+0.2% of the earlier single-core result of 306.15 MB/s. The busiest core
+stayed below 11% across the captures. Both widths passed the direct-read
+checksum checks and recorded zero SSD writes. These measurements include
+the host datapaths of the two staged implementations.
+[Four-core measurement evidence](../../docs/evidence/zu15eg_gen1_x2_v1/four-core-comparison.json)
+
 ## Gen2 x2 development stage
 
 The `gen2-x2` package links the same two GTH lanes and host bridge. It starts
@@ -162,6 +182,28 @@ The 30-second sequential read workload measured **472.23 MB/s at QD1** and
 **589.85 MB/s at QD8**. The namespace write counters stayed at zero. This was
 one successful warm run. Cold-start repeatability remains open.
 [Gen2 x2 hardware evidence](../../docs/evidence/zu15eg_gen2_x2_v1/completion.json)
+
+### Four-core Gen2 comparison
+
+The same board, SSD, and RAM Linux image ran 30-second direct sequential
+1 MiB reads at both widths. All four Cortex-A53 cores were online, with one
+fio/libaio worker pinned to each core. Each worker read a separate 4 GiB
+range. Linux confirmed 5.0 GT/s and the expected width before each set.
+
+| Aggregate queue depth | Gen2 x1 | Gen2 x2 | x2 gain |
+| ---: | ---: | ---: | ---: |
+| 4 | 426.98 MB/s | 590.41 MB/s | 38.28% |
+| 8 | 427.19 MB/s | 590.74 MB/s | 38.28% |
+| 16 | 426.99 MB/s | 590.46 MB/s | 38.28% |
+
+QD8 reports the median of two runs at each width. The Gen2 x2 QD8 result
+was close to the earlier single-core result of 589.85 MB/s. The busiest
+core stayed below 23% across the captures. These measurements compare the
+two staged implementations, including their different host datapaths.
+Both widths passed the direct-read checksum checks with zero SSD writes.
+[Four-core measurement evidence](../../docs/evidence/zu15eg_gen2_x2_v1/four-core-comparison.json)
+
+### Build the Gen2 x2 image
 
 ```sh
 vivado -mode batch -source ip/soft_pcie_root/package.tcl \
@@ -247,6 +289,18 @@ for about 0.3% of host cycles. The counters show that heavy bridge input
 backpressure was absent. The cause of the roughly 920 MB/s ceiling remains
 open. The board finished at Gen3 x2 with CPU 0 online and zero SSD writes.
 [Host scaling evidence](../../docs/evidence/zu15eg_gen3_x2_v1/host-scaling.json)
+
+### Two-thread Gen3 comparison
+
+Both widths ran two 30-second trials with two fio threads pinned to CPUs 0
+and 1, one per core. Each thread used QD4 and a separate 4 GiB range with
+1 MiB direct sequential reads through libaio. Linux confirmed 8.0 GT/s and
+the expected lane width. The median aggregate-QD8 result was **734.56 MB/s
+at Gen3 x1** and **920.87 MB/s at Gen3 x2**, a **25.36%** x2 gain. Both
+widths passed the checksum checks with zero SSD writes.
+[Two-thread measurement evidence](../../docs/evidence/zu15eg_gen3_x2_v1/two-thread-comparison.json)
+
+### Build the Gen3 x2 image
 
 ```sh
 vivado -mode batch -source ip/soft_pcie_root/package.tcl \

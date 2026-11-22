@@ -20,6 +20,16 @@ soft PCIe RTL and one GTH to an NVMe SSD. It states that no hard PCIe controller
 or vendor PCIe controller IP is used and includes workload and qualification
 scope. See the [current post draft](linkedin-gen3-current.md).
 
+## Gen3 x1 and x2 comparison
+
+The [Gen3 comparison graphic](linkedin-gen3-x1-vs-x2.png) shows
+**734.56 MB/s at x1** and **920.87 MB/s at x2**, a **25.4% gain** in
+sequential read throughput. Each figure is the median of two 30-second
+runs on the same ZU15EG with a Samsung 990 EVO 1 TB SSD under Linux.
+Each fio thread used 1 MiB direct reads at QD4, with one thread pinned to
+each of two CPU cores. The FPGA and SSD illustration is conceptual.
+[Hardware measurements](../evidence/zu15eg_gen3_x2_v1/two-thread-comparison.json) · [Image generation prompt](linkedin-gen3-x1-vs-x2-prompt.txt)
+
 ## Historical ACK-retirement comparison
 
 Use [the ACK-retirement comparison](linkedin-ack-retirement-gen2-gen3.png) for

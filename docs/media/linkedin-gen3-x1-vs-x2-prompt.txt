@@ -1,0 +1,17 @@
+Use case: ads-marketing
+Asset type: Landscape 16:9 LinkedIn launch graphic for soft-pcie-root.
+Primary request: Make a new promotional graphic comparing measured PCIe Gen3 x1 and Gen3 x2 NVMe sequential-read performance. Image 1 is the style reference for readable benchmark typography and dark navy/cyan colors. Image 2 is the style reference for the original campaign's conceptual FPGA-to-NVMe illustration and polished launch aesthetic. Build a fresh composition using the exact new copy below.
+
+Scene and layout: generous dark navy negative space on the left for copy and two side-by-side benchmark figures. Put a cinematic macro 3D illustration of one FPGA package connected to a single M.2 NVMe SSD by fine cyan traces on the right. The artwork is conceptual, without any logos or lettering. Keep the text zone dark and flat for strong mobile-feed readability. One subtle copper accent in the board artwork. Maintain generous safe margins on all sides. Use bold contemporary sans-serif type, white headline and crisp cyan figures. Emphasize the x2 value slightly. The visual hierarchy is headline, metrics, gain, then test context. Render the x1 and x2 labels directly over their respective values. Avoid visual clutter.
+
+Render only this exact text, with normal spacing. The labels, decimals, and units are essential:
+“PCIe Gen3. Built in logic.”
+“NVMe sequential read”
+“Gen3 x1” above “734.56 MB/s”
+“Gen3 x2” above “920.87 MB/s”
+“+25.4% read throughput”
+“ZU15EG · Samsung 990 EVO 1 TB · Linux”
+“1 MiB direct reads · QD8 · 2 fio threads · 30 s”
+“github.com/GhlHub/soft-pcie-root”
+
+Use exactly those measured numbers in decimal MB/s and no write results or other claims. Use the Latin lowercase x in x1 and x2. Keep the type pin sharp and size the context lines so they remain legible. No third data card, logos, watermarks, presentational mockup framing, or extra copy.

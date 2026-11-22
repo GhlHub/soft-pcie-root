@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+/dts-v1/;
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+
+/ {
+ model = "XCZU15EG Core V1.0 / F V1.0 soft PCIe NVMe host";
+ compatible = "xlnx,zynqmp";
+
+ aliases { serial0 = &uart0; };
+ chosen { stdout-path = "serial0:115200n8"; };
+
+ memory@0 {
+  device_type = "memory";
+  reg = <0x0 0x00000000 0x0 0x80000000>,
+        <0x8 0x00000000 0x0 0x80000000>;
+ };
+
+ soft_pcie_root: pcie@a0000000 {
+  compatible = "ngt,zcu104-soft-pcie-1.0";
+  device_type = "pci";
+  #address-cells = <3>;
+  #size-cells = <2>;
+  reg = <0 0xa0000000 0 0x1000>, <0 0xa2000000 0 0x1000>;
+  reg-names = "config", "host";
+  bus-range = <1 1>;
+  linux,pci-domain = <1>;
+  ranges = <0x02000000 0 0xa3000000 0 0xa3000000 0 0x01000000>;
+  dma-ranges = <0x02000000 0 0 0 0 0 0x80000000>;
+  interrupt-parent = <&gic>;
+  interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
+ };
+};
+
+&uart0 { status = "okay"; };

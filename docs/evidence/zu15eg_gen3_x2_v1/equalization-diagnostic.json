@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen3-x2, dp01-passive",
+  "scope": "audited Gen3 image with passive per-lane equalization failure registers",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.13,
+      "whs_ns": 0.011,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.043,
+      "whs_ns": 0.011,
+      "wpws_ns": 0.543
+    },
+    "gen3": {
+      "period_ns": 4.0,
+      "wns_ns": 0.043,
+      "whs_ns": 0.011,
+      "wpws_ns": 0.543
+    }
+  },
+  "sha256": {
+    "system.bit": "0e70efd0c6e0b422cfd19ab2ada56d56d6edf06f296e2a444135e1c42049a0bf",
+    "routed.dcp": "f27be191197bbaea0a2dd399c0b9b31bc4338fb0637a90b462a2af1c66fedb4f",
+    "system.xsa": "b3d8ac95193073878af60d267da37a6b11d02f467354a54b4acce1aff31613b9",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa",
+    "sources.json": "6f538a08b7dbe29cdc0d8292b3c7485d9ec0ba3252abca1e3d9debea57594648"
+  },
+  "regression_tests_passed": 2498,
+  "regression_seconds": 375.24,
+  "matched_board_trace": {
+    "phase_controller_state": 1,
+    "elapsed_link_cycles": 85143,
+    "lanes": [
+      {
+        "lane": 0,
+        "last_TS_rate_byte": "0x0",
+        "flags": [
+          "PHY_ready"
+        ],
+        "decoder_error": "orphan continuation",
+        "error_word_first_byte": "0xfd",
+        "sync_header": 1,
+        "start": false,
+        "word_index": 0
+      },
+      {
+        "lane": 1,
+        "last_TS_rate_byte": "0x0",
+        "flags": [
+          "PHY_ready"
+        ],
+        "decoder_error": "orphan continuation",
+        "error_word_first_byte": "0xa",
+        "sync_header": 0,
+        "start": false,
+        "word_index": 0
+      }
+    ]
+  },
+  "host_driver_loaded": false,
+  "physical_gen3_x2_nvme_io": "pending"
+}

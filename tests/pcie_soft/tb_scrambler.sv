@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
-module tb_scrambler;
+module tb_scrambler #(
+    parameter bit PRECOMPUTE_ADVANCE = 0
+);
     reg clk = 0;
     always #4 clk = ~clk;
     reg rst_n, valid_i, ready_i;
@@ -8,7 +10,9 @@ module tb_scrambler;
     wire ready_o, valid_o;
     wire [15:0] data_o, lfsr;
     wire [1:0] ctrl_o, keep_o;
-    pcie_soft_scrambler dut (
+    pcie_soft_scrambler #(
+        .PRECOMPUTE_ADVANCE(PRECOMPUTE_ADVANCE)
+    ) dut (
         clk,
         rst_n,
         data_i,

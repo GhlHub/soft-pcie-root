@@ -1,8 +1,9 @@
-// Two-bank store-and-forward Gen1/Gen2 x1 serializer: two symbols/cycle.
+// Two-bank store-and-forward Gen1/Gen2 serializer: two or four symbols/cycle.
 // Collection/CRC of the next packet overlaps wire transmission of the head.
 // Caller muxes this only in L0; hold_i pauses only between complete packets.
 module pcie_soft_packet_tx #(
-    parameter integer MAX_DWORDS = 64
+    parameter integer MAX_DWORDS = 64,
+                      SYMBOLS    = 2
 ) (
     input wire clk, rst_n, hold_i,
     input wire [31:0] tlp_data_i,
@@ -12,8 +13,8 @@ module pcie_soft_packet_tx #(
     input wire dllp_valid_i,
     output wire dllp_ready_o,
     input wire [31:0] dllp_body_i,
-    output reg [15:0] symbols_o,
-    output reg [1:0] control_o,
+    output reg [8*SYMBOLS-1:0] symbols_o,
+    output reg [SYMBOLS-1:0] control_o,
     output wire packet_done_o, idle_o, transmitting_o,
     output reg overflow_o
 );
@@ -76,10 +77,10 @@ module pcie_soft_packet_tx #(
     endfunction
     // A bank is owned from first input beat through final wire symbol. No RAM
     // reset: complete-count and collecting/drop state establish validity.
-    assign tlp_ready_o    = rst_n && (collecting_q || dropping_q || (!hold_i && count_q < 2));
-    assign dllp_ready_o   = rst_n && state_q == IDLE && !hold_i;
-    assign packet_done_o  = state_q == SEND && symbol_q == (W + 4)'(4 * int'(words_q) + 6);
-    assign idle_o         = state_q == IDLE && count_q == 0 && !collecting_q && !dropping_q;
+    assign tlp_ready_o = rst_n && (collecting_q || dropping_q || (!hold_i && count_q < 2));
+    assign dllp_ready_o = rst_n && state_q == IDLE && !hold_i;
+    assign packet_done_o = state_q == SEND && symbol_q == (W + 4)'(4 * int'(words_q) + 8 - SYMBOLS);
+    assign idle_o = state_q == IDLE && count_q == 0 && !collecting_q && !dropping_q;
     assign transmitting_o = state_q == SEND || state_q == DLLP;
     wire input_fire = tlp_valid_i && tlp_ready_o;
     wire commit_packet = input_fire && tlp_last_i && !dropping_q;
@@ -102,22 +103,31 @@ module pcie_soft_packet_tx #(
         symbols_o = 0;
         control_o = 0;
         if (state_q == SEND) begin
-            symbols_o = {byte_at(int'(symbol_q) + 1), byte_at(int'(symbol_q))};
+            for (integer symbol = 0; symbol < SYMBOLS; symbol = symbol + 1)
+            symbols_o[8*symbol+:8] = byte_at(int'(symbol_q) + symbol);
             if (symbol_q == 0) control_o[0] = 1;
-            if (packet_done_o) control_o[1] = 1;
+            if (packet_done_o) control_o[SYMBOLS-1] = 1;
         end else if (state_q == DLLP) begin
-            case (symbol_q)
-                0: begin
-                    symbols_o = {body_q[7:0], 8'h5c};
-                    control_o = 1;
-                end
-                2: symbols_o = body_q[23:8];
-                4: symbols_o = {dllp_crc_q[7:0], body_q[31:24]};
-                default: begin
-                    symbols_o = {8'hfd, dllp_crc_q[15:8]};
-                    control_o = 2;
-                end
-            endcase
+            if (SYMBOLS == 2) begin
+                case (symbol_q)
+                    0: begin
+                        symbols_o = (8 * SYMBOLS)'({body_q[7:0], 8'h5c});
+                        control_o = SYMBOLS'(1);
+                    end
+                    2: symbols_o = (8 * SYMBOLS)'(body_q[23:8]);
+                    4: symbols_o = (8 * SYMBOLS)'({dllp_crc_q[7:0], body_q[31:24]});
+                    default: begin
+                        symbols_o = (8 * SYMBOLS)'({8'hfd, dllp_crc_q[15:8]});
+                        control_o = SYMBOLS'(2);
+                    end
+                endcase
+            end else if (symbol_q == 0) begin
+                symbols_o    = (8 * SYMBOLS)'({body_q[23:0], 8'h5c});
+                control_o[0] = 1;
+            end else begin
+                symbols_o            = (8 * SYMBOLS)'({8'hfd, dllp_crc_q, body_q[31:24]});
+                control_o[SYMBOLS-1] = 1;
+            end
         end
     end
     always @(posedge clk) begin
@@ -170,12 +180,13 @@ module pcie_soft_packet_tx #(
                 if (packet_done_o) begin
                     read_bank_q <= !read_bank_q;
                     state_q     <= IDLE;
-                end else symbol_q <= symbol_q + 2;
+                end else symbol_q <= symbol_q + (W + 4)'(SYMBOLS);
                 DLLP:
-                if (symbol_q == 6) state_q <= IDLE;
-                else symbol_q <= symbol_q + 2;
+                if (symbol_q == (W + 4)'(8 - SYMBOLS)) state_q <= IDLE;
+                else symbol_q <= symbol_q + (W + 4)'(SYMBOLS);
                 default: state_q <= IDLE;
             endcase
         end
     end
+    initial if (SYMBOLS != 2 && SYMBOLS != 4) $fatal(1, "SYMBOLS must be 2 or 4");
 endmodule

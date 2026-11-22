@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen3-x2, dp01-passive",
+  "change": "discard initial partial receive blocks until a start marker, preserving the error after alignment",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.555,
+      "whs_ns": 0.014,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.021,
+      "whs_ns": 0.014,
+      "wpws_ns": 0.543
+    },
+    "gen3": {
+      "period_ns": 4.0,
+      "wns_ns": 0.021,
+      "whs_ns": 0.014,
+      "wpws_ns": 0.543
+    }
+  },
+  "sha256": {
+    "system.bit": "923c82047567a58175efdc10b5f583ad90d44275a606ae1583a8d147c092eafe",
+    "routed.dcp": "7f447fb22e97a7a1e4d21265f68e19bc20adf4ef3c922add50c2287080f3677f",
+    "system.xsa": "c7626e09b7bc51827cd366eba8f6be4c1a3a53b3c87970e2383e116b48fc1f4e",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa",
+    "sources.json": "bdab813eb4477a4df23a9955b46f1a90d6b68c24082d4302c32302de27acc838"
+  },
+  "regression_tests_passed": 2502,
+  "regression_seconds": 381.7,
+  "lint_and_real_xpm_elaboration": "passed",
+  "first_two_volatile_trials": [
+    {
+      "initial_state": "after_failed_phase1_at_gen3",
+      "polling_configuration_at_us": 101142,
+      "failed_at_us": 149140,
+      "rate_change_observed": false,
+      "final_root_status": "0x74",
+      "final_mailbox_status": "0x0",
+      "final_ddr_status": "0x4",
+      "host_driver_loaded": false
+    },
+    {
+      "initial_state": "after_failed_polling_at_gen1",
+      "polling_configuration_at_us": 101141,
+      "failed_at_us": 149139,
+      "rate_change_observed": false,
+      "final_root_status": "0x74",
+      "final_mailbox_status": "0x0",
+      "final_ddr_status": "0x4",
+      "host_driver_loaded": false
+    }
+  ],
+  "physical_gen3_x2_nvme_io": "pending",
+  "forced_gen1_control": {
+    "same_bitstream": true,
+    "speed_GT_s": 2.5,
+    "width": 2,
+    "endpoint_pci_id": "144d:a80d",
+    "source": "endpoint configuration space"
+  },
+  "volatile_trial_after_forced_gen1": {
+    "polling_configuration_at_us": 101141,
+    "failed_at_us": 149141,
+    "rate_change_observed": false,
+    "final_root_status": "0x74",
+    "final_mailbox_status": "0x0",
+    "final_ddr_status": "0x4",
+    "host_driver_loaded": false
+  }
+}

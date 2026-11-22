@@ -232,12 +232,14 @@ endmodule''', [RTL / 'pcie_lane_deskew.sv'])
 
 
 @pytest.mark.parametrize('lane', [0, 1])
-def test_recovery_to_native_lane_stream(tmp_path, lane):
+@pytest.mark.parametrize('registered_mask', [0, 1])
+def test_recovery_to_native_lane_stream(tmp_path, lane, registered_mask):
     simulate(tmp_path, f'''module tb;
 reg clk=0;always #2 clk=~clk;reg rst=1,ts2=0,stream=0,stop=0;
 wire[31:0] data,decoded;wire valid,start,stopped,dv,err,good1,good2;
 wire[1:0] hdr;integer n1=0,n2=0,words=0;
-gen3_recovery_tx #(.LANE_ID({lane})) tx(.clk(clk),.reset_i(rst),.enable_i(1'b1),.stop_i(stop),
+gen3_recovery_tx #(.LANE_ID({lane}),.REGISTER_MASK({registered_mask}))
+ tx(.clk(clk),.reset_i(rst),.enable_i(1'b1),.stop_i(stop),
  .ts2_i(ts2),.stream_i(stream),.ec_i(2'b0),.preset_i(4'd4),.first_i(6'd0),.second_i(6'd40),.post_i(6'd0),
  .initfc1_i(1'b0),.packet_data_i(32'b0),.packet_valid_i(1'b0),.packet_last_i(1'b0),
  .eq_fields_i(32'b0),.reset_interval_i(1'b0),.data_o(data),.valid_o(valid),.start_o(start),
@@ -262,3 +264,73 @@ initial begin
  $display("PASS");$finish;end
 initial begin #50000;$fatal(1,"timeout");end
 endmodule''', [GEN3 / (name + '.sv') for name in ['gen3_recovery_tx', 'gen3_native_rx']])
+
+
+def test_gen3_x2_recovery_transmits_joint_beats_and_striped_eds(tmp_path):
+    simulate(tmp_path, '''module tb;
+reg clk=0; always #2 clk=~clk;
+reg rst=1, ts2=0, stream=0, stop=0, valid=0, last=0;
+reg [63:0] packet=0;
+reg [1:0] words=2;
+wire ready,sent,stopped,fault;
+wire [63:0] tx_data,decoded,aggregate;
+wire [1:0] tx_valid,tx_start,rx_valid,rx_error;
+wire [3:0] tx_header;
+wire [3:0] position;
+integer retirements=0, payload_beats=0, eds_sets=0;
+gen3_x2_recovery_tx tx(.clk(clk),.reset_i(rst),.enable_i(1'b1),.stop_i(stop),
+ .ts2_i(ts2),.stream_i(stream),.preset_i(8'h44),.first_i(12'b0),.second_i({6'd40,6'd40}),
+ .post_i(12'b0),.packet_data_i(packet),.packet_words_i(words),.packet_valid_i(valid),
+ .packet_last_i(last),.packet_ready_o(ready),.packet_sent_o(sent),.data_o(tx_data),
+ .valid_o(tx_valid),.start_o(tx_start),.header_o(tx_header),.stopped_o(stopped),.fault_o(fault));
+for (genvar lane=0;lane<2;lane=lane+1) begin : peer
+ localparam [31:0] EDS=lane==0 ? 32'h901f0000 : 32'h00800000;
+ gen3_native_rx #(.LANE_ID(lane)) rx(.clk(clk),.reset_i(rst),.enable_i(1'b1),
+  .data_i(tx_data[32*lane+:32]),.valid_i(tx_valid[lane]),.start_i(tx_start[lane]),
+  .header_i(tx_header[2*lane+:2]),.eds_i(rx_valid[lane] && position[2*lane+:2]==3 &&
+   decoded[32*lane+:32]==EDS),.parser_error_i(1'b0),.error_o(rx_error[lane]),
+  .data_valid_o(rx_valid[lane]),.data_o(decoded[32*lane+:32]),.position_o(position[2*lane+:2]));
+ for (genvar byte_index=0;byte_index<4;byte_index=byte_index+1)
+  assign aggregate[16*byte_index+8*lane+:8]=decoded[32*lane+8*byte_index+:8];
+end
+always @(negedge clk) if (!rst) begin
+ if (fault || (|rx_error) || rx_valid[0] != rx_valid[1]) $fatal(1,"lane framing fault");
+ if (sent) retirements=retirements+1;
+ if (&rx_valid) begin
+  if (position[1:0] != position[3:2]) $fatal(1,"unequal block position");
+  if (aggregate==64'h0090801f00000000) begin
+   if (position[1:0] != 3) $fatal(1,"EDS before block end");
+   eds_sets=eds_sets+1;
+  end else if (aggregate!=0) begin
+   case (payload_beats)
+    0: if (aggregate!==64'h0706050403020100) $fatal(1,"first beat striping");
+    1: if (aggregate!==64'h0f0e0d0c0b0a0908) $fatal(1,"body striping");
+    2: if (aggregate!==64'h00000000e4d3c2b1) $fatal(1,"last word padding");
+    default: $fatal(1,"unexpected payload");
+   endcase
+   payload_beats=payload_beats+1;
+  end
+ end
+end
+task put(input [63:0] beat, input [1:0] count, input final_beat);
+ @(negedge clk); #1;
+ packet=beat; words=count; last=final_beat; valid=1;
+ do @(posedge clk); while (!ready);
+endtask
+initial begin
+ repeat(3) @(negedge clk); #1; rst=0;
+ repeat(120) @(negedge clk); #1; ts2=1;
+ repeat(120) @(negedge clk); #1; stream=1;
+ put(64'h0706050403020100,2,0);
+ put(64'h0f0e0d0c0b0a0908,2,0);
+ put(64'h789abcdee4d3c2b1,1,1);
+ @(negedge clk); #1; valid=0;
+ repeat(1800) @(negedge clk); #1; stop=1;
+ wait(stopped); repeat(6) @(negedge clk);
+ if (payload_beats!=3 || retirements!=1 || eds_sets<2) $fatal(1,"missing packet or EDS");
+ $display("PASS"); $finish;
+end
+initial begin #20000; $fatal(1,"timeout"); end
+endmodule''', [GEN3 / f'{name}.sv' for name in (
+        'gen3_x2_recovery_tx', 'gen3_recovery_tx', 'gen3_native_rx',
+    )] + [RTL / 'pcie_lane_stripe.sv'])

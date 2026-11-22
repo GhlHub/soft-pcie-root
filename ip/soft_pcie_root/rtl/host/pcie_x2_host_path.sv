@@ -4,7 +4,7 @@
 // rst_n is GLOBAL cold reset. Never reset CDC or accepted AXI ownership for Recovery.
 module pcie_x2_host_path (
     input wire clk, link_clk, rst_n, link_active_i, dma_enable_i,
-    output wire rx_cross_fault_o, tx_cross_fault_o,
+    output wire rx_cross_fault_o, tx_cross_fault_o, tx_source_fault_o,
     input wire [63:0] link_rx_data_i,
     input wire link_rx_valid_i, link_rx_last_i,
     output wire link_rx_ready_o,
@@ -50,13 +50,13 @@ module pcie_x2_host_path (
     output wire m_axi_rready
 );
 
-    (* ASYNC_REG="TRUE" *) reg [2:0] link_release, host_release;
+    (* ASYNC_REG="TRUE", DONT_TOUCH="TRUE" *) reg [2:0] link_release_q, host_release_q;
     always @(posedge link_clk or negedge rst_n)
-        if (!rst_n) link_release <= 0;
-        else link_release <= {link_release[1:0], 1'b1};
+        if (!rst_n) link_release_q <= 0;
+        else link_release_q <= {link_release_q[1:0], 1'b1};
     always @(posedge clk or negedge rst_n)
-        if (!rst_n) host_release <= 0;
-        else host_release <= {host_release[1:0], 1'b1};
+        if (!rst_n) host_release_q <= 0;
+        else host_release_q <= {host_release_q[1:0], 1'b1};
     wire [127:0] rx_data_i, tx_data_o;
     wire [2:0] rx_words_i, tx_words_o;
     wire rx_valid_i, rx_last_i, rx_ready_o, tx_valid_o, tx_last_o, tx_ready_i;
@@ -70,7 +70,7 @@ module pcie_x2_host_path (
         .OUTPUT_DWORDS(4)
     ) rx_pack (
         link_clk,
-        link_release[2],
+        link_release_q[2],
         link_rx_data_i,
         {1'b0, link_rx_words_i},
         11'b0,
@@ -129,7 +129,7 @@ module pcie_x2_host_path (
         .OUTPUT_DWORDS(2)
     ) tx_unpack (
         link_clk,
-        link_release[2],
+        link_release_q[2],
         tx_cdc_data[127:0],
         tx_cdc_data[130:128],
         tx_cdc_data[141:131],
@@ -147,15 +147,20 @@ module pcie_x2_host_path (
     assign link_tx_words_o   = unpack_words[1:0];
     assign link_tx_credits_o = unpack_meta[8:0];
     assign rx_cross_fault_o  = pack_fault || rx_fifo_fault;
-    // Both exported crossing faults are observed in the link clock domain.
+    // Launch a registered sticky fault from the host domain to the link.
+    (* DONT_TOUCH="TRUE" *) reg tx_fault_source_q;
+    always @(posedge clk)
+        if (!host_release_q[2]) tx_fault_source_q <= 0;
+        else if (tx_fifo_fault) tx_fault_source_q <= 1;
     (* ASYNC_REG="TRUE" *) reg [2:0] tx_fault_sync;
     always @(posedge link_clk)
-        if (!link_release[2]) tx_fault_sync <= 0;
-        else tx_fault_sync <= {tx_fault_sync[1:0], tx_fifo_fault};
-    assign tx_cross_fault_o = unpack_fault || tx_fault_sync[2];
+        if (!link_release_q[2]) tx_fault_sync <= 0;
+        else tx_fault_sync <= {tx_fault_sync[1:0], tx_fault_source_q};
+    assign tx_cross_fault_o  = unpack_fault || tx_fault_sync[2];
+    assign tx_source_fault_o = tx_fault_source_q;
     wire unused = ^{unused_rx_meta, unpack_words[2], unpack_meta[10:9]};
     pcie_ddr_bridge_x2 bridge (
-        .rst_n(host_release[2]),
+        .rst_n(host_release_q[2]),
         .*
     );
 endmodule

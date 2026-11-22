@@ -1,12 +1,13 @@
-// Non-backpressured decoded-symbol receiver, Gen1/Gen2 x1, MPS128. Commits only
+// Non-backpressured decoded-symbol receiver, Gen1/Gen2, MPS128. Commits only
 // complete, in-order, CRC-valid packets. Sixteen independent ownership slots (4 KiB packet storage).
 module pcie_soft_packet_rx #(
     parameter integer MAX_DWORDS = 64,
-                      DEPTH      = 16
+                      DEPTH      = 16,
+                      SYMBOLS    = 2
 ) (
     input wire clk, rst_n, link_reset_i,
-    input wire [15:0] symbols_i,
-    input wire [1:0] control_i,
+    input wire [8*SYMBOLS-1:0] symbols_i,
+    input wire [SYMBOLS-1:0] control_i,
     input wire valid_i, error_i,
     output wire [31:0] tlp_data_o,
     output wire tlp_valid_o, tlp_last_o,
@@ -17,7 +18,8 @@ module pcie_soft_packet_rx #(
     output reg [11:0] response_sequence_o,
     output reg dllp_o,
     output reg [31:0] dllp_body_o,
-    output reg packet_error_o
+    output reg packet_error_o,
+    input wire abort_candidate_i
 );
     localparam integer S = $clog2(DEPTH), W = $clog2(MAX_DWORDS), BC = $clog2(MAX_DWORDS * 4 + 8);
     (* ram_style="distributed" *)reg [31:0] memory [0:DEPTH*MAX_DWORDS-1];
@@ -94,7 +96,7 @@ module pcie_soft_packet_rx #(
         response_sequence = expected_q - 1'b1;
         dllp_body = 0;
         // Header is complete several cycles before a minimally valid END. Use
-        // the registered header rather than cascading its two-symbol update into
+        // the registered header rather than cascading its symbol update into
         // the END validator. Metadata RAM inputs need not be zero when WE is low.
         commit_class = header_q[4:0] == 5'h0a ?
             2'd2 : ((header_q[4:0] == 0 && header_q[6]) ? 2'd0 : 2'd1);
@@ -104,10 +106,12 @@ module pcie_soft_packet_rx #(
         k = 0;
         distance = 0;
         payload_index = 0;
-        for (j = 0; j < 2; j = j + 1) begin
+        // Four incoming symbols can write at most one payload DWORD. Even a
+        // minimum DLLP is eight symbols, so completion events cannot overlap.
+        for (j = 0; j < SYMBOLS; j = j + 1) begin
             octet = symbols_i[j*8+:8];
             k     = control_i[j];
-            if (valid_i) begin
+            if (valid_i && !abort_candidate_i) begin
                 if (error_i) begin
                     if (mode_n == 1) begin
                         emit_response = 1;
@@ -123,14 +127,17 @@ module pcie_soft_packet_rx #(
                             emit_nak      = 1;
                         end
                     end
-                    mode_n     = octet == 8'hfb ? 1 : 2;
-                    body_n     = 0;
-                    tail_n     = 0;
-                    crc_n      = 32'hffffffff;
-                    crc16_n    = 16'hffff;
-                    drop_n     = occupied_q == (S + 1)'(DEPTH);
-                    word_n     = 0;
-                    header_n   = 0;
+                    mode_n = octet == 8'hfb ? 1 : 2;
+                    body_n = 0;
+                    tail_n = 0;
+                    crc_n = 32'hffffffff;
+                    crc16_n = 16'hffff;
+                    // A packet ending earlier in this beat may have taken
+                    // the final slot before the next packet starts.
+                    drop_n = occupied_q == (S + 1)'(DEPTH) ||
+                        (commit_packet && occupied_q == (S + 1)'(DEPTH - 1));
+                    word_n = 0;
+                    header_n = 0;
                     sequence_n = 0;
                 end else if (k && (octet == 8'hfd || octet == 8'hfe)) begin
                     if (mode_n == 1) begin
@@ -192,7 +199,7 @@ module pcie_soft_packet_rx #(
                                 word_n[8*(payload_index[1:0])+:8] = older;
                                 if (payload_index[1:0] == 3) begin
                                     if (payload_index < BC'(MAX_DWORDS * 4)) begin
-                                        write_word  = 1;
+                                        write_word  = !drop_n;
                                         write_index = payload_index[W+1:2];
                                         write_data  = word_n;
                                         if (payload_index == 3) header_n = word_n;
@@ -212,8 +219,7 @@ module pcie_soft_packet_rx #(
         end
     end
     always @(posedge clk) begin
-        if (write_word && !drop_n && rst_n && !link_reset_i)
-            memory[{write_slot_q, write_index}] <= write_data;
+        if (write_word && rst_n && !link_reset_i) memory[{write_slot_q, write_index}] <= write_data;
         if (commit_packet && rst_n && !link_reset_i) begin
             lengths[write_slot_q] <= commit_words;
             classes[write_slot_q] <= commit_class;
@@ -241,7 +247,9 @@ module pcie_soft_packet_rx #(
             dllp_body_o         <= 0;
             packet_error_o      <= 0;
         end else begin
-            mode_q              <= mode_n;
+            // PHY Recovery may abandon a partial frame independently of
+            // the committed packets and sequence in the current link epoch.
+            mode_q              <= abort_candidate_i ? 2'b0 : mode_n;
             body_q              <= body_n;
             tail_q              <= tail_n;
             crc_q               <= crc_n;
@@ -272,5 +280,6 @@ module pcie_soft_packet_rx #(
         if (DEPTH < 2 || (DEPTH & (DEPTH - 1)) != 0 || MAX_DWORDS < 36 ||
             (MAX_DWORDS & (MAX_DWORDS - 1)) != 0)
             $fatal(1, "Receiver geometry must use power-of-two slots/words and hold MPS128");
+    initial if (SYMBOLS != 2 && SYMBOLS != 4) $fatal(1, "SYMBOLS must be 2 or 4");
 `endif
 endmodule

@@ -11,6 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def test_fallback_packet_path(tmp_path,gen2,initial_rate,fault):
     source=(ROOT/'tests/pcie_soft/tb_root_link.sv').read_text()
     source=source.replace('pcie_soft_link #(', 'gen3_gen2_fallback #(').replace('.GEN2_ENABLE       (GEN2_TEST),', '.IDLE_CYCLES(8),')
+    source=re.sub(r'\s*\.LINK_WIDTH\s*\(LINK_WIDTH\),', '', source)
     source=source.replace('dut.', 'dut.link.')
     remove=['phy_gen2_i','phy_rate_ready_i','target_gen2_o','speed_idle_o','fallback_o','enable_i','detect_done_i','receiver_present_i','phy_rx_error_i']
     for name in remove: source=re.sub(r'\s*\.'+name+r'\s*\([^\n]*\),','',source)

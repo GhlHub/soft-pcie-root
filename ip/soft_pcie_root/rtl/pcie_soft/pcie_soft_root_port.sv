@@ -103,6 +103,7 @@ module pcie_soft_root_port #(
         rate_fault,
         deemphasis
     );
+    wire unused_target_gen3, unused_gen3_handoff;
     pcie_soft_link #(
         .GEN2_ENABLE(GEN2_ENABLE)
     ) controller (
@@ -116,6 +117,9 @@ module pcie_soft_root_port #(
         .speed_idle_o      (speed_idle),
         .fallback_o        (fallback_o),
         .deemphasis_o      (deemphasis),
+        .phy_gen3_i        (1'b0),
+        .target_gen3_o     (unused_target_gen3),
+        .gen3_handoff_o    (unused_gen3_handoff),
         .phy_ready_i       (ready && !rate_fault),
         .rx_idle_i         (rx_idle),
         .detect_done_i     (detect_done),

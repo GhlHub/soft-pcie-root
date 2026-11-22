@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen3-x2, dp01-passive",
+  "vivado": "2026.1",
+  "change": "retain each lane’s qualified Configuration.Complete TS2 burst through local transmit qualification",
+  "prior_hardware_timeout": "implementation.json",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.327,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.006,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    },
+    "gen3": {
+      "period_ns": 4.0,
+      "wns_ns": 0.006,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    }
+  },
+  "routing_errors": 0,
+  "unwaived_critical_cdc": 0,
+  "board_pin_audit": "passed",
+  "unused_pins": "PULLNONE",
+  "sha256": {
+    "system.bit": "be8b7ee6661317471e593846eb328b9691acca4072c7903b37e582f3551185a6",
+    "routed.dcp": "5d8ae31bdcf12e1692a4b8ce0df66e6e6a97a77043555bfa2c3c38fdfcec97f5",
+    "system.xsa": "1b114c1b12732043f8d9fc2ff1f610966772e1fde1e198e32125be0a588fadb6",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa",
+    "sources.json": "21760b6b6da933df7effb8b97bfb1763b68133bec23fc10d50d240cc2ae9bc70"
+  },
+  "regression_tests_passed": 2498,
+  "regression_seconds": 367.18,
+  "focused_tests_passed": 148,
+  "lint_and_real_xpm_elaboration": "passed",
+  "first_volatile_startup": {
+    "capture_us": 600000,
+    "samples": 499296,
+    "configuration_complete_at_us": 101211,
+    "configuration_idle_at_us": 101213,
+    "recovery_speed_wait_at_us": 101219,
+    "gen3_terminal_failure_at_us": 101940,
+    "final_root_status": "0xfc",
+    "final_rate_status": "0xa",
+    "final_ddr_status": "0x4",
+    "host_driver_loaded": false
+  },
+  "physical_gen3_x2_nvme_io": "pending"
+}

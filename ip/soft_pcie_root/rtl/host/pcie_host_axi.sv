@@ -210,7 +210,7 @@ module pcie_host_axi #(
                             25'h84: s_axi_rdata <= perf_overflow_q;
                             25'h88:
                             s_axi_rdata <= PACKET_DWORDS == 2 ? 32'h50524632 :
-                                32'h50524631;  // PRF2/PRF1
+                                PACKET_DWORDS == 4 ? 32'h50524633 : 32'h50524631;
                             25'h8c: s_axi_rdata <= 125000000;
                             25'h90:
                             s_axi_rdata <= {16'b0, 8'(READ_PREFETCH_SLOTS), 8'(PACKET_DWORDS)};

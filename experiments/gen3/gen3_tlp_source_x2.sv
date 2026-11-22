@@ -55,20 +55,25 @@ module gen3_tlp_source_x2 #(
             crc_byte = c;
         end
     endfunction
+    function automatic [31:0] crc_dword(input [31:0] old, input [31:0] value);
+        crc_dword = crc_byte(
+            crc_byte(crc_byte(crc_byte(old, value[7:0]), value[15:8]), value[23:16]), value[31:24]);
+    endfunction
     wire [31:0] seed = collecting ? crc : crc_byte(
         crc_byte(32'hffffffff, {4'b0, sequence_i[11:8]}), sequence_i[7:0]
     );
-    reg [31:0] next_crc;
-    always @* begin
-        next_crc = seed;
-        for (integer b = 0; b < 8; b = b + 1)
-        if (b < 4 * int'(words_i)) next_crc = crc_byte(next_crc, data_i[8*b+:8]);
-    end
+    // Apply only fixed-length transforms on the feedback path. The final
+    // beat chooses one or two DWORDs after the transforms are evaluated.
+    wire [31:0] crc_one = crc_dword(seed, data_i[31:0]);
+    wire [31:0] crc_two = crc_dword(crc_one, data_i[63:32]);
+    wire [31:0] next_crc = words_i == 2 ? crc_two : crc_one;
     assign ready_o = !reset_i && (collecting || dropping || (!fault_o && count < 2));
     assign valid_o = !reset_i && count != 0;
     wire [W:0] total_words = lengths[read_bank] + 2;
-    assign last_o  = read_index + 2 >= total_words;
-    assign words_o = last_o ? 2'(total_words - read_index) : 2'd2;
+    // STP and LCRC add exactly two DWORDs. Cancel them from
+    // the final-beat comparison and use the body's parity for its word count.
+    assign last_o  = read_index >= lengths[read_bank];
+    assign words_o = last_o && lengths[read_bank][0] ? 2'd1 : 2'd2;
     for (genvar lane = 0; lane < 2; lane = lane + 1) begin : output_lanes
         wire [W:0] index = read_index + (W + 1)'(lane);
         assign data_o[32*lane+:32] = index == 0 ? stp : index == total_words - 1'b1 ? checksums[

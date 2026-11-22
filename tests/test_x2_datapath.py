@@ -40,7 +40,7 @@ wire [63:0] out;wire [1:0] count,cl;wire [8:0] credits;wire [11:0] seq;wire [31:
 reg [63:0] expected[0:{len(expected)-1}];integer counts[0:{len(expected)-1}],lasts[0:{len(expected)-1}];
 integer received=0,responses=0,naks=0,errors=0,dllps=0,cycle=0;
 reg held=0;reg [66:0] hold_data;
-gen3_data_rx_x2 dut(clk,reset,start,abort_rx,valid,data,pos,active,eds,out,count,v,last,ready,cl,credits,response,nak,seq,dllpv,db,error);
+gen3_data_rx_x2 dut(clk,reset,start,abort_rx,valid,data,pos,active,eds,out,count,v,last,ready,cl,credits,response,nak,seq,dllpv,db,error,);
 always @(posedge clk) if(!reset)begin
  cycle<=cycle+1;
  if(response)begin responses<=responses+1;if(nak)naks<=naks+1;end
@@ -158,7 +158,7 @@ endmodule'''
     simulate(tmp_path,bench,[GEN3/'gen3_tx_window_x2.sv',GEN3/'gen3_tlp_source_x2.sv',GEN3/'gen3_stp.sv',RTL/'pcie_soft_replay.sv',RTL/'pcie_soft_ack_capture.sv'])
 
 
-@pytest.mark.parametrize('input_words,output_words',[(2,4),(4,2)])
+@pytest.mark.parametrize('input_words,output_words', [(2,4), (4,2), (2,1)])
 def test_x2_width_adapter(tmp_path,input_words,output_words):
     # Every final occupancy, long streams, backpressure; explicit packet metadata.
     lengths=list(range(1,38))*3
@@ -357,7 +357,7 @@ def rx_trace(tmp_path,program,words=64,slots=16):
 reg clk=0;always #2 clk=~clk;
 reg reset=1,start=0,abort_rx=0,valid=0,ready=1;reg [63:0] data;reg [1:0] pos;
 wire active,eds,v,last,response,nak,dv,error;wire [63:0] out;wire [1:0] nw,cl;wire [8:0] cost;wire [11:0] seq;wire [31:0] db;
-gen3_data_rx_x2 dut(clk,reset,start,abort_rx,valid,data,pos,active,eds,out,nw,v,last,ready,cl,cost,response,nak,seq,dv,db,error);
+gen3_data_rx_x2 dut(clk,reset,start,abort_rx,valid,data,pos,active,eds,out,nw,v,last,ready,cl,cost,response,nak,seq,dv,db,error,);
 always @(posedge clk)if(!reset)begin
  if(v&&ready)$display("D %016h %d %d",out,nw,last);
  if(response)$display("R %d %d",seq,nak);
@@ -516,7 +516,7 @@ reg reset=1,start=0,valid=0,ready=0;reg [63:0] data;reg [1:0] pos;
 wire active,eds,v,last,response,nak,dv,error;wire [63:0] out;wire [1:0] nw,cl;
 wire [8:0] cost;wire [11:0] seq;wire [31:0] db;
 integer beats=0;reg opened=0;
-gen3_data_rx_x2 dut(clk,reset,start,1'b0,valid,data,pos,active,eds,out,nw,v,last,ready,cl,cost,response,nak,seq,dv,db,error);
+gen3_data_rx_x2 dut(clk,reset,start,1'b0,valid,data,pos,active,eds,out,nw,v,last,ready,cl,cost,response,nak,seq,dv,db,error,);
 always @(posedge clk)if(!reset)begin
  if(error||nak)$fatal(1,"unexpected packet rejection");
  if(opened&&!v)$fatal(1,"synchronous packet RAM inserted a read bubble");

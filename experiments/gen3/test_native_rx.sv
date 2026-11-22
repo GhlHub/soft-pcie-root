@@ -41,7 +41,8 @@ module test_native_rx;
         data_valid,
         decoded,
         pos,
-        stream
+        stream,
+        /* block_event_o */
     );
     gen3_data_rx #(
         .BUFFERED(1)

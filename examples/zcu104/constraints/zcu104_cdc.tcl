@@ -10,7 +10,7 @@ if {[llength $cdc_files]==1} {
  set cdc_entry [info script]
 } else {error "Missing unique board CDC entry file"}
 set cdc_directory [file dirname $cdc_entry]
-set native [get_cells -hier -quiet -filter {REF_NAME == gen3_native_root || ORIG_REF_NAME == gen3_native_root}]
+set native [get_cells -hier -quiet -filter {REF_NAME == gen3_native_root || ORIG_REF_NAME == gen3_native_root || REF_NAME == gen3_native_x2 || ORIG_REF_NAME == gen3_native_x2}]
 set legacy [get_cells -hier -quiet -filter {REF_NAME == pcie_soft_root_port || ORIG_REF_NAME == pcie_soft_root_port}]
 if {[llength $native]+[llength $legacy]!=1} {error "Expected exactly one selected PCIe root backend"}
 if {[llength $native]} {

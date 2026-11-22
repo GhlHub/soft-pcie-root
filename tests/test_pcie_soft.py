@@ -83,7 +83,8 @@ def scramble_octets(state, data, ctrl, keep, scramble):
 
 
 @pytest.mark.parametrize('seed', [41, 2053])
-def test_scrambler_stalls_and_symbols(tmp_path, seed):
+@pytest.mark.parametrize('precompute', [0, 1])
+def test_scrambler_stalls_and_symbols(tmp_path, seed, precompute):
     rng = random.Random(seed)
     state, occupied, held = 0xffff, False, (0, 0, 0)
     pending, offered = None, False
@@ -115,7 +116,8 @@ def test_scrambler_stalls_and_symbols(tmp_path, seed):
                     f'{int(occupied)} {held[0]:04x} {held[1]:x} {held[2]:x} {state:04x}')
     path = tmp_path / 'scrambler.txt'
     path.write_text('\n'.join(rows) + '\n')
-    run_bench(tmp_path, 'tb_scrambler', ['pcie_soft_scrambler.sv'], path)
+    run_bench(tmp_path, 'tb_scrambler', ['pcie_soft_scrambler.sv'], path,
+              [('PRECOMPUTE_ADVANCE', precompute)])
 
 
 def test_scrambler_roundtrip(tmp_path):
@@ -140,13 +142,23 @@ def test_link_training(tmp_path):
     run_bench(tmp_path, 'tb_link_training', ['pcie_soft_training.sv', 'pcie_soft_ltssm.sv'])
 
 
-@pytest.mark.parametrize("gen2", [0, 1])
-def test_integrated_root_link(tmp_path, gen2):
+@pytest.mark.parametrize('gen2,width,skew', [(0, 1, 0), (1, 1, 0), (0, 2, 0), (0, 2, 3),
+                                          (1, 2, 0), (1, 2, 3)],
+                         ids=['gen1-x1', 'gen2-x1', 'gen1-x2', 'gen1-x2-skew',
+                              'gen2-x2', 'gen2-x2-skew'])
+def test_integrated_root_link(tmp_path, gen2, width, skew):
     sources = ['pcie_soft_link.sv', 'pcie_soft_ltssm.sv', 'pcie_soft_training.sv',
                'pcie_soft_scrambler.sv', 'pcie_soft_packet_tx.sv', 'pcie_soft_packet_rx.sv',
                'pcie_soft_requester.sv', 'pcie_soft_flow_control.sv',
                'pcie_soft_replay.sv', 'pcie_soft_ack_capture.sv']
-    run_bench(tmp_path, 'tb_root_link', sources, parameters=[('GEN2_TEST',gen2)])
+    if width == 2:
+        sources += ['pcie_legacy_x2_rx.sv', 'pcie_legacy_x2_packet_rx.sv', 'pcie_lane_deskew.sv', 'pcie_lane_stripe.sv',
+                    ROOT / 'experiments/gen3/gen3_multilane_startup.sv',
+                    ROOT / 'experiments/gen3/gen3_legacy_x2_phy.sv',
+                    ROOT / 'experiments/gen3/gen3_legacy_x2_pipe.sv',
+                    ROOT / 'experiments/gen3/gen3_native_x2_rate.sv']
+    run_bench(tmp_path, 'tb_root_link', sources,
+              parameters=[('GEN2_TEST', gen2), ('LINK_WIDTH', width), ('LANE1_DELAY', skew)])
 
 
 def test_ack_capture(tmp_path):

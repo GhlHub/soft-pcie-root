@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen2-x2, dp01-passive",
+  "implementation": "implementation.json",
+  "bitstream_sha256": "28f9fcf096c31e694cbd411e49d5c82f40dff046f73efa40a7d763680f70e4a5",
+  "deployment": "volatile JTAG and RAM Linux 6.6.70",
+  "startup": {
+    "physical_power_cycle": false,
+    "pcie_enabled_after_firmware_and_before_driver_probe": true,
+    "trace_sample_count": 499314,
+    "trace_interval_us": 600000,
+    "first_stable_L0_us": 103498,
+    "rate_change_observed": true,
+    "earlier_warm_training_timeouts": true
+  },
+  "link": {
+    "speed_GT_s": 5.0,
+    "width": 2,
+    "endpoint_pci_id": "144d:a80d",
+    "source": "Linux PCIe Link Status readback"
+  },
+  "ssd_model": "Samsung SSD 990 EVO 1TB",
+  "read_integrity": {
+    "successful_direct_reads": 2,
+    "bytes_per_read": 268435456,
+    "sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+    "matches_gen1_x2_and_x1": true,
+    "namespace_write_count_unchanged": true
+  },
+  "sequential_read": {
+    "fio_version": "3.38",
+    "ioengine": "libaio",
+    "direct": true,
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "offset_bytes": 0,
+    "region_bytes": 4294967296,
+    "target_seconds_per_job": 30,
+    "results": [
+      {"queue_depth": 1, "bytes_per_second": 472231407, "runtime_ms": 30003, "read_bytes": 14168358912, "fio_error": 0, "write_bytes": 0},
+      {"queue_depth": 8, "bytes_per_second": 589848019, "runtime_ms": 30013, "read_bytes": 17703108608, "fio_error": 0, "write_bytes": 0}
+    ],
+    "write_counters_before_and_after": ["0:0", "0:0"]
+  },
+  "final_state_before_halt": {
+    "root_status": "0x53",
+    "mailbox_status": "0x2",
+    "rate_status": "0x9",
+    "ddr_status": "0xc",
+    "packet_capacity": "0x1004",
+    "namespace_inflight": [0, 0],
+    "healthy_idle": true
+  }
+}

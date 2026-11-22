@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen3-x2, dp01-passive",
+  "implementation": "packet-receiver-start.json",
+  "bitstream_sha256": "e64b414f1876ab411fe98b84e91fd6ad4d998f78b255ca8a6ab95d1eb20656fe",
+  "deployment": "volatile JTAG and RAM Linux 6.6.70",
+  "adapter_model": "unconfirmed",
+  "vadj_measurement": "open",
+  "startup": {
+    "physical_power_cycle": false,
+    "successful_warm_starts": 1,
+    "processor_halted_during_pl_reload": true,
+    "pcie_enabled_before_driver_probe": true,
+    "trace_sample_count": 507862,
+    "max_sample_interval_us": 33,
+    "first_L0_sample_us": 130555,
+    "first_data_link_active_sample_us": 130556
+  },
+  "link": {
+    "speed_GT_s": 8.0,
+    "width": 2,
+    "endpoint_pci_id": "144d:a80d",
+    "source": "Linux PCIe Link Status readback"
+  },
+  "ssd_model": "Samsung SSD 990 EVO 1TB",
+  "read_integrity": {
+    "successful_direct_reads": 2,
+    "bytes_per_read": 268435456,
+    "sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+    "matches_gen1_x2_gen2_x2_and_x1": true,
+    "namespace_write_count_unchanged": true
+  },
+  "sequential_read": {
+    "fio_version": "3.38",
+    "ioengine": "libaio",
+    "direct": true,
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "offset_bytes": 0,
+    "region_bytes": 4294967296,
+    "target_seconds_per_job": 30,
+    "results": [
+      {
+        "queue_depth": 1,
+        "bytes_per_second": 668038186,
+        "runtime_ms": 30002,
+        "read_bytes": 20042481664,
+        "mean_completion_latency_ns": 846988,
+        "fio_cpu_percent": 50.20,
+        "fio_error": 0,
+        "write_bytes": 0
+      },
+      {
+        "queue_depth": 8,
+        "bytes_per_second": 678907699,
+        "runtime_ms": 30002,
+        "read_bytes": 20368588800,
+        "mean_completion_latency_ns": 10870139,
+        "fio_cpu_percent": 84.30,
+        "fio_error": 0,
+        "write_bytes": 0
+      }
+    ],
+    "write_counters_before_and_after": ["0:0", "0:0"]
+  },
+  "final_state": {
+    "root_status": "0x93",
+    "mailbox_status": "0x2",
+    "rate_status": "0x8",
+    "ddr_status": "0xc",
+    "packet_capacity": "0x1004",
+    "namespace_inflight": [0, 0],
+    "namespace_unmounted": true,
+    "healthy_idle": true
+  }
+}

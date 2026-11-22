@@ -1,8 +1,9 @@
-# Experimental FMC ZCU104 FMC lane0. PCIe PHY mode enables receiver detection;
+# PCIe PHY mode enables receiver detection;
 # it does not instantiate a PCIe controller/hard block.
+if {![info exists gt_channel]} {set gt_channel X0Y15}
 create_ip -name gtwizard_ultrascale -vendor xilinx.com -library ip -module_name pcie_gen1_gt
 set ip [get_ips pcie_gen1_gt]
-set_property -dict [list CONFIG.CHANNEL_ENABLE X0Y15 CONFIG.TX_MASTER_CHANNEL X0Y15 CONFIG.RX_MASTER_CHANNEL X0Y15 \
+set_property -dict [list CONFIG.CHANNEL_ENABLE $gt_channel CONFIG.TX_MASTER_CHANNEL $gt_channel CONFIG.RX_MASTER_CHANNEL $gt_channel \
  CONFIG.TX_LINE_RATE 2.5 CONFIG.RX_LINE_RATE 2.5 CONFIG.TX_PLL_TYPE CPLL CONFIG.RX_PLL_TYPE CPLL \
  CONFIG.TX_REFCLK_FREQUENCY 100 CONFIG.RX_REFCLK_FREQUENCY 100 \
  CONFIG.TX_DATA_ENCODING 8B10B CONFIG.RX_DATA_DECODING 8B10B \

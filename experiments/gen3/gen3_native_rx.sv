@@ -2,7 +2,8 @@
 // Native 32-bit PCS boundary. Packet bytes remain provisional downstream.
 // Local disable/error aborts only a candidate; committed packets are not reset.
 module gen3_native_rx #(
-    parameter integer LANE_ID = 0
+    parameter integer LANE_ID      = 0,
+    parameter bit     EXTERNAL_EDS = 0
 ) (
     input wire clk, reset_i, enable_i,
     input wire [31:0] data_i,
@@ -18,12 +19,16 @@ module gen3_native_rx #(
     output reg stream_start_o, data_valid_o,
     output reg [31:0] data_o,
     output reg [1:0] position_o,
-    output wire stream_o
+    output wire stream_o,
+    // Bonded lanes validate EDS after deskew. These records mark complete
+    // ordered sets in the lane's data-stream epoch.
+    output reg [2:0] block_event_o
 );
 
     initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
 
     localparam [22:0] LANE_SEED = LANE_ID == 0 ? 23'h1dbfbc : 23'h0607bb;
+    localparam [2:0] SDS = 4, SKP = 5, EIEOS = 6, EIOS = 7;
     // Classify each incoming DWORD ahead of the descrambler. Payload and
     // sidebands advance together; valid is synchronously flushed on disable.
     // Parser feedback stays at the consumer stage, relative to decoded output.
@@ -101,6 +106,7 @@ module gen3_native_rx #(
             error_o        <= 1;
             data_valid_o   <= 0;
             stream_start_o <= 0;
+            block_event_o  <= 0;
             ts1_valid_o    <= 0;
             ts2_valid_o    <= 0;
         end
@@ -138,6 +144,7 @@ module gen3_native_rx #(
             pending_eds     <= 0;
             stream_start_o  <= 0;
             data_valid_o    <= 0;
+            block_event_o   <= 0;
         end else begin
             ts_event_o     <= 0;
             ts1_valid_o    <= 0;
@@ -146,6 +153,7 @@ module gen3_native_rx #(
             eios_o         <= 0;
             stream_start_o <= 0;
             data_valid_o   <= 0;
+            block_event_o  <= 0;
             pending_eds    <= 0;
             if (eds_i) eds_seen <= 1;
             if (rx_valid) begin
@@ -211,18 +219,20 @@ module gen3_native_rx #(
                                     fail();
                                 else if (stream) begin
                                     stream_start_o <= 1;
-                                    expect_data    <= 1;
-                                    parity         <= 0;
-                                    pending_eds    <= !(eds_seen || eds_i);
-                                    eds_seen       <= 0;
+                                    if (EXTERNAL_EDS) block_event_o <= SKP;
+                                    expect_data <= 1;
+                                    parity      <= 0;
+                                    pending_eds <= !EXTERNAL_EDS && !(eds_seen || eds_i);
+                                    eds_seen    <= 0;
                                 end
                             end else if (rx_data != 32'haaaaaaaa || skip_words >= 5) fail();
                         end
                     end else if (at == 3) begin
                         in_block <= 0;
                         if (this_eieos && eieos_match && rx_eieos_word) begin
-                            if (stream && !(eds_seen || eds_i)) fail();
+                            if (!EXTERNAL_EDS && stream && !(eds_seen || eds_i)) fail();
                             else begin
+                                if (EXTERNAL_EDS && stream) block_event_o <= EIEOS;
                                 lfsr      <= LANE_SEED;
                                 aligned_o <= 1;
                                 stream    <= 0;
@@ -247,12 +257,14 @@ module gen3_native_rx #(
                                 stream         <= 1;
                                 expect_data    <= 1;
                                 stream_start_o <= 1;
-                                parity         <= 0;
-                                eds_seen       <= 0;
+                                if (EXTERNAL_EDS) block_event_o <= SDS;
+                                parity   <= 0;
+                                eds_seen <= 0;
                             end
                         end else if (this_eios && eios_match && rx_eios_word) begin
-                            if (stream && !(eds_seen || eds_i)) fail();
+                            if (!EXTERNAL_EDS && stream && !(eds_seen || eds_i)) fail();
                             else begin
+                                if (EXTERNAL_EDS && stream) block_event_o <= EIOS;
                                 eios_o    <= 1;
                                 aligned_o <= 0;
                                 stream    <= 0;
@@ -261,14 +273,16 @@ module gen3_native_rx #(
                     end
                 end
                 // Structural failures override all provisional output pulses.
-                if ((rx_start && (in_block || rx_bad_header || (expect_data && !data_block) ||
-                                  (data_block && (!stream || !aligned_o ||
-                                                  (!expect_data && (eds_seen || eds_i)))) ||
-                                  (skip && rx_data != 32'haaaaaaaa))) || (!rx_start && !in_block))
+                if ((rx_start &&
+                     (in_block || rx_bad_header || (expect_data && !data_block) ||
+                      (data_block && (!stream || !aligned_o ||
+                                      (!EXTERNAL_EDS && !expect_data && (eds_seen || eds_i)))) ||
+                      (skip && rx_data != 32'haaaaaaaa))) || (!rx_start && !in_block))
                     fail();
             end
-            if (parser_error_i || (pending_eds && !eds_i) ||
-                (eds_i && rx_valid && data_block && !expect_data))
+            if (parser_error_i ||
+                (!EXTERNAL_EDS &&
+                 ((pending_eds && !eds_i) || (eds_i && rx_valid && data_block && !expect_data))))
                 fail();
         end
     end

@@ -64,22 +64,21 @@ early-quarantine software branch has model coverage but has not been deployed.
 
 ## x2 development branch
 
-`dev/pcie-x2` contains lane-aware Gen3 codecs and standalone striping/deskew
-components, shared multi-lane startup/equalization, and separate 64-bit packet
-plus 128-bit host/DDR datapaths with simulation coverage. Widening applies only
-to the future Gen3 x2 build; existing x1 widths remain unchanged.
-The Add IP GUI exposes `LINK_WIDTH=1/2` (default 1); **x2 root elaboration is
-explicitly blocked until PHY and packet/AXI integration is complete**. See the [remaining integration
-work](docs/x2-development.md) and [ZU15EG target](examples/zu15eg/README.md).
-The x1 baseline is tagged `x1-hardware-validated-2026-11-08`.
+`dev/pcie-x2` integrates the two-lane PHY and a 128-bit host/DDR path for the
+staged ZU15EG builds. Gen1, Gen2 and Gen3 x2 negotiated the intended rate and
+passed read-only NVMe checks on that board. Gen3 x2 reached **921.21 MB/s**
+in a 30-second, two-worker read test. The ordinary IP catalog defaults to x1
+and retains its x2 elaboration guard. The x1 baseline is tagged
+`x1-hardware-validated-2026-11-08`.
+[ZU15EG build and results](examples/zu15eg/README.md) · [x2 development scope](docs/x2-development.md)
 
 ## Configuration and earlier results
 
 The unified Vivado **Gen3 (`ENABLE_GEN3`)** checkbox selects Gen3 at build
 time. It defaults off, selecting Gen1/Gen2 x1 with 32-bit host packet paths and
 two DDR read-prefetch slots. Both selections retain a 64-bit/125 MHz DDR AXI
-interface. See [packaging and integration](docs/ip-guide.md#optional-gen3-packaging).
-The PHY targets UltraScale+ GTHE4; other families and wider links need development.
+interface in the x1 builds. The PHY targets UltraScale+ GTHE4.
+[Packaging and integration](docs/ip-guide.md#optional-gen3-packaging)
 
 The frozen release remains Gen1/Gen2 x1. The latest measured Gen2 ACK-retirement
 build achieved **428.30/260.21 MB/s** at QD8; a fresh Gen2 backend build containing
@@ -97,6 +96,7 @@ the power initializer currently recognizes OP047 only. See
 | --- | --- |
 | `ip/soft_pcie_root/` | Reusable RTL and Vivado IP packager |
 | `examples/zcu104/` | IP-based block design, physical constraints and audit |
+| `examples/zu15eg/` | ZU15EG x1 and staged x2 board builds |
 | `software/driver/` | GPL-2.0-only Linux PCI host driver |
 | `software/linux/` | Reproducible Buildroot/Linux/U-Boot example configuration |
 | `tests/` | Protocol, ownership, DMA, CDC and software regressions |

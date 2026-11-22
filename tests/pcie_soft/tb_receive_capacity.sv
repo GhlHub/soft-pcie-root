@@ -30,7 +30,8 @@ module tb_receive_capacity;
         seq,
         dv,
         dllp,
-        error
+        error,
+        1'b0
     );
     reg [8:0] bytes_q[0:255];
     integer count = 0, errors = 0, naks = 0;

@@ -1,10 +1,36 @@
 # Build a self-contained local Vivado IP repository. No board access.
-# Optional second argument changes the initial checkbox value only. Both PHY
-# backends are included in one catalog definition and remain GUI-selectable.
-if {[llength $argv] < 1 || [llength $argv] > 2} {error "Supply fresh output directory and optional default ENABLE_GEN3 (0 or 1)"}
+# The default package includes both x1 PHY backends. The explicit ZU15EG
+# x2 packages contain the native two-lane PHY for the selected board stage.
+if {[llength $argv] < 1 || [llength $argv] > 4} {
+ error "Supply fresh output directory, optional default ENABLE_GEN3 (0 or 1), board (zcu104 or zu15eg), and optional gen1-x2, gen2-x2 or gen3-x2 stage"
+}
 set enable_gen3 0
-if {[llength $argv] == 2} {set enable_gen3 [lindex $argv 1]}
+if {[llength $argv] >= 2} {set enable_gen3 [lindex $argv 1]}
 if {$enable_gen3 ni {0 1}} {error "ENABLE_GEN3 must be 0 or 1"}
+set board zcu104
+if {[llength $argv] >= 3} {set board [lindex $argv 2]}
+set native_width 1
+set stage ""
+if {[llength $argv] == 4} {
+ set stage [lindex $argv 3]
+ if {$stage ni {gen1-x2 gen2-x2 gen3-x2} || $board ne "zu15eg" || !$enable_gen3} {
+  error "The x2 stages require zu15eg and ENABLE_GEN3=1"
+ }
+ set native_width 2
+}
+switch -- $board {
+ zcu104 {
+  set package_part xczu7ev-ffvc1156-2-e
+  set gt_channel X0Y15
+  set gt_bank 130
+ }
+ zu15eg {
+  set package_part xczu15eg-ffvb1156-2-i
+  set gt_channel X1Y4
+  set gt_bank 228
+ }
+ default {error "Unsupported packaging board: $board"}
+}
 set root [file normalize [file join [file dirname [info script]] ../..]]
 set output [file normalize [lindex $argv 0]]
 if {[file exists $output]} {error "Output exists; use a fresh directory"}
@@ -12,7 +38,7 @@ file mkdir $output
 exec python3 $root/scripts/host_sources.py capture $output/sources.json
 set source $root/experiments/gen3
 source $source/prepare_host_phy.tcl
-create_project soft_pcie_package [file join $output project] -part xczu7ev-ffvc1156-2-e
+create_project soft_pcie_package [file join $output project] -part $package_part
 set_property XPM_LIBRARIES {XPM_CDC XPM_MEMORY XPM_FIFO} [current_project]
 source [file join $root ip soft_pcie_root create_gt.tcl]
 # Import generated legacy RTL rather than an unconditional XCI subcore. Its
@@ -68,15 +94,20 @@ set model [ipx::get_hdl_parameters ENABLE_GEN3 -of_objects $core]
 set_property value $enable_gen3 $model
 set width [ipx::get_user_parameters LINK_WIDTH -of_objects $core]
 if {[llength $width]!=1} {error "Missing inferred LINK_WIDTH parameter"}
-set_property -dict [list value_format long value_resolve_type user value 1 display_name {Link width (x2 training development)} value_validation_type range_long value_validation_range_minimum 1 value_validation_range_maximum 2] $width
-set_property value 1 [ipx::get_hdl_parameters LINK_WIDTH -of_objects $core]
+set_property -dict [list value_format long value_resolve_type user value $native_width display_name {Link width (x2 training development)} value_validation_type range_long value_validation_range_minimum 1 value_validation_range_maximum 2] $width
+set_property value $native_width [ipx::get_hdl_parameters LINK_WIDTH -of_objects $core]
+foreach {mode parameter} {gen1-x2 X2_GEN1_BRINGUP gen2-x2 X2_GEN2_BRINGUP gen3-x2 X2_GEN3_BRINGUP} {
+ set selected [expr {$stage eq $mode}]
+ set_property value $selected [ipx::get_user_parameters $parameter -of_objects $core]
+ set_property value $selected [ipx::get_hdl_parameters $parameter -of_objects $core]
+}
 set preset [ipx::get_user_parameters GEN3_TX_PRESET -of_objects $core]
 if {[llength $preset]!=1} {error "Missing inferred GEN3_TX_PRESET parameter"}
 set_property -dict [list value_format long value_resolve_type user value 4 display_name {Gen3 TX preset (0-10)} value_validation_type range_long value_validation_range_minimum 0 value_validation_range_maximum 10] $preset
 set_property value 4 [ipx::get_hdl_parameters GEN3_TX_PRESET -of_objects $core]
 set busparam [ipx::get_bus_parameters NUM_READ_OUTSTANDING -of_objects [ipx::get_bus_interfaces M_DDR -of_objects $core]]
 set_property value_resolve_type dependent $busparam
-set_property value_dependency {2 + 6 * spirit:decode(id('MODELPARAM_VALUE.ENABLE_GEN3'))} $busparam
+set_property value_dependency {2 + 6 * spirit:decode(id('MODELPARAM_VALUE.ENABLE_GEN3')) + 8 * (spirit:decode(id('MODELPARAM_VALUE.X2_GEN1_BRINGUP')) + spirit:decode(id('MODELPARAM_VALUE.X2_GEN2_BRINGUP')) + spirit:decode(id('MODELPARAM_VALUE.X2_GEN3_BRINGUP')))} $busparam
 # Generate only the selected PHY XDC at customization time. Preserve vendor
 # constraints/notices, without targeting the backend that is not elaborated.
 file mkdir $output/core/ttcl
@@ -87,8 +118,17 @@ puts $stream {<: setFileName "[getComponentNameString]_phy" :>}
 puts $stream {<: setFileExtension ".xdc" :>}
 puts $stream {<: setFileProcessingOrder early :>}
 puts $stream "<: if {\[getBooleanValue \"ENABLE_GEN3\"]} { :>"
-foreach native_xdc [list $base/source/ip_pcie_phy.xdc $base/ip_0/synth/gen3_reference_phy_gt.xdc] {
- set input [open $native_xdc r];puts $stream [read $input];close $input
+foreach native_xdc [list $base/source/ip_pcie_phy.xdc $base/ip_0/synth/${native_name}_gt.xdc] {
+ set input [open $native_xdc r];set text [read $input];close $input
+ if {$stage in {gen1-x2 gen2-x2} && [file tail $native_xdc] eq "ip_pcie_phy.xdc"} {
+  # Use the fastest rate of the legacy bring-up stage during implementation.
+  if {[regsub -all {set_case_analysis 1 (\[get_pins -filter \{REF_PIN_NAME=~[TR]XRATE\[1\]\})} $text {set_case_analysis 0 \1} text] != 2 ||
+      ($stage eq "gen1-x2" && [regsub {create_clock -name txoutclk -period 4 } $text {create_clock -name txoutclk -period 8 } text] != 1) ||
+      ($stage eq "gen2-x2" && [regsub -all {set_case_analysis 0 (\[get_pins -filter \{REF_PIN_NAME=~[TR]XRATE\[0\]\})} $text {set_case_analysis 1 \1} text] != 2)} {
+   error "Unexpected native PHY rate constraints"
+  }
+ }
+ puts $stream $text
 }
 puts $stream "<: } else { :>"
 set input [open $legacy/synth/pcie_gen1_gt.xdc r]
@@ -106,4 +146,10 @@ ipx::update_checksums $core
 ipx::check_integrity $core
 ipx::save_core $core
 exec python3 $root/scripts/host_sources.py check $output/sources.json
+set target_file [open [file join $output target-part.txt] w]
+puts $target_file $package_part
+close $target_file
+set width_file [open [file join $output native-width.txt] w]
+puts $width_file $native_width
+close $width_file
 puts "SOFT_PCIE_IP_PACKAGED [file join $output core component.xml]"

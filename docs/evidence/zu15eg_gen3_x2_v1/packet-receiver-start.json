@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen3-x2, dp01-passive",
+  "change": "discard continuations before the packet decoder sees each lane’s first valid block start",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.139,
+      "whs_ns": 0.011,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.024,
+      "whs_ns": 0.011,
+      "wpws_ns": 0.543
+    },
+    "gen3": {
+      "period_ns": 4.0,
+      "wns_ns": 0.024,
+      "whs_ns": 0.011,
+      "wpws_ns": 0.543
+    }
+  },
+  "sha256": {
+    "sources.json": "065a131e3e12c1dff2b0b79ee92657f47f3373b9d7edfae513f2c35c3a2111eb",
+    "routed.dcp": "225b768e87f838321e2c2396f27b0f9b07e7c414e2b306fd267315341576e49b",
+    "system.bit": "e64b414f1876ab411fe98b84e91fd6ad4d998f78b255ca8a6ab95d1eb20656fe",
+    "system.xsa": "d149e7741036d6f8644a5399a7d86c24866d4843be9956eade242a2a62d6eb1c",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa"
+  },
+  "unwaived_critical_cdc": 0,
+  "routing_errors": 0,
+  "physical_gen3_x2_nvme_io": "passed in completion.json",
+  "regression_tests_passed": 2510,
+  "regression_seconds": 392.45,
+  "lint_and_real_xpm_elaboration": "passed",
+  "focused_tests_passed": 18
+}

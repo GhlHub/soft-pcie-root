@@ -4,37 +4,72 @@
 // constructed independently in Python; no DUT state is used by the checker.
 module tb_rx_fault_matrix;
     parameter integer HALF_PERIOD = 4;
+    parameter integer SYMBOLS = 2;
+    parameter integer DEPTH = 16;
+    parameter integer PIPELINED = 0;
     reg clk = 0;
     always #(HALF_PERIOD) clk = ~clk;
     reg rst_n = 0, valid = 0, phy_error = 0, ready = 0;
-    reg [15:0] symbols = 0;
-    reg [ 1:0] control = 0;
+    reg                 abort_candidate = 0;
+    reg [8*SYMBOLS-1:0] symbols = 0;
+    reg [  SYMBOLS-1:0] control = 0;
     wire [31:0] data, dllp_body;
     wire tv, last, response, nak, dllp_valid, packet_error;
     wire [ 1:0] cls;
     wire [ 8:0] credits;
     wire [11:0] sequence_number;
-    pcie_soft_packet_rx dut (
-        clk,
-        rst_n,
-        1'b0,
-        symbols,
-        control,
-        valid,
-        phy_error,
-        data,
-        tv,
-        last,
-        ready,
-        cls,
-        credits,
-        response,
-        nak,
-        sequence_number,
-        dllp_valid,
-        dllp_body,
-        packet_error
-    );
+    if (PIPELINED) begin : pipelined_rx
+        pcie_legacy_x2_packet_rx #(
+            .DEPTH(DEPTH)
+        ) dut (
+            clk,
+            rst_n,
+            1'b0,
+            32'(symbols),
+            4'(control),
+            valid,
+            phy_error,
+            data,
+            tv,
+            last,
+            ready,
+            cls,
+            credits,
+            response,
+            nak,
+            sequence_number,
+            dllp_valid,
+            dllp_body,
+            packet_error,
+            abort_candidate
+        );
+    end else begin : legacy_rx
+        pcie_soft_packet_rx #(
+            .SYMBOLS(SYMBOLS),
+            .DEPTH  (DEPTH)
+        ) dut (
+            clk,
+            rst_n,
+            1'b0,
+            symbols,
+            control,
+            valid,
+            phy_error,
+            data,
+            tv,
+            last,
+            ready,
+            cls,
+            credits,
+            response,
+            nak,
+            sequence_number,
+            dllp_valid,
+            dllp_body,
+            packet_error,
+            abort_candidate
+        );
+    end
     integer dllps = 0, acks = 0, naks = 0;
     reg [11:0] last_sequence = 0;
     reg [31:0] last_dllp = 0;
@@ -71,15 +106,20 @@ module tb_rx_fault_matrix;
             if (rc != 5) $fatal(1, "Bad vector row %0d", row);
             row = row + 1;
             @(negedge clk);
-            valid     = 0;
-            ready     = 0;
-            phy_error = 0;
+            valid           = 0;
+            ready           = 0;
+            phy_error       = 0;
+            abort_candidate = 0;
             case (operation)
                 0: begin
-                    symbols   = 16'(a);
-                    control   = 2'(b);
+                    symbols   = (8 * SYMBOLS)'(a);
+                    control   = SYMBOLS'(b);
                     valid     = 1;
                     phy_error = c != 0;
+                    cycles(1);
+                end
+                6: begin
+                    abort_candidate = 1;
                     cycles(1);
                 end
                 1: cycles(a);

@@ -39,8 +39,12 @@ puts PASS
     assert r.stdout.strip()=='PASS'
 
 
-@pytest.mark.parametrize('width,gen3',[(1,0),(1,1),(2,1),(3,1)])
-def test_root_width_guard(tmp_path,width,gen3):
+@pytest.mark.parametrize('width,gen3,gen1_stage,gen2_stage,gen3_stage', [
+    (1, 0, 0, 0, 0), (1, 1, 0, 0, 0), (2, 1, 0, 0, 0), (2, 1, 1, 0, 0), (2, 0, 1, 0, 0),
+    (3, 1, 0, 0, 0), (2, 1, 0, 1, 0), (2, 1, 1, 1, 0), (2, 0, 0, 1, 0), (1, 1, 0, 1, 0),
+    (2, 1, 0, 0, 1), (2, 0, 0, 0, 1), (1, 1, 0, 0, 1), (2, 1, 0, 1, 1), (2, 1, 2, 0, -1),
+])
+def test_root_width_guard(tmp_path, width, gen3, gen1_stage, gen2_stage, gen3_stage):
     # -i blackboxes missing AMD PHY/XPM primitives ONLY for this parameter-guard
     # test. This neither simulates a PHY nor qualifies the integrated host shell.
     sources=sorted((ROOT/'ip/soft_pcie_root/rtl').rglob('*.sv'))
@@ -48,14 +52,18 @@ def test_root_width_guard(tmp_path,width,gen3):
     output=tmp_path/'guard'
     command=['iverilog','-g2012','-i','-s','soft_pcie_root',
              f'-Psoft_pcie_root.LINK_WIDTH={width}',f'-Psoft_pcie_root.ENABLE_GEN3={gen3}',
+             f'-Psoft_pcie_root.X2_GEN1_BRINGUP={gen1_stage}',
+             f'-Psoft_pcie_root.X2_GEN2_BRINGUP={gen2_stage}',
+             f'-Psoft_pcie_root.X2_GEN3_BRINGUP={gen3_stage}',
              '-o',str(output),*map(str,sources)]
     r=subprocess.run(command,text=True,capture_output=True)
     assert r.returncode==0,r.stderr
     r=subprocess.run(['vvp',str(output)],text=True,capture_output=True,timeout=20)
-    if width==1:
+    stages = (gen1_stage, gen2_stage, gen3_stage)
+    if (width == 1 and not any(stages)) or (width == 2 and gen3 and sorted(stages) == [0, 0, 1]):
         assert r.returncode==0,r.stdout+r.stderr
     else:
-        expected = 'root backend is not integrated' if width==2 else 'LINK_WIDTH must be 1 or 2'
+        expected = 'root backend is not integrated' if width in (1, 2) else 'LINK_WIDTH must be 1 or 2'
         assert r.returncode!=0 and expected in r.stdout
         # Ordinary elaboration must also reject the unresolved backend; synthesis
         # must not optimize away an initial-only warning and produce x1 hardware.

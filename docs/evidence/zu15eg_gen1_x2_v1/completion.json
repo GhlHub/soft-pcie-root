@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-22",
+  "device": "xczu15eg-ffvb1156-2-i",
+  "vivado": "2026.1",
+  "profile": "gen1-x2, dp01-passive",
+  "deployment": "volatile JTAG bitstream and RAM Linux",
+  "adapter_model": "unconfirmed",
+  "vadj_measurement": "open",
+  "pins": {
+    "refclk0": [
+      "L8",
+      "L7"
+    ],
+    "DP0": {
+      "logical_lane": 0,
+      "GTH": "X1Y4",
+      "TX": [
+        "R4",
+        "R3"
+      ],
+      "RX": [
+        "T2",
+        "T1"
+      ]
+    },
+    "DP1": {
+      "logical_lane": 1,
+      "GTH": "X1Y5",
+      "TX": [
+        "P6",
+        "P5"
+      ],
+      "RX": [
+        "P2",
+        "P1"
+      ]
+    }
+  },
+  "artifacts_sha256": {
+    "system.bit": "514567aa5a8b04846f96ed36a1ece044e61b5bc33b92857c36f04ffab3fc80b0",
+    "routed.dcp": "518475a7cd1341e0880a9cbda4ac95486fb8c73c0f46696ef6d4c01858b43cb2",
+    "sources.json": "b4c74765100ff35dcd62cbd678ad20224c50833fefc3bca297eddde0ff5ce45d",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa"
+  },
+  "audit": {
+    "reopened_pass": true,
+    "setup_slack_ns": 0.076,
+    "hold_slack_ns": 0.016,
+    "pulse_width_slack_ns": 0.543,
+    "unwaived_critical_cdc": 0,
+    "routing_errors": 0,
+    "unused_pins": "PULLNONE",
+    "fmc_sidebands_undriven": true
+  },
+  "resources": {
+    "total_LUTs": 30760,
+    "FFs": 18563,
+    "RAMB18": 1,
+    "GTHE4": 2
+  },
+  "host": {
+    "DDR_AXI_width_bits": 128,
+    "host_clock_MHz": 125,
+    "read_prefetch_slots": 16
+  },
+  "link": {
+    "speed_GT_s": 2.5,
+    "width": 2,
+    "endpoint_pci_id": "144d:a80d",
+    "status_verified_by": [
+      "endpoint config",
+      "Linux sysfs"
+    ]
+  },
+  "ssd_model": "Samsung SSD 990 EVO 1TB",
+  "linux": "6.6.70",
+  "read_integrity": {
+    "reads": 2,
+    "bytes_per_read": 268435456,
+    "sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+    "matches_gen3_x1": true,
+    "test_bytes_written": 0
+  },
+  "sequential_read": {
+    "fio_version": "3.38",
+    "ioengine": "libaio",
+    "direct": true,
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "offset_bytes": 0,
+    "region_bytes": 4294967296,
+    "target_seconds_per_job": 30,
+    "results": [
+      {
+        "queue_depth": 1,
+        "bytes_per_second": 271894456,
+        "runtime_ms": 30004,
+        "read_bytes": 8157921280,
+        "fio_error": 0,
+        "write_bytes": 0
+      },
+      {
+        "queue_depth": 8,
+        "bytes_per_second": 306153321,
+        "runtime_ms": 30027,
+        "read_bytes": 9192865792,
+        "fio_error": 0,
+        "write_bytes": 0
+      }
+    ]
+  },
+  "final_state": {
+    "healthy_idle": true,
+    "root_status": "0x53",
+    "configuration_status": "0x2",
+    "rate_status": "0x8",
+    "ddr_status": "0xc",
+    "packet_capacity": "0x1004"
+  }
+}

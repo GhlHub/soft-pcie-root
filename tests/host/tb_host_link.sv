@@ -362,9 +362,9 @@ module tb_host_link #(
             if (dut.rx_packet_error)
                 $display(
                     "TRACE RX error body=%0d tail=%08x crc16=%04x",
-                    dut.receiver.body_q,
-                    dut.receiver.tail_q,
-                    dut.receiver.crc16_q
+                    dut.legacy_rx.receiver.body_q,
+                    dut.legacy_rx.receiver.tail_q,
+                    dut.legacy_rx.receiver.crc16_q
                 );
             if (dut.fc_dllp_valid && dut.fc_dllp_ready)
                 $display(

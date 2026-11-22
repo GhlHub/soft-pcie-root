@@ -43,7 +43,8 @@ module test_gen3_packet_peer;
         data_valid,
         decoded,
         pos,
-        stream
+        stream,
+        /* block_event_o */
     );
     gen3_data_rx #(
         .BUFFERED(1)

@@ -13,7 +13,8 @@ module gen3_training_rx #(
     output reg [5:0] fs_o, lf_o,
     output reg [31:0] symbols6_9_o,
     output reg error_o, eios_o,
-    output reg [127:0] last_ts_o
+    output reg [127:0] last_ts_o,
+    output reg [15:0] error_context_o
 );
 
     initial if (LANE_ID < 0 || LANE_ID > 1) $fatal(1, "LANE_ID must be 0 or 1");
@@ -28,19 +29,27 @@ module gen3_training_rx #(
     wire [  1:0] at = start_i ? 2'b0 : index;
     wire [  7:0] this_kind = start_i ? data_i[7:0] : kind;
     wire         skip = start_i ? (header_i == 1 && data_i[7:0] == 8'haa) : is_skip;
+    wire [12:0] error_word = {data_i[7:0], header_i, start_i, at};
     reg  [ 31:0] word_decoded;
     reg  [ 22:0] next_lfsr;
+    reg  [ 22:0] advanced_lfsr;
+    reg  [ 31:0] scramble_mask;
     reg  [127:0] assembled;
     integer j, b;
     always @* begin
-        word_decoded = data_i;
-        next_lfsr    = lfsr;
+        word_decoded  = data_i;
+        advanced_lfsr = lfsr;
+        for (b = 0; b < 32; b = b + 1) begin
+            scramble_mask[b] = advanced_lfsr[22];
+            advanced_lfsr = {advanced_lfsr[21:0], 1'b0} ^ (advanced_lfsr[22] ? 23'h210125 : 23'b0);
+        end
+        // SKP holds the state at the word boundary. Its classification does
+        // not feed each step of the fixed 32-bit LFSR transform.
+        next_lfsr = skip ? lfsr : advanced_lfsr;
         for (j = 0; j < 4; j = j + 1) begin
             for (b = 0; b < 8; b = b + 1) begin
                 if ((this_kind == 8'h1e || this_kind == 8'h2d) && !(at == 0 && j == 0))
-                    word_decoded[8*j+b] = data_i[8*j+b] ^ next_lfsr[22];
-                if (!skip)
-                    next_lfsr = {next_lfsr[21:0], 1'b0} ^ (next_lfsr[22] ? 23'h210125 : 23'b0);
+                    word_decoded[8*j+b] = data_i[8*j+b] ^ (skip ? lfsr[22] : scramble_mask[8*j+b]);
             end
         end
         assembled = decoded;
@@ -64,6 +73,7 @@ module gen3_training_rx #(
             ts1_valid_o <= 0;
             error_o     <= 0;
             eios_o      <= 0;
+            error_context_o <= 0;
         end else begin
             ts_event_o  <= 0;
             ts1_valid_o <= 0;
@@ -80,6 +90,7 @@ module gen3_training_rx #(
                         (data_i[7:0] == 8'haa && data_i != 32'haaaaaaaa)) begin
                         aligned_o <= 0;
                         error_o   <= 1;
+                        error_context_o <= {header_i != 1 ? 3'd1 : in_block ? 3'd2 : 3'd3, error_word};
                     end
                 end else if (in_block && !is_skip) index <= index + 1'b1;
                 else if (in_block && is_skip) begin
@@ -91,17 +102,22 @@ module gen3_training_rx #(
                             data_i != {lfsr[7:0], lfsr[15:8], !lfsr[22], lfsr[22:16], 8'he1}) begin
                             aligned_o <= 0;
                             error_o   <= 1;
+                            error_context_o <= {3'd3, error_word};
                         end
                     end else if (data_i != 32'haaaaaaaa || skip_words >= 5) begin
                         in_block  <= 0;
                         is_skip   <= 0;
                         aligned_o <= 0;
                         error_o   <= 1;
+                        error_context_o <= {3'd3, error_word};
                     end
-                end else begin
+                end else if (aligned_o) begin
                     aligned_o <= 0;
                     error_o   <= 1;
+                    error_context_o <= {3'd4, error_word};
                 end
+                // At entry the PHY can already be inside a peer block. The
+                // next start and a complete EIEOS establish the boundary.
                 if (start_i || in_block) begin
                     lfsr    <= next_lfsr;
                     decoded <= assembled;
@@ -127,6 +143,7 @@ module gen3_training_rx #(
                         end else begin
                             aligned_o <= 0;
                             error_o   <= 1;
+                            error_context_o <= {3'd5, error_word};
                         end
                     end
                 end

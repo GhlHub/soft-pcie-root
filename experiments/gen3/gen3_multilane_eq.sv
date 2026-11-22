@@ -12,7 +12,8 @@ module gen3_multilane_eq #(
     parameter integer SETTLE_CYCLES   = 125,
     parameter integer REQUEST_CYCLES  = 375000,
     parameter integer EVALUATE_CYCLES = 25000,
-    parameter integer APPLY_CYCLES    = 125
+    parameter integer APPLY_CYCLES    = 125,
+    parameter bit     STANDALONE_TX   = 1
 ) (
     input wire clk, reset_i, enter_i, cancel_i,
     input wire [LINK_WIDTH-1:0] phy_ready_i, preset_applied_i,
@@ -32,7 +33,12 @@ module gen3_multilane_eq #(
     output wire active_o,
     output reg done_o, failed_o,
     output wire [1:0] phase_o,
-    output reg [LINK_WIDTH-1:0] phase1_complete_o, phase23_complete_o
+    output reg [LINK_WIDTH-1:0] phase1_complete_o, phase23_complete_o,
+    output wire [LINK_WIDTH*32-1:0] tx_fields_o,
+    output wire [LINK_WIDTH-1:0] restart_interval_o,
+    output wire [LINK_WIDTH*4-1:0] applied_preset_o,
+    output wire [LINK_WIDTH*18-1:0] applied_coeff_o,
+    output reg [127:0] failure_debug_o
 );
     localparam [1:0] IDLE = 0, PHASE1 = 1, PHASE23 = 2, TERMINAL = 3;
     reg [             1:0] state;
@@ -42,6 +48,8 @@ module gen3_multilane_eq #(
     reg [LINK_WIDTH*18-1:0] initial_coeff_q;
     wire [LINK_WIDTH-1:0] p1_done, p1_failed, p23_done, p23_failed;
     wire [LINK_WIDTH-1:0] aligned, event_ts, valid_ts, qualified_ts, rx_error;
+    wire [LINK_WIDTH*32-1:0] lane_debug;
+    wire [63:0] debug_words = 64'(lane_debug);
     wire start_attempt = enter_i && state == IDLE && !cancel_i;
     wire enter_adapt;
     wire link_fault = !(&phy_ready_i) || (|rx_error) || (state == PHASE1 && (|p1_failed)) ||
@@ -51,6 +59,12 @@ module gen3_multilane_eq #(
     wire cancel_engines = cancel_i || state == TERMINAL || (active_o && link_fault);
     assign active_o = state == PHASE1 || state == PHASE23;
     assign phase_o  = state;
+    // Preserve the first fatal sample after cancel stops the lane decoders.
+    always @(posedge clk) begin
+        if (reset_i || start_attempt) failure_debug_o <= 0;
+        else if (active_o && link_fault && !cancel_i)
+            failure_debug_o <= {32'h58455131, state, timer[29:0], debug_words};
+    end
     always @(posedge clk) begin
         if (reset_i) begin
             state              <= IDLE;
@@ -115,20 +129,17 @@ module gen3_multilane_eq #(
         wire [ 0:0] unused_12_phase3_success;
         wire [ 0:0] unused_13_complete;
         wire [ 0:0] unused_14_phases23_skipped;
-        wire [ 2:0] unused_15_failure_reason;
+        wire [ 2:0] phase1_failure_reason;
         wire [15:0] unused_16_ts_events;
         wire [ 0:0] unused_17_active_o;
-        wire [ 3:0] unused_18_reason_o;
+        wire [ 3:0] phase23_failure_reason;
         wire [ 3:0] unused_19_attempts_o;
-        wire [ 3:0] unused_20_applied_preset_o;
-        wire [17:0] unused_21_applied_coeff_o;
-        wire [ 0:0] unused_22_ts_done_o;
-        wire [ 0:0] unused_23_stopped_o;
-        wire [10:0] unused_24_balance_o;
         wire [ 1:0] ec;
         wire [5:0] fs, lf, peer_fs, peer_lf;
         wire [31:0] fields, adapt_fields;
         wire [127:0] last_ts;
+        wire [15:0] rx_error_context;
+        reg seen_ts_q;
         wire [1:0] adapt_txctrl, adapt_rxctrl;
         wire reset_interval;
         wire normal_rate = last_ts[35] && !last_ts[39];
@@ -146,7 +157,24 @@ module gen3_multilane_eq #(
             1'b0,
             2'b01
         };
-        wire [31:0] tx_fields = state == PHASE23 ? adapt_fields : {^p1_fields, p1_fields};
+        wire [31:0] tx_fields = (state == PHASE23 || (state == TERMINAL && !failed_o)) ?
+            adapt_fields : {^p1_fields, p1_fields};
+        assign tx_fields_o[32*lane+:32] = tx_fields;
+        assign restart_interval_o[lane] = reset_interval && state == PHASE23;
+        always @(posedge clk) begin
+            if (reset_i || start_attempt) seen_ts_q <= 0;
+            else if (event_ts[lane]) seen_ts_q <= 1;
+        end
+        wire seen_ts = seen_ts_q || event_ts[lane];
+        wire [15:0] failure_detail = rx_error[lane] ? rx_error_context : {
+            3'b0, phase1_failure_reason, phase23_failure_reason, seen_ts ? ec : 2'b0,
+            rx_valid_i[lane], rx_start_i[lane], rx_header_i[2*lane+:2]
+        };
+        assign lane_debug[32*lane+:32] = {
+            failure_detail, seen_ts ? last_ts[39:32] : 8'b0, aligned[lane], phase1_complete_o[lane],
+            phase23_complete_o[lane], phy_ready_i[lane], event_ts[lane], qualified_ts[lane],
+            p1_failed[lane], p23_failed[lane]
+        };
         gen3_training_rx #(
             .LANE_ID(lane)
         ) rx (
@@ -166,7 +194,8 @@ module gen3_multilane_eq #(
             .symbols6_9_o(fields),
             .error_o     (rx_error[lane]),
             .eios_o      (unused_0_eios_o),
-            .last_ts_o   (last_ts)
+            .last_ts_o   (last_ts),
+            .error_context_o(rx_error_context)
         );
         gen3_eq_phase1 #(
             .TIMEOUT_CYCLES(PHASE1_CYCLES),
@@ -208,7 +237,7 @@ module gen3_multilane_eq #(
             .complete        (unused_13_complete),
             .phases23_skipped(unused_14_phases23_skipped),
             .failed          (p1_failed[lane]),
-            .failure_reason  (unused_15_failure_reason),
+            .failure_reason  (phase1_failure_reason),
             .ts_events       (unused_16_ts_events)
         );
         gen3_eq_adapt #(
@@ -251,36 +280,45 @@ module gen3_multilane_eq #(
             .active_o         (unused_17_active_o),
             .done_o           (p23_done[lane]),
             .failed_o         (p23_failed[lane]),
-            .reason_o         (unused_18_reason_o),
+            .reason_o         (phase23_failure_reason),
             .attempts_o       (unused_19_attempts_o),
-            .applied_preset_o (unused_20_applied_preset_o),
-            .applied_coeff_o  (unused_21_applied_coeff_o)
+            .applied_preset_o (applied_preset_o[4*lane+:4]),
+            .applied_coeff_o  (applied_coeff_o[18*lane+:18])
         );
         assign txeq_ctrl_o[2*lane+:2] = active_o && !cancel_engines ? adapt_txctrl : 2'b0;
         assign rxeq_ctrl_o[2*lane+:2] = active_o && !cancel_engines ? adapt_rxctrl : 2'b0;
-        gen3_training_tx #(
-            .EXTERNAL_EQ(1),
-            .LANE_ID    (lane)
-        ) tx (
-            .clk             (clk),
-            .reset_i         (reset_i || start_attempt),
-            .enable_i        (active_o && !cancel_engines),
-            .stop_i          (cancel_engines),
-            .ec_i            (2'b01),
-            .preset_i        (preset_q[4*lane+:4]),
-            .first_i         (local_fs_q[6*lane+:6]),
-            .second_i        (local_lf_q[6*lane+:6]),
-            .post_i          (initial_coeff_q[18*lane+:6]),
-            .data_o          (tx_data_o[32*lane+:32]),
-            .valid_o         (tx_valid_o[lane]),
-            .start_o         (tx_start_o[lane]),
-            .ts_done_o       (unused_22_ts_done_o),
-            .stopped_o       (unused_23_stopped_o),
-            .header_o        (tx_header_o[2*lane+:2]),
-            .balance_o       (unused_24_balance_o),
-            .eq_fields_i     (tx_fields),
-            .reset_interval_i(reset_interval && state == PHASE23)
-        );
+        if (STANDALONE_TX) begin : local_transmitter
+            wire unused_ts_done, unused_tx_stopped;
+            wire [10:0] unused_tx_balance;
+            gen3_training_tx #(
+                .EXTERNAL_EQ(1),
+                .LANE_ID    (lane)
+            ) tx (
+                .clk             (clk),
+                .reset_i         (reset_i || start_attempt),
+                .enable_i        (active_o && !cancel_engines),
+                .stop_i          (cancel_engines),
+                .ec_i            (2'b01),
+                .preset_i        (preset_q[4*lane+:4]),
+                .first_i         (local_fs_q[6*lane+:6]),
+                .second_i        (local_lf_q[6*lane+:6]),
+                .post_i          (initial_coeff_q[18*lane+:6]),
+                .data_o          (tx_data_o[32*lane+:32]),
+                .valid_o         (tx_valid_o[lane]),
+                .start_o         (tx_start_o[lane]),
+                .ts_done_o       (unused_ts_done),
+                .stopped_o       (unused_tx_stopped),
+                .header_o        (tx_header_o[2*lane+:2]),
+                .balance_o       (unused_tx_balance),
+                .eq_fields_i     (tx_fields),
+                .reset_interval_i(restart_interval_o[lane])
+            );
+        end else begin : external_transmitter
+            assign tx_data_o[32*lane+:32] = 0;
+            assign tx_valid_o[lane]       = 0;
+            assign tx_start_o[lane]       = 0;
+            assign tx_header_o[2*lane+:2] = 0;
+        end
         wire unused_ts = ^{last_ts[127:40], last_ts[38:36], last_ts[34:0]};
     end
     initial begin

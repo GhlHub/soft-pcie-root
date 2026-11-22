@@ -1,8 +1,9 @@
 # Fastest GTH-derived 250 MHz clock (Gen1 runs slower). No blanket asynchronous clock groups.
 set gt [get_cells -hier -quiet -filter {REF_NAME == GTHE4_CHANNEL}]
-set_property LOC GTHE4_CHANNEL_X0Y15 $gt
+set zu15eg [string match xczu15eg-ffvb1156-2-* [get_property PART [current_project]]]
+set_property LOC [expr {$zu15eg ? "GTHE4_CHANNEL_X1Y4" : "GTHE4_CHANNEL_X0Y15"}] $gt
 set rb [get_cells -hier -quiet -filter {REF_NAME == IBUFDS_GTE4}]
-set_property LOC GTHE4_COMMON_X0Y3 $rb
+set_property LOC [expr {$zu15eg ? "GTHE4_COMMON_X1Y1" : "GTHE4_COMMON_X0Y3"}] $rb
 set_property BEL IBUFDS0_GTHE4 $rb
 create_generated_clock -name pcie_core -source [get_ports refclk_p_i] -multiply_by 5 -divide_by 2 [get_pins -of_objects $gt -filter {REF_PIN_NAME == TXOUTCLK}]
 set first [get_cells -hier -regexp {.*(ready_meta_reg\[[0-4]\]|idle_sync_reg\[0\]|request_sync_q_reg\[0\]|reply_sync_q_reg\[0\]|status_meta_q_reg\[[0-8]\]|phy_meta_q_reg\[[0-9]+\]|debug_meta_q_reg\[[0-9]+\]|heartbeat_sync_q_reg\[0\]|rate_meta_q_reg\[[0-2]\]|policy_sync_q_reg\[0\]|target_sync_q_reg\[0\]|idle_sync_q_reg\[0\])}]

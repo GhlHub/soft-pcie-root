@@ -1,0 +1,945 @@
+{
+  "date": "2026-11-22",
+  "board": "ZU15EG",
+  "ssd": "Samsung SSD 990 EVO 1TB",
+  "linux": "6.6.70 RAM Linux",
+  "profile": "gen3-x2, dp01-passive",
+  "bitstream_sha256": "e64b414f1876ab411fe98b84e91fd6ad4d998f78b255ca8a6ab95d1eb20656fe",
+  "link": {
+    "speed_GT_s": 8.0,
+    "lanes": 2
+  },
+  "historical_30_second_single_job_qd8_bytes_per_second": {
+    "gen3_x1": 707042613,
+    "gen3_x2": 678907699
+  },
+  "host": {
+    "boot_parameter": "maxcpus=1",
+    "default_online_cpu_ids": [
+      0
+    ],
+    "possible_cpu_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "linux_queue_max_sectors_kib": 252,
+    "matched_nvme_queue_cpu_mapping": {
+      "0": [
+        0
+      ],
+      "1": [
+        1
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        3
+      ]
+    },
+    "pcie_parent_irq_effective_cpu_ids": [
+      0
+    ]
+  },
+  "method": {
+    "same_volatile_image_and_ram_linux_session": true,
+    "cpu_online_state_changed_via_sysfs": true,
+    "storage_read_only": true,
+    "fio_version": "3.38",
+    "hardware_counters": "DBR1 PRF3 at 125 MHz",
+    "counter_overflow_and_faults": 0,
+    "sample_interval": "fio invocation including setup and teardown"
+  },
+  "trials": {
+    "single_cpu_workload_sweep": [
+      {
+        "name": "QD8_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 6750732288,
+        "bytes_per_second": 674938241,
+        "linux_read_requests": 32190,
+        "fio_read_requests": 6438,
+        "fio_cpu_percent_of_one_core": 83.43,
+        "cpu0_idle_or_iowait_percent": 4.63,
+        "host_clock_cycles": 1286680262,
+        "percent_of_host_cycles": {
+          "rx_empty": 55.029,
+          "rx_copy": 36.964,
+          "check_fence": 3.672,
+          "queued_blocked": 2.771,
+          "rx_backpressure": 0.274,
+          "writer_busy": 36.924,
+          "write_outstanding": 67.023
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "QD1",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 1,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 6530531328,
+        "bytes_per_second": 652922548,
+        "linux_read_requests": 31140,
+        "fio_read_requests": 6228,
+        "fio_cpu_percent_of_one_core": 55.81,
+        "cpu0_idle_or_iowait_percent": 26.75,
+        "host_clock_cycles": 1299670867,
+        "percent_of_host_cycles": {
+          "rx_empty": 56.867,
+          "rx_copy": 35.401,
+          "check_fence": 3.579,
+          "queued_blocked": 2.729,
+          "rx_backpressure": 0.286,
+          "writer_busy": 35.363,
+          "write_outstanding": 64.177
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "QD32",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 32,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 7097810944,
+        "bytes_per_second": 709639166,
+        "linux_read_requests": 33845,
+        "fio_read_requests": 6769,
+        "fio_cpu_percent_of_one_core": 83.25,
+        "cpu0_idle_or_iowait_percent": 5.48,
+        "host_clock_cycles": 1303360220,
+        "percent_of_host_cycles": {
+          "rx_empty": 53.269,
+          "rx_copy": 38.365,
+          "check_fence": 3.866,
+          "queued_blocked": 2.939,
+          "rx_backpressure": 0.3,
+          "writer_busy": 38.324,
+          "write_outstanding": 69.555
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "QD8_252K",
+        "ioengine": "libaio",
+        "block_bytes": 258048,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10001
+        ],
+        "read_bytes": 6708473856,
+        "bytes_per_second": 670780307,
+        "linux_read_requests": 25997,
+        "fio_read_requests": 25997,
+        "fio_cpu_percent_of_one_core": 93.33,
+        "cpu0_idle_or_iowait_percent": 5.41,
+        "host_clock_cycles": 1300843993,
+        "percent_of_host_cycles": {
+          "rx_empty": 55.983,
+          "rx_copy": 36.33,
+          "check_fence": 3.429,
+          "queued_blocked": 2.543,
+          "rx_backpressure": 0.154,
+          "writer_busy": 36.292,
+          "write_outstanding": 65.944
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "TWO_QD4",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10004,
+          10002
+        ],
+        "read_bytes": 6771703808,
+        "bytes_per_second": 676966835,
+        "linux_read_requests": 32290,
+        "fio_read_requests": 6458,
+        "fio_cpu_percent_of_one_core": 86.34,
+        "cpu0_idle_or_iowait_percent": 9.84,
+        "host_clock_cycles": 1287950735,
+        "percent_of_host_cycles": {
+          "rx_empty": 55.015,
+          "rx_copy": 37.036,
+          "check_fence": 3.601,
+          "queued_blocked": 2.735,
+          "rx_backpressure": 0.44,
+          "writer_busy": 36.996,
+          "write_outstanding": 67.174
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "QD8_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 6614417408,
+        "bytes_per_second": 661309478,
+        "linux_read_requests": 31540,
+        "fio_read_requests": 6308,
+        "fio_cpu_percent_of_one_core": 82.61,
+        "cpu0_idle_or_iowait_percent": 5.58,
+        "host_clock_cycles": 1304059350,
+        "percent_of_host_cycles": {
+          "rx_empty": 56.553,
+          "rx_copy": 35.735,
+          "check_fence": 3.521,
+          "queued_blocked": 2.646,
+          "rx_backpressure": 0.252,
+          "writer_busy": 35.697,
+          "write_outstanding": 64.813
+        },
+        "written_bytes": 0
+      }
+    ],
+    "single_worker_irq_affinity_comparison": [
+      {
+        "name": "CPU0_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": "0",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 6609174528,
+        "bytes_per_second": 660785295,
+        "linux_read_requests": 31515,
+        "fio_read_requests": 6303,
+        "fio_cpu_percent_of_one_core": 82.86,
+        "cpu0_idle_or_iowait_percent": 5.68,
+        "host_clock_cycles": 1302474405,
+        "percent_of_host_cycles": {
+          "rx_empty": 56.525,
+          "rx_copy": 35.75,
+          "check_fence": 3.532,
+          "queued_blocked": 2.657,
+          "rx_backpressure": 0.254,
+          "writer_busy": 35.712,
+          "write_outstanding": 64.838
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "IRQ_SPLIT_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": "1",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 6931087360,
+        "bytes_per_second": 692970141,
+        "linux_read_requests": 33050,
+        "fio_read_requests": 6610,
+        "fio_cpu_percent_of_one_core": 95.97,
+        "cpu0_idle_or_iowait_percent": 98.86,
+        "host_clock_cycles": 1299611305,
+        "percent_of_host_cycles": {
+          "rx_empty": 54.296,
+          "rx_copy": 37.573,
+          "check_fence": 3.725,
+          "queued_blocked": 2.809,
+          "rx_backpressure": 0.28,
+          "writer_busy": 37.532,
+          "write_outstanding": 68.142
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "SAME_CPU",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": "0",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 6316621824,
+        "bytes_per_second": 631535875,
+        "linux_read_requests": 30120,
+        "fio_read_requests": 6024,
+        "fio_cpu_percent_of_one_core": 99.28,
+        "cpu0_idle_or_iowait_percent": 7.71,
+        "host_clock_cycles": 1300254505,
+        "percent_of_host_cycles": {
+          "rx_empty": 58.376,
+          "rx_copy": 34.227,
+          "check_fence": 3.382,
+          "queued_blocked": 2.545,
+          "rx_backpressure": 0.247,
+          "writer_busy": 34.191,
+          "write_outstanding": 62.08
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "IRQ_SPLIT_32",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 32,
+        "cpu_affinity": "1",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10001
+        ],
+        "read_bytes": 6942621696,
+        "bytes_per_second": 694192750,
+        "linux_read_requests": 33105,
+        "fio_read_requests": 6621,
+        "fio_cpu_percent_of_one_core": 96.02,
+        "cpu0_idle_or_iowait_percent": 98.68,
+        "host_clock_cycles": 1299644590,
+        "percent_of_host_cycles": {
+          "rx_empty": 54.201,
+          "rx_copy": 37.634,
+          "check_fence": 3.75,
+          "queued_blocked": 2.846,
+          "rx_backpressure": 0.285,
+          "writer_busy": 37.594,
+          "write_outstanding": 68.244
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "IRQ_SPLIT_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": "1",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10001
+        ],
+        "read_bytes": 6865027072,
+        "bytes_per_second": 686434063,
+        "linux_read_requests": 32735,
+        "fio_read_requests": 6547,
+        "fio_cpu_percent_of_one_core": 96.11,
+        "cpu0_idle_or_iowait_percent": 96.79,
+        "host_clock_cycles": 1299558663,
+        "percent_of_host_cycles": {
+          "rx_empty": 54.727,
+          "rx_copy": 37.216,
+          "check_fence": 3.692,
+          "queued_blocked": 2.784,
+          "rx_backpressure": 0.259,
+          "writer_busy": 37.176,
+          "write_outstanding": 67.502
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "CPU0_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": "0",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002
+        ],
+        "read_bytes": 5896142848,
+        "bytes_per_second": 589496385,
+        "linux_read_requests": 28115,
+        "fio_read_requests": 5623,
+        "fio_cpu_percent_of_one_core": 83.16,
+        "cpu0_idle_or_iowait_percent": 5.66,
+        "host_clock_cycles": 1305467477,
+        "percent_of_host_cycles": {
+          "rx_empty": 61.326,
+          "rx_copy": 31.823,
+          "check_fence": 3.119,
+          "queued_blocked": 2.342,
+          "rx_backpressure": 0.234,
+          "writer_busy": 31.789,
+          "write_outstanding": 57.717
+        },
+        "written_bytes": 0
+      }
+    ],
+    "two_worker_core_affinity_comparison": [
+      {
+        "name": "DUO_CPU0_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10002,
+          10003
+        ],
+        "read_bytes": 5958008832,
+        "bytes_per_second": 595650441,
+        "linux_read_requests": 28410,
+        "fio_read_requests": 5682,
+        "fio_cpu_percent_of_one_core": 85.57,
+        "cpu0_idle_or_iowait_percent": 10.19,
+        "host_clock_cycles": 1289333425,
+        "percent_of_host_cycles": {
+          "rx_empty": 60.684,
+          "rx_copy": 32.571,
+          "check_fence": 2.921,
+          "queued_blocked": 2.136,
+          "rx_backpressure": 0.398,
+          "writer_busy": 32.535,
+          "write_outstanding": 59.137
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "DUO_SPLIT_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0,1",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10007,
+          10008
+        ],
+        "read_bytes": 9187622912,
+        "bytes_per_second": 918073695,
+        "linux_read_requests": 43810,
+        "fio_read_requests": 8762,
+        "fio_cpu_percent_of_one_core": 125.27,
+        "cpu0_idle_or_iowait_percent": 25.47,
+        "host_clock_cycles": 1302235753,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.953,
+          "rx_copy": 49.723,
+          "check_fence": 5.491,
+          "queued_blocked": 4.301,
+          "rx_backpressure": 0.289,
+          "writer_busy": 49.669,
+          "write_outstanding": 90.183
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "DUO_FIXED0",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10005,
+          10001
+        ],
+        "read_bytes": 5740953600,
+        "bytes_per_second": 573924064,
+        "linux_read_requests": 27375,
+        "fio_read_requests": 5475,
+        "fio_cpu_percent_of_one_core": 99.34,
+        "cpu0_idle_or_iowait_percent": 12.8,
+        "host_clock_cycles": 1299994185,
+        "percent_of_host_cycles": {
+          "rx_empty": 62.493,
+          "rx_copy": 31.127,
+          "check_fence": 2.726,
+          "queued_blocked": 1.967,
+          "rx_backpressure": 0.358,
+          "writer_busy": 31.093,
+          "write_outstanding": 56.541
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "DUO_SPLIT_8",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": "0,1",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10017,
+          10017
+        ],
+        "read_bytes": 9224323072,
+        "bytes_per_second": 920866833,
+        "linux_read_requests": 43985,
+        "fio_read_requests": 8797,
+        "fio_cpu_percent_of_one_core": 142.41,
+        "cpu0_idle_or_iowait_percent": 22.47,
+        "host_clock_cycles": 1304583145,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.839,
+          "rx_copy": 49.832,
+          "check_fence": 5.482,
+          "queued_blocked": 4.272,
+          "rx_backpressure": 0.262,
+          "writer_busy": 49.778,
+          "write_outstanding": 90.397
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "DUO_SPLIT_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0,1",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10008,
+          10007
+        ],
+        "read_bytes": 9214885888,
+        "bytes_per_second": 920798630,
+        "linux_read_requests": 43940,
+        "fio_read_requests": 8788,
+        "fio_cpu_percent_of_one_core": 139.93,
+        "cpu0_idle_or_iowait_percent": 20.34,
+        "host_clock_cycles": 1305433850,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.92,
+          "rx_copy": 49.748,
+          "check_fence": 5.495,
+          "queued_blocked": 4.286,
+          "rx_backpressure": 0.267,
+          "writer_busy": 49.695,
+          "write_outstanding": 90.246
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "DUO_CPU0_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0",
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10004,
+          10003
+        ],
+        "read_bytes": 5360320512,
+        "bytes_per_second": 535844715,
+        "linux_read_requests": 25560,
+        "fio_read_requests": 5112,
+        "fio_cpu_percent_of_one_core": 83.97,
+        "cpu0_idle_or_iowait_percent": 11.64,
+        "host_clock_cycles": 1312699982,
+        "percent_of_host_cycles": {
+          "rx_empty": 65.363,
+          "rx_copy": 28.781,
+          "check_fence": 2.477,
+          "queued_blocked": 1.764,
+          "rx_backpressure": 0.315,
+          "writer_busy": 28.75,
+          "write_outstanding": 52.281
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "QD8_LIBAIO_BATCH",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10001
+        ],
+        "read_bytes": 5476712448,
+        "bytes_per_second": 547616483,
+        "linux_read_requests": 26115,
+        "fio_read_requests": 5223,
+        "fio_cpu_percent_of_one_core": 72.01,
+        "cpu0_idle_or_iowait_percent": 4.61,
+        "host_clock_cycles": 1290752912,
+        "percent_of_host_cycles": {
+          "rx_empty": 63.737,
+          "rx_copy": 29.898,
+          "check_fence": 2.858,
+          "queued_blocked": 2.115,
+          "rx_backpressure": 0.167,
+          "writer_busy": 29.866,
+          "write_outstanding": 54.265
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "QD8_URING",
+        "ioengine": "io_uring",
+        "block_bytes": 1048576,
+        "jobs": 1,
+        "queue_depth_per_job": 8,
+        "cpu_affinity": null,
+        "cpu_affinity_policy": null,
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 0,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10008
+        ],
+        "read_bytes": 5577375744,
+        "bytes_per_second": 557291741,
+        "linux_read_requests": 26595,
+        "fio_read_requests": 5319,
+        "fio_cpu_percent_of_one_core": 23.21,
+        "cpu0_idle_or_iowait_percent": 4.17,
+        "host_clock_cycles": 1285185885,
+        "percent_of_host_cycles": {
+          "rx_empty": 62.818,
+          "rx_copy": 30.579,
+          "check_fence": 3.016,
+          "queued_blocked": 2.272,
+          "rx_backpressure": 0.209,
+          "writer_busy": 30.546,
+          "write_outstanding": 55.463
+        },
+        "written_bytes": 0,
+        "fixed_buffers": true,
+        "registered_files": true
+      }
+    ],
+    "four_worker_core_affinity_comparison": [
+      {
+        "name": "FOUR_2CORE_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 4,
+        "queue_depth_per_job": 2,
+        "cpu_affinity": "0,1",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10009,
+          10006,
+          10007,
+          10007
+        ],
+        "read_bytes": 9187622912,
+        "bytes_per_second": 918099805,
+        "linux_read_requests": 43810,
+        "fio_read_requests": 8762,
+        "fio_cpu_percent_of_one_core": 153.04,
+        "cpu0_idle_or_iowait_percent": 25.73,
+        "host_clock_cycles": 1300449822,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.877,
+          "rx_copy": 49.796,
+          "check_fence": 5.483,
+          "queued_blocked": 4.27,
+          "rx_backpressure": 0.256,
+          "writer_busy": 49.742,
+          "write_outstanding": 90.354
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "FOUR_4CORE_A",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 4,
+        "queue_depth_per_job": 2,
+        "cpu_affinity": "0,1,2,3",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10005,
+          10008,
+          10003,
+          10009
+        ],
+        "read_bytes": 9186574336,
+        "bytes_per_second": 918083465,
+        "linux_read_requests": 43805,
+        "fio_read_requests": 8761,
+        "fio_cpu_percent_of_one_core": 121.71,
+        "cpu0_idle_or_iowait_percent": 69.82,
+        "host_clock_cycles": 1301278185,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.825,
+          "rx_copy": 49.759,
+          "check_fence": 5.579,
+          "queued_blocked": 4.358,
+          "rx_backpressure": 0.284,
+          "writer_busy": 49.706,
+          "write_outstanding": 90.275
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "FOUR_4CORE_QD4",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 4,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0,1,2,3",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10018,
+          10012,
+          10015,
+          10017
+        ],
+        "read_bytes": 9194962944,
+        "bytes_per_second": 918073050,
+        "linux_read_requests": 43845,
+        "fio_read_requests": 8769,
+        "fio_cpu_percent_of_one_core": 123.11,
+        "cpu0_idle_or_iowait_percent": 71.5,
+        "host_clock_cycles": 1301151015,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.755,
+          "rx_copy": 49.809,
+          "check_fence": 5.591,
+          "queued_blocked": 4.37,
+          "rx_backpressure": 0.291,
+          "writer_busy": 49.756,
+          "write_outstanding": 90.346
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "FOUR_4CORE_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 4,
+        "queue_depth_per_job": 2,
+        "cpu_affinity": "0,1,2,3",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10004,
+          10003,
+          10008,
+          10006
+        ],
+        "read_bytes": 9185525760,
+        "bytes_per_second": 918070642,
+        "linux_read_requests": 43800,
+        "fio_read_requests": 8760,
+        "fio_cpu_percent_of_one_core": 128.63,
+        "cpu0_idle_or_iowait_percent": 70.96,
+        "host_clock_cycles": 1301983975,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.845,
+          "rx_copy": 49.727,
+          "check_fence": 5.593,
+          "queued_blocked": 4.364,
+          "rx_backpressure": 0.278,
+          "writer_busy": 49.673,
+          "write_outstanding": 90.23
+        },
+        "written_bytes": 0
+      },
+      {
+        "name": "FOUR_2CORE_B",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 4,
+        "queue_depth_per_job": 2,
+        "cpu_affinity": "0,1",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 10,
+        "job_runtime_ms": [
+          10006,
+          10008,
+          10004,
+          10007
+        ],
+        "read_bytes": 9188671488,
+        "bytes_per_second": 918293576,
+        "linux_read_requests": 43815,
+        "fio_read_requests": 8763,
+        "fio_cpu_percent_of_one_core": 151.11,
+        "cpu0_idle_or_iowait_percent": 31.53,
+        "host_clock_cycles": 1300720198,
+        "percent_of_host_cycles": {
+          "rx_empty": 38.886,
+          "rx_copy": 49.792,
+          "check_fence": 5.48,
+          "queued_blocked": 4.262,
+          "rx_backpressure": 0.253,
+          "writer_busy": 49.738,
+          "write_outstanding": 90.346
+        },
+        "written_bytes": 0
+      }
+    ],
+    "thirty_second_two_worker_confirmation": [
+      {
+        "name": "DUO_SPLIT_30S",
+        "ioengine": "libaio",
+        "block_bytes": 1048576,
+        "jobs": 2,
+        "queue_depth_per_job": 4,
+        "cpu_affinity": "0,1",
+        "cpu_affinity_policy": "split",
+        "region_per_job_bytes": 4294967296,
+        "offset_increment_bytes": 4294967296,
+        "target_seconds": 30,
+        "job_runtime_ms": [
+          30008,
+          30008
+        ],
+        "read_bytes": 27643609088,
+        "bytes_per_second": 921207980,
+        "linux_read_requests": 131815,
+        "fio_read_requests": 26363,
+        "fio_cpu_percent_of_one_core": 153.82,
+        "cpu0_idle_or_iowait_percent": 11.17,
+        "host_clock_cycles": 3796135685,
+        "percent_of_host_cycles": {
+          "rx_empty": 36.918,
+          "rx_copy": 51.283,
+          "check_fence": 5.783,
+          "queued_blocked": 4.549,
+          "rx_backpressure": 0.304,
+          "writer_busy": 51.228,
+          "write_outstanding": 93.006
+        },
+        "written_bytes": 0
+      }
+    ]
+  },
+  "scope": {
+    "gen3_x1_remeasured": false,
+    "cpu_affinity_also_changes_nvme_submission_queue": true,
+    "link_rx_credit_wait_and_axi_write_response_duration_not_measured": true
+  },
+  "final_state": {
+    "online_cpu_ids": [
+      0
+    ],
+    "link_speed_GT_s": 8.0,
+    "link_width": 2,
+    "namespace_unmounted": true,
+    "namespace_inflight": [
+      0,
+      0
+    ],
+    "namespace_write_counters": "0:0",
+    "profiling_enabled": false,
+    "healthy_idle": true,
+    "two_direct_256_MiB_reads_sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02"
+  }
+}

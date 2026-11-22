@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "vivado": "2026.1",
+  "profile": "gen3-x2, dp01-passive",
+  "scope": "generated image and reopened implementation audit",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.329,
+      "whs_ns": 0.01,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.056,
+      "whs_ns": 0.01,
+      "wpws_ns": 0.543
+    },
+    "gen3": {
+      "period_ns": 4.0,
+      "wns_ns": 0.056,
+      "whs_ns": 0.01,
+      "wpws_ns": 0.543
+    }
+  },
+  "routing_errors": 0,
+  "unwaived_critical_cdc": 0,
+  "board_pin_audit": "passed",
+  "unused_pins": "PULLNONE",
+  "sha256": {
+    "system.bit": "deff3abaf72cdef8d703563eacc9aac478d327eb16cb5c8502f44046b07bbd28",
+    "routed.dcp": "e1bb9f124e2a18f3a4664f32111317e6046b7728be8ff5c129cb0caf9d6a35f0",
+    "system.xsa": "e73fda0cb7f4b49cab8f8a3a21b8b68855362c41414ef297e439892c9c0e9b37",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa",
+    "sources.json": "cb187873d5162bf65a48371095cd8387e219fda56a73b76b122889d3cc0ab77f"
+  },
+  "regression_tests_passed": 2486,
+  "regression_seconds": 398.7,
+  "first_volatile_startup": {
+    "capture_us": 600000,
+    "samples": 499358,
+    "configuration_complete_at_us": 101211,
+    "failed_at_us": 103210,
+    "rate_change_observed": false,
+    "final_root_status": "0x74",
+    "final_rate_status": "0xa",
+    "final_ddr_status": "0x4",
+    "host_driver_loaded": false
+  },
+  "physical_gen3_x2_validation": "pending"
+}

@@ -5,8 +5,9 @@
 // Buffered token decoder, registered packet events and single-port 64-bit RAM.
 // Abort discards only a candidate; committed packets and sequence survive.
 module gen3_data_rx_x2 #(
-    parameter integer WORDS = 64,
-                      SLOTS = 16
+    parameter integer WORDS      = 64,
+                      SLOTS      = 16,
+    parameter bit     STRICT_EDS = 0
 ) (
     input wire clk, reset_i, start_stream_i, abort_i, valid_i,
     input wire [63:0] data_i,
@@ -22,7 +23,7 @@ module gen3_data_rx_x2 #(
     output reg [11:0] response_sequence_o,
     output reg dllp_o,
     output reg [31:0] dllp_body_o,
-    output reg error_o
+    output reg error_o, framing_error_o
 );
     function automatic [31:0] crc_byte(input [31:0] old, input [7:0] v);
         reg [31:0] c;
@@ -56,13 +57,32 @@ module gen3_data_rx_x2 #(
     wire [1:0] row0 = ingress_rd[4:3], row1 = row0 + 2'd1, row2 = row0 + 2'd2, row3 = row0 + 2'd3;
     wire [255:0] window = {ingress[row3], ingress[row2], ingress[row1], ingress[row0]} >>
         (8 * ingress_rd[2:0]);
-    reg [3:0] prefix;
     reg bad_idle;
     reg [95:0] aligned;
     wire [31:0] meta_window = {metadata[row3], metadata[row2], metadata[row1], metadata[row0]} >>
         (2 * ingress_rd[2:1]);
     wire null_prefix = mode_q == AFTER && meta_window[1];
-    wire [7:0] scan = null_prefix ? meta_window[11:4] : meta_window[7:0];
+    function automatic [3:0] idle_prefix(input [3:0] zeroes, input bit past_null);
+        begin
+            idle_prefix = past_null ? 4'd4 : 4'd0;
+            if (zeroes[3]) begin
+                idle_prefix = past_null ? 4'd6 : 4'd2;
+                if (zeroes[2]) begin
+                    idle_prefix = past_null ? 4'd8 : 4'd4;
+                    if (zeroes[1]) begin
+                        idle_prefix = past_null ? 4'd10 : 4'd6;
+                        if (zeroes[0]) idle_prefix = past_null ? 4'd12 : 4'd8;
+                    end
+                end
+            end
+        end
+    endfunction
+    // Compute both possible idle scans before the prefix selection.
+    wire [3:0] prefix = null_prefix ? idle_prefix(
+        {meta_window[4], meta_window[6], meta_window[8], meta_window[10]}, 1'b1
+    ) : idle_prefix(
+        {meta_window[0], meta_window[2], meta_window[4], meta_window[6]}, 1'b0
+    );
     wire [4:0] token_pointer = ingress_rd + 5'(prefix);
     wire [1:0] token_row0 = token_pointer[4:3], token_row1 = token_row0 + 2'd1,
         token_row2 = token_row0 + 2'd2;
@@ -111,8 +131,10 @@ module gen3_data_rx_x2 #(
     reg  [12:0] body_length;
     reg  [ 5:0] consumed;
     reg framing, eds, start, body_valid, body_last, finish, nullified, dllp;
-    reg [63:0] body_data;
-    reg        body_two;
+    // An event's validity qualifies the captured bytes. Keeping validation
+    // off the payload input avoids a wide reset from the token scan.
+    wire [63:0] body_data = mode_q == BODY ? window[63:0] : aligned[95:32];
+    reg         body_two;
     // Registered event boundary: no token decode in the CRC or RAM write path.
     reg ev_start, ev_body, ev_last, ev_two, ev_finish, ev_null, ev_dllp;
     reg [63:0] ev_data;
@@ -121,14 +143,6 @@ module gen3_data_rx_x2 #(
     reg [12:0] ev_length;
     reg [31:0] ev_seed;
 
-    always @* begin
-        prefix = 0;
-        if (scan[0]) prefix = 2;
-        if (scan[0] && scan[2]) prefix = 4;
-        if (scan[0] && scan[2] && scan[4]) prefix = 6;
-        if (scan[0] && scan[2] && scan[4] && scan[6]) prefix = 8;
-        prefix = prefix + (null_prefix ? 4'd4 : 4'd0);
-    end
     always @* begin
         aligned     = token_window[95:0];
         bad_idle    = decoded[62];
@@ -144,12 +158,10 @@ module gen3_data_rx_x2 #(
         finish      = 0;
         nullified   = 0;
         dllp        = 0;
-        body_data   = 0;
         body_two    = 0;
         if (active_o && count_q >= 4) begin
             if (mode_q == BODY && (remaining_q <= 4 || count_q >= 8)) begin
                 body_valid  = 1;
-                body_data   = window[63:0];
                 body_two    = remaining_q >= 8;
                 body_last   = remaining_q <= 8;
                 consumed    = body_two ? 6'd8 : 6'd4;
@@ -183,7 +195,8 @@ module gen3_data_rx_x2 #(
                     if (count_q >= 6'(prefix) + 4) begin
                         if (decoded[58]) begin
                             consumed = 6'(prefix) + 4;
-                            if (token_pointer[2:0] != 4 || positions[token_pointer[4:3]] != 3)
+                            if (token_pointer[2:0] != 4 || positions[token_pointer[4:3]] != 3 || (
+                                STRICT_EDS && (valid_i || token_pointer[4:3] != ingress_wr - 2'd1)))
                                 framing = 1;
                             else eds = 1;
                         end else if (!decoded[57]) framing = 1;
@@ -192,7 +205,6 @@ module gen3_data_rx_x2 #(
                             body_valid  = 1;
                             body_two    = decoded[63];
                             body_last   = decoded[64];
-                            body_data   = aligned[95:32];
                             consumed    = 6'(prefix) + (body_two ? 6'd12 : 6'd8);
                             remaining_n = body_length - (body_two ? 13'd8 : 13'd4);
                             mode_n      = body_last ? AFTER : BODY;
@@ -266,8 +278,8 @@ module gen3_data_rx_x2 #(
     end
 
     reg [31:0] crc_q, tail_q;
-    wire unused_metadata = ^{aligned[15:0], window[255:64], scan[7], scan[5], scan[3], scan[1],
-                             meta_window[31:12], token_window[191:96]};
+    wire unused_metadata = ^{aligned[15:0], window[255:64], meta_window[31:11], meta_window[9],
+                             meta_window[7], meta_window[5], meta_window[3], token_window[191:96]};
     reg [31:0] header_q;
     wire unused_header = ^{header_q[22:18], header_q[15:7]};
     reg [12:0] packet_length_q;
@@ -344,10 +356,11 @@ module gen3_data_rx_x2 #(
                 2'd2 : ((header_q[4:0] == 0 && header_q[6]) ? 2'd0 : 2'd1);
             costs[wr_q] <= header_q[6] ? 9'((payload + 11'd3) >> 2) : 9'd0;
         end
-        response_o <= 0;
-        nak_o      <= 0;
-        dllp_o     <= 0;
-        error_o    <= 0;
+        response_o      <= 0;
+        nak_o           <= 0;
+        dllp_o          <= 0;
+        error_o         <= 0;
+        framing_error_o <= live && framing;
         if (reset_i) begin
             occupied_q <= 0;
             wr_q       <= 0;

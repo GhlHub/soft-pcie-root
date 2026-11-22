@@ -107,7 +107,8 @@ module test_native_link;
             decodedvalid,
             decoded,
             position,
-            stream
+            stream,
+            /* block_event_o */
         );
         gen3_data_rx #(
             .BUFFERED(1)

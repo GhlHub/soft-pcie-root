@@ -144,6 +144,7 @@ module gen3_gen2_fallback #(
     // Hold only the never-used backend in reset before its FIRST rate switch.
     // Later speed changes pause its own LTSSM and preserve every owner.
     wire link_reset_n = !reset_i && !first_switch;
+    wire unused_target_gen3, unused_gen3_handoff;
     pcie_soft_link #(
         .GEN2_ENABLE       (1),
         .QUIET_CYCLES      (QUIET_CYCLES),
@@ -200,7 +201,10 @@ module gen3_gen2_fallback #(
         .target_gen2_o     (target_gen2),
         .speed_idle_o      (speed_idle),
         .fallback_o        (link_fallback),
-        .deemphasis_o      (deemphasis_o)
+        .deemphasis_o      (deemphasis_o),
+        .phy_gen3_i        (1'b0),
+        .target_gen3_o     (unused_target_gen3),
+        .gen3_handoff_o    (unused_gen3_handoff)
     );
     wire unused = link_fallback;
 endmodule

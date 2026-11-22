@@ -24,13 +24,13 @@ flowchart LR
 
 ### Optional Gen3 packaging
 
-On `dev/pcie-x2`, Configuration also exposes **Link width (x2 training
-development)** (`LINK_WIDTH`): 1 or 2, default 1. The callback propagates the
-selected value to RTL and rejects x2 without `ENABLE_GEN3`. The current root
-explicitly fails x2 elaboration: two-lane PHY, rate-change and packet/AXI
-integration remain unfinished. Selecting 2 does not produce a working x2
-root port. See [x2 development](x2-development.md) for training-stage simulations
-and the metadata-only `make width-metadata` check.
+On `dev/pcie-x2`, Configuration exposes **Link width (x2 training
+development)** (`LINK_WIDTH`) with choices 1 and 2 and a default of 1. The
+callback propagates the value to RTL and requires `ENABLE_GEN3` for x2.
+The ordinary catalog retains its x2 elaboration guard. The ZU15EG board flow
+generates a stage-specific PHY and enables x2 through the `gen1-x2`, `gen2-x2`,
+or `gen3-x2` build profile. Each profile has passed read-only NVMe testing.
+[ZU15EG build profiles](../examples/zu15eg/README.md) · [x2 development](x2-development.md)
 
 Vivado now has one catalog definition, `soft-pcie.org:user:soft_pcie_root:1.1`, with a
 **Gen3 (`ENABLE_GEN3`)** checkbox. It defaults off. Generate a fresh local

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Routed out-of-context measurements, NOT an integrated board implementation.
-if {$argc != 4} {error "Usage: route_x2_blocks.tcl snapshot-root output part target"}
-lassign $argv root output part target
+if {$argc ni {4 5}} {error "Usage: route_x2_blocks.tcl snapshot-root output part target ?legacy-gen2?"}
+lassign $argv root output part target legacy_gen2
 set root [file normalize $root]
 set output [file normalize $output]
 if {[file exists $output]} {error "Fresh target output required"}
@@ -12,7 +12,9 @@ foreach f [glob $root/experiments/gen3/*.sv $root/ip/soft_pcie_root/rtl/host/*.s
     read_verilog -sv $f
 }
 set generic {}
-if {$target in {gen3_multilane_startup gen3_multilane_eq}} {set generic {LINK_WIDTH=2}}
+if {$target in {gen3_multilane_startup gen3_multilane_eq pcie_soft_link}} {set generic {LINK_WIDTH=2}}
+set gen2 [expr {$target eq "pcie_soft_link" && $legacy_gen2 eq "1"}]
+if {$gen2} {lappend generic GEN2_ENABLE=1}
 synth_design -top $target -part $part -mode out_of_context -flatten_hierarchy rebuilt -generic $generic
 if {$target eq "pcie_x2_host_path"} {
     create_clock -name host -period 8.000 [get_ports clk]
@@ -35,6 +37,8 @@ if {$target eq "pcie_x2_host_path"} {
     set_false_path -to $first
     set clears [get_pins -hier -filter {REF_PIN_NAME == CLR || REF_PIN_NAME == PRE}]
     if {[llength $clears]} {set_false_path -from [get_ports rst_n] -to $clears}
+} elseif {$target eq "pcie_soft_link" && !$gen2} {
+    create_clock -name link -period 8.000 [get_ports clk]
 } else {
     create_clock -name link -period 4.000 [get_ports clk]
 }

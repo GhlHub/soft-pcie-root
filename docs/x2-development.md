@@ -5,16 +5,21 @@ annotated tag `x1-hardware-validated-2026-11-08`. That tag labels the existing
 hardware-validated x1 lineage and its documented limits; it is not a new
 hardware run or a frozen qualification of all development changes.
 
-**This branch does not yet implement an integrated x2 root port.** The
-catalog now exposes `LINK_WIDTH=1/2`, with x1 as the default and x2 root
-elaboration explicitly blocked. Shared x2 training stages are simulated;
-complete Gen1-to-Gen3 link startup and physical packet operation are not yet
-integrated. The separate 64-bit packet and 128-bit host/DDR datapaths now have
-functional simulation coverage; this is not a timing or throughput measurement.
-The user subsequently requested local place-and-route resource measurements.
-See [the OOC measurement report](x2-resource-measurement.md) for scope and
-results. Integrated implementation and physical testing remain outstanding;
-physical testing awaits the ZU15EG board.
+The ZU15EG `gen1-x2` package connects the two-lane native PHY at X1Y4/X1Y5 to
+the Gen1 x2 link, a fixed 64-bit link-side packet interface and the 128-bit
+host/DDR path. All three staged ZU15EG profiles passed reopened route audits
+and negotiated their intended rates on the physical board with a Samsung
+990 EVO 1 TB. Read-only NVMe integrity and throughput checks passed at Gen1,
+Gen2 and Gen3 x2. The successful Gen2 and Gen3 runs enabled PCIe before the
+Linux driver probe. The ordinary catalog defaults to x1 and retains its x2
+elaboration guard.
+[Gen1 x2 evidence](evidence/zu15eg_gen1_x2_v1/completion.json)
+[Gen2 x2 evidence](evidence/zu15eg_gen2_x2_v1/completion.json)
+[Gen3 x2 evidence](evidence/zu15eg_gen3_x2_v1/completion.json)
+
+The [ZU15EG example](../examples/zu15eg/README.md) records physical Gen1, Gen2
+and Gen3 x1 results. The [OOC measurement report](x2-resource-measurement.md)
+describes the earlier standalone Gen3 x2 routes.
 
 ## Implemented component work
 
@@ -45,19 +50,24 @@ The original x1 tests retain default parameters and independent oracles.
 
 - `gen3_multilane_startup` coordinates fixed-width Gen1 receiver detection,
   polling, width/link/lane assignment, per-lane polarity, Configuration and
-  same-rate Recovery. Both lanes must qualify; rate agreement, malformed TS,
-  missing receivers and absolute Recovery deadlines are checked. Logical lane
+  Recovery, including the Gen2 rate transition in the `gen2-x2` stage. Both
+  lanes must qualify. The coordinator checks rate agreement, malformed TS,
+  missing receivers and absolute Recovery deadlines. Logical lane
   order is fixed; lane reversal and width fallback are not implemented.
 - `gen3_multilane_eq` coordinates real lane-specific Gen3 training codecs and
   Phase 1/2/3 engines. All lanes cross the Phase 1 barrier together; completion
   requires every lane. PHY loss, alignment loss, invalid training and shared
   deadlines defeat cached success. Configuration is sampled at attempt entry;
-  cancellation requires a fresh entry. This is a separate equalization stage,
-  not the outer rate-change LTSSM or packet handoff.
+  cancellation requires a fresh entry. The Gen3 x2 port uses its equalization
+  fields and per-lane coefficients in the continuous packet and training PCS.
 - `LINK_WIDTH` metadata, GUI validation and HDL propagation support values 1/2.
-  x2 requires `ENABLE_GEN3`; the root has both a simulation fatal and an
-  unresolved-backend elaboration guard. The root still has scalar serial ports and selects its existing x1 paths;
-  separate x2 packet/host modules are not yet selected by the root. No x2 choice silently generates an x1 backend.
+  The deliberate `gen1-x2` stage sets `ENABLE_GEN3=1`, `LINK_WIDTH=2` and
+  `X2_GEN1_BRINGUP=1`. It selects real serial vectors and the wide host
+  interface while fixing the native PIPE rate at Gen1. The `gen2-x2` stage
+  selects `X2_GEN2_BRINGUP=1` in place of `X2_GEN1_BRINGUP` and enables shared
+  rate negotiation. The `gen3-x2` stage selects `X2_GEN3_BRINGUP=1` and
+  qualifies both lanes through Gen3 startup. All other x2 combinations hit
+  the elaboration guard.
 - Independent Gen1 peers exchange real encoded training sequences with delayed
   lanes and polarity inversion. Gen3 peers generate lane-specific scrambled TS
   and exercise delayed/faulted lanes, configuration changes and cancellation.
@@ -76,41 +86,212 @@ production GUI callback with real IPX objects. It does not generate a PHY or
 validate a complete IP build. Root parameter tests blackbox unavailable vendor
 modules only to exercise the guard; they are not root-port functional simulations.
 
-## Required integration work
+## Gen1 x2 decoded-symbol link
 
-1. Integrate the shared startup and equalization stages into a common PHY/rate-
-   change LTSSM and packet handoff. Preserve shared deadlines, all-lane
-   qualification, no-backend-reset-after-L0 and startup-only fallback ownership.
-2. Generate an actual two-lane PHY with a common clock/reset/rate controller,
-   per-lane PIPE/EQ interfaces and correct constraints. Connect classified
-   records to deskew, including variable-length SKP removal and synchronized
-   SDS/EDS handling. Verify bad/missing lanes, reversal policy and block loss.
-3. **Datapath implemented, root/PHY integration pending:** Gen3 x2 aggregate
-   framing/parser/formatter processes 64 bits per cycle. `gen3_data_rx_x2`
-   validates complete packets before publication; `gen3_link_layer_x2` connects
-   credit admission, requester arbitration, 64-bit replay and formatting. Only
-   Gen3 x2 will select these modules. The first OOC route found severe
-   RX setup violations. The [RX repair](x2-rx-timing-fix.md) now meets internal
-   250 MHz timing with narrow margin; TX/link still has its −0.013 ns violation.
-4. **Datapath implemented, root selection pending:** `pcie_x2_host_path` connects
+`pcie_soft_link` uses the two-lane startup controller and a four-symbol packet
+framer/parser when `LINK_WIDTH=2`. The receive path descrambles each lane,
+removes corrected SKP ordered sets, and deskews the lanes before packet parsing.
+The link retains the shared requester, flow control and replay ownership. Recovery
+discards tentative receive data while preserving complete queued packets.
+
+The independent peer exchanges configuration and memory traffic using both
+lanes. It checks aligned operation, a three-cycle lane 1 delay, independent
+SKP correction on each lane, bad CRC, replay and same-rate Recovery. The peer
+also drives separate receiver-detect and fresh P0 acknowledgements through
+the native PIPE adapter. The board stage connects the same adapter to the
+generated PHY and uses the fixed-width x2 host path.
+
+Run the link and PIPE checks with
+`.venv/bin/python -m pytest -q tests/test_pcie_soft.py tests/test_legacy_x2_packets.py tests/test_legacy_x2_pipe.py`.
+The first CDC-clean native Gen1 x2 checkpoint passed all **2,173** regression tests in
+331.23 seconds. The synthesized board audit verified both GTH lanes, the
+wide AXI path and the command and packet CDC structures, with zero
+unwaived critical CDC findings.
+
+The reopened route audit found DP0 and DP1 reversed at the generated PHY
+interface. The native wrapper now maps the physical pins and each per-lane
+PIPE data and status field to the corresponding logical lane. A simulation
+using the generated PHY port signature reproduced the reversal with the
+earlier wrapper and passed with the corrected one.
+
+The native PHY broadcasts one TX power-ready status to both lanes. The
+wrapper now synchronizes it once. It still requires each lane's receiver
+detect and P0 acknowledgement. The corrected design passed synthesis and the
+reopened timing, CDC and lane-pin audit. On hardware, two 256 MiB reads matched
+the x1 checksum and the namespace write counters stayed constant. The
+fixed-width DDR bridge ran at 125 MHz on Gen1 x2.
+
+The decoded-symbol link routed out of context at 125 MHz on
+`xczu15eg-ffvb1156-2-i` with +0.491 ns internal setup and +0.040 ns internal
+hold slack, 5,967 LUTs, 2,413 registers and one RAMB18E2. The timing
+report covers paths within the link. External ports, PHY and host CDC remain
+outside this route. Reproduce with a fresh output directory:
+
+```sh
+python3 scripts/route_x2_blocks.py build/x2_gen1_link_ooc_next \
+  --part xczu15eg-ffvb1156-2-i --targets pcie_soft_link
+```
+
+## Gen2 x2 decoded-symbol link
+
+`gen3_native_x2_rate` issues the shared PIPE Rate command after both receive
+lanes enter electrical idle. It waits for a low PHYSTATUS baseline, then
+requires a fresh acknowledgement from each lane before applying the rate to
+the link state machine. Separate tests cover stuck status, missing replies
+and loss of transmit idle. The independent symbol peer qualifies Gen2 startup,
+Gen2-to-Gen1-to-Gen2 Recovery with a configuration read pending, and packet
+traffic with and without three cycles of lane skew. These tests model PIPE
+status and train the digital link.
+
+The first Gen2-enabled decoded link routed out of context at 250 MHz with
+−1.740 ns internal setup slack and +0.041 ns hold slack. The worst path runs
+from lane 1 training decode through receive alignment and the packet parser
+to the NAK register. An input register isolated deskew and reduced the setup
+violation to −1.074 ns. The Gen2 x2 stage now uses a word-oriented receiver.
+It classifies starts and ends, aligns wire data into DWORDs, and registers
+CRC and length results before publishing a packet. A complete frame already
+in the pipeline survives an abort of the following candidate. A synchronous,
+unreset RAM delivers one DWORD per cycle across queued packet boundaries.
+
+The revised link routed at 250 MHz with **+0.367 ns internal setup**,
+**+0.032 ns hold** and **+1.458 ns pulse-width** slack on
+`xczu15eg-ffvb1156-2-i`. It uses 3,675 LUTs, 2,780 registers and 1.5 BRAM tiles.
+The tests cover aligned and skewed rate changes, TLP and DLLP CRC faults,
+truncation, nullified short words, queue exhaustion, and Recovery alongside
+packet publication. PHY, PS integration and board timing are outside this
+link-only route.
+
+The first full board route passed the synthesized structure and CDC checks.
+It measured −0.198 ns setup, +0.004 ns hold and +0.543 ns pulse-width slack.
+The worst path runs from a GTH receive status output to a width adapter
+clock enable. The next build registers PIPE data, control and status together
+and uses fixed group shifts in the narrowing adapters. The adapters still
+accept the next input beat on the edge that consumes the last output group.
+That build passed the reopened route audit at 250 MHz (+0.194 ns setup) and
+125 MHz (+0.351 ns setup), with +0.012 ns hold in both modes and zero
+unwaived critical CDC findings. The endpoint reported 5.0 GT/s x2 over JTAG
+and again in Linux during the read-only NVMe checkout. The first several
+warm starts timed out. The successful test measured 472.23 and 589.85 MB/s
+at QD1 and QD8. [Gen2 x2 hardware evidence](evidence/zu15eg_gen2_x2_v1/completion.json)
+
+Reproduce the 250 MHz decoded-link timing run with a fresh output directory:
+
+```sh
+python3 scripts/route_x2_blocks.py build/x2_gen2_link_ooc_next \
+  --part xczu15eg-ffvb1156-2-i --targets pcie_soft_link --legacy-gen2
+```
+
+## Gen3 x2 integration
+
+The Gen3 stage negotiates the rate at Gen1. After EIOS and electrical idle,
+Phase 0 requires fresh preset and coefficient-query acknowledgements from
+both lanes. The shared PIPE controller then requires fresh rate-change
+acknowledgements from both lanes before handing the wire to Gen3. The Gen3
+transmit engines retain their cadence and scrambler position across Phase 1,
+adaptive Phase 2/3, and Recovery. The packet path uses the same lane mapping
+as Gen1 and Gen2 and presents 64-bit packet beats to the fixed-width x2
+host path. Gen3 selection occurs before a legacy Data Link owner is active.
+
+The bonded receiver removes lane-specific SKP, deskews matching ordered sets
+and word positions, then validates EDS and whole-packet integrity across the
+aggregate stream. The encoded peer tests cover Phase 0 with staggered lane
+replies, adaptive EQ, configuration completion, and peer-initiated same-rate
+Recovery with a configuration read outstanding. A local simulation using the
+generated PHY port declaration also passed Gen1 receiver detect through Gen3
+x2 packet I/O, including the board wrapper's lane remap and one same-rate
+Recovery. The native scenario is now part of
+`tests/test_gen3_x2_post_port.py`. It checks the transmitted Phase 0 preset
+and eight EIOS sets on both lanes before the shared rate change, then
+exchanges configuration and application packets. The transceiver responses
+are behavioral.
+
+The standalone Gen3 packet port passed its 250 MHz internal route with
++0.092 ns setup and +0.042 ns hold
+slack after the TX LCRC transform was changed. The integrated native board
+build passed packaging and synthesis. Registering the diagnostic source mux
+on PCLK cleared the synthesized CDC findings. The next route reported
+−0.404 ns setup and +0.001 ns hold slack. Its worst path passed from legacy
+receive training through link admission into host transmit backpressure.
+The buffered transmit boundary and shorter training, replay submission,
+and fault paths reduced this to −0.143 ns across 53 endpoints. Post-route
+optimization reached −0.033 ns across 24 endpoints. The current source
+registers the Gen3 transmit scramble mask, computes the legacy scrambler
+advance before symbol selection, and shortens the RX idle-prefix scan.
+The resulting full Gen3 x2 board image passed reopened timing, CDC, pin,
+and routing checks. Setup slack was +0.329 ns in Gen1 and +0.056 ns in Gen2
+and Gen3. Hold slack was +0.010 ns in all modes. The full regression passed
+2,486 tests. The initial physical run timed out in Configuration.Complete
+while still training at Gen1.
+[ZU15EG implementation evidence](evidence/zu15eg_gen3_x2_v1/implementation.json)
+
+The startup correction retains each lane's eight qualified received TS2s
+and rate fields until the local transmit requirement finishes. The new
+finite-burst peer reproduces the receive-status race on the previous RTL
+and covers the minimum receive count. The corrected route passed its
+independent audit with +0.327 ns Gen1 and +0.006 ns Gen2/Gen3 setup slack,
+and +0.012 ns hold slack in all modes. All 2,498 regression tests passed.
+[Startup correction evidence](evidence/zu15eg_gen3_x2_v1/startup-qualification.json)
+
+The board then reached Gen3 Phase 1. A diagnostic image captured a
+continuation word without a block start on each lane before either aligned.
+The decoder now discards these initial partial words until it sees a block
+start and acquires a complete EIEOS. The same framing error remains fatal
+after alignment. The wire-peer regression covers both cases.
+[Physical equalization failure record](evidence/zu15eg_gen3_x2_v1/equalization-diagnostic.json)
+
+The receiver correction passed all 2,502 regression tests and the reopened
+audit with +0.555 ns Gen1 and +0.021 ns Gen2/Gen3 setup slack. The corrected
+image reached 2.5 GT/s x2 when forced to Gen1. Automatic Gen3 warm trials
+timed out in Polling.Configuration.
+[Correction and warm trial evidence](evidence/zu15eg_gen3_x2_v1/receiver-boundary.json)
+
+The passive Polling.Configuration diagnostic image passed that state on a
+warm run and reached Gen3 adaptive equalization. The parallel packet receiver
+could latch a framing fault on the initial partial block and carry the fault
+into the post-equalization handshake. The integrated native PIPE peer reproduced
+this post-equalization failure. The corrected receiver waits for the first
+valid block start on each lane, and the same simulation completes configuration
+and application traffic with and without a packet-active Recovery event.
+[Polling diagnostic hardware trace](evidence/zu15eg_gen3_x2_v1/polling-diagnostic.json)
+
+The exact corrected image passed the reopened audit with +0.139 ns Gen1
+setup, +0.024 ns Gen2/Gen3 setup and +0.011 ns hold slack in all modes. The
+full regression passed 2,510 tests. On a warm PL reload, Gen3 x2 reached L0
+and Linux confirmed 8.0 GT/s on both lanes. Both direct 256 MiB reads matched
+the lower-rate checksums. One 30-second 1 MiB sequential direct read job per
+queue depth measured 668.04 MB/s at QD1 and 678.91 MB/s at QD8, with zero
+writes and a healthy idle finish.
+[Gen3 x2 implementation](evidence/zu15eg_gen3_x2_v1/packet-receiver-start.json)
+[Gen3 x2 hardware evidence](evidence/zu15eg_gen3_x2_v1/completion.json)
+
+## Further validation and packaging
+
+1. Verify startup and sustained Recovery through the integrated native Gen3
+   PHY, including bad or missing lanes, reversal policy, and block loss.
+   Preserve all-lane qualification and accepted ownership.
+2. Verify cold-start repeatability for the audited Gen2 and Gen3 x2 images.
+3. Exercise the Gen3 x2 64-bit aggregate framing and replay with sustained
+   traffic and compare it with the previous stages. The
+   [RX repair](x2-rx-timing-fix.md) and the TX LCRC revision closed their
+   respective standalone internal timing paths.
+4. `pcie_x2_host_path` connects
    64-bit link beats through packet-preserving width adapters and whole-packet
    CDC to `pcie_ddr_bridge_x2`, with 128-bit packet and DDR AXI paths. It uses
    explicit final occupancy and four RAM banks, preserving byte enables,
    accepted AXI drain and all-B-before-MSI. The subsequent OOC host route met
-   its internal constraints; integrated timing, CDC and actual DDR bandwidth
-   remain unverified.
-5. Connect the existing GUI `LINK_WIDTH` to real serial port vectors, PHY
-   selection, packet/AXI widths, interface metadata and constraints. Remove the
-   explicit x2 elaboration guard only once the backend is connected and tested.
-   Preserve x1 defaults and source identity.
+   its internal constraints. Gen1 x2 verified the integrated wide host path.
+   Sustained DDR throughput at Gen3 x2 remains to be measured separately
+   from end-to-end NVMe throughput.
+5. Extend the ordinary catalog's `LINK_WIDTH` selection to the complete x2
+   backend after the Gen1, Gen2 and Gen3 stages pass. Preserve the x1 defaults
+   and interface dimensions.
 6. Add independent end-to-end x2 peer simulation: Gen1 startup through Gen3,
    negotiated width/rate, per-lane EQ, sustained striped packets, token
    boundaries, corrupted lane data, finite credits, replay/NAK/sequence wrap,
    AXI stalls/errors, MSI ordering and packet-active Recovery. Test both GUI
    choices and reject unsupported parameter combinations during customization.
-7. After source freeze and board availability, perform fresh package generation,
-   implementation, independent checkpoint/CDC audit and board validation.
-   Establish actual negotiated x2 width before attributing throughput to x2.
+7. Repeat package generation, implementation, independent checkpoint/CDC
+   audit and negotiated-link board checks after catalog integration.
 
 The widening in items 3 and 4 is a build-time choice, not a runtime response
 to negotiated speed. Existing Gen1/Gen2 x1 and Gen3 x1 builds retain their
@@ -176,6 +357,14 @@ in `pcie_soft_replay`; its ownership and ACK-retirement logic is unchanged.
 | Validated link TLP / replay input | 64 bits | `words=1/2`; non-final beats contain two DWORDs |
 | Formatted TX stream | 64 bits | `words=1/2`; final unused DWORD is zero |
 | Host packet / DDR AXI | 128 bits | Packet `words=1..4`; AXI uses byte strobes |
+
+`gen3_x2_recovery_tx` feeds paired PCS transmitters with striped packet bytes
+and lane-specific scrambling. Both lanes accept and retire the aggregate
+beat together. A test checks two full beats, a one-DWORD final beat, and the
+striped EDS token before SKP and stream shutdown. The transmit block routed
+out of context at 250 MHz with +0.191 ns setup and +0.044 ns hold slack on
+`xczu15eg-ffvb1156-2-i`. The Gen3 receive bonding, rate/equalization handoff
+and root integration are pending.
 
 The receive parser accepts eight bytes per valid cycle into a circular buffer,
 with token/body and finish/next-token overlap. Predecoded token metadata,

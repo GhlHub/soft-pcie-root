@@ -80,11 +80,21 @@ width-metadata:
 
 # Packet/host datapaths for ENABLE_GEN3=1, LINK_WIDTH=2 only; no PHY generation.
 X2_LINK_RTL = experiments/gen3/gen3_link_layer_x2.sv experiments/gen3/gen3_link_profile.sv experiments/gen3/gen3_dllp_source_x2.sv experiments/gen3/gen3_tx_window_x2.sv experiments/gen3/gen3_tlp_source_x2.sv experiments/gen3/gen3_stp.sv ip/soft_pcie_root/rtl/host/pcie_packet_width.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_flow_control.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_requester.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_replay.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_ack_capture.sv
+X2_PCS_RTL = $(addprefix experiments/gen3/,gen3_x2_post_port.sv gen3_x2_post_eq.sv gen3_x2_receive.sv gen3_x2_recovery_tx.sv gen3_native_rx.sv gen3_recovery_tx.sv gen3_data_rx_x2.sv) $(addprefix ip/soft_pcie_root/rtl/pcie_soft/,pcie_lane_deskew.sv pcie_lane_stripe.sv)
+X2_EQ_RTL = $(addprefix experiments/gen3/,gen3_x2_port.sv gen3_x2_initial_eq.sv gen3_multilane_eq.sv gen3_training_rx.sv gen3_training_tx.sv gen3_eq_phase1.sv gen3_eq_adapt.sv)
 .PHONY: lint-x2 test-x2-datapath
 lint: lint-x2
 lint-x2:
+	verilator --lint-only -Wall --top-module gen3_legacy_x2_pipe experiments/gen3/gen3_legacy_x2_pipe.sv
+	verilator --lint-only -Wall --top-module gen3_native_x2_rate experiments/gen3/gen3_native_x2_rate.sv
+	verilator --lint-only -Wall -Wno-PINCONNECTEMPTY --top-module gen3_x2_recovery_tx experiments/gen3/gen3_x2_recovery_tx.sv experiments/gen3/gen3_recovery_tx.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_stripe.sv
+	verilator --lint-only -Wall -Wno-PINCONNECTEMPTY --top-module gen3_x2_receive experiments/gen3/gen3_x2_receive.sv experiments/gen3/gen3_native_rx.sv experiments/gen3/gen3_data_rx_x2.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_deskew.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_lane_stripe.sv
+	verilator --lint-only -Wall --top-module pcie_soft_link -GLINK_WIDTH=2 experiments/gen3/gen3_multilane_startup.sv experiments/gen3/gen3_legacy_x2_phy.sv $(filter-out ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv,$(wildcard ip/soft_pcie_root/rtl/pcie_soft/*.sv))
+	verilator --lint-only -Wall --top-module pcie_soft_link -GLINK_WIDTH=2 -GGEN2_ENABLE=1 experiments/gen3/gen3_multilane_startup.sv experiments/gen3/gen3_legacy_x2_phy.sv $(filter-out ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_gth.sv ip/soft_pcie_root/rtl/pcie_soft/pcie_soft_root_port.sv,$(wildcard ip/soft_pcie_root/rtl/pcie_soft/*.sv))
 	verilator --lint-only -Wall --top-module gen3_data_rx_x2 experiments/gen3/gen3_data_rx_x2.sv
 	verilator --lint-only -Wall --top-module gen3_link_layer_x2 $(X2_LINK_RTL)
+	verilator --lint-only -Wall -Wno-PINCONNECTEMPTY --top-module gen3_x2_post_port $(X2_LINK_RTL) $(X2_PCS_RTL)
+	verilator --lint-only -Wall -Wno-PINCONNECTEMPTY --top-module gen3_x2_port $(X2_LINK_RTL) $(X2_PCS_RTL) $(X2_EQ_RTL)
 	verilator --lint-only -Wall --top-module pcie_x2_host_path ip/soft_pcie_root/rtl/host/pcie_x2_host_path.sv ip/soft_pcie_root/rtl/host/pcie_ddr_bridge_x2.sv ip/soft_pcie_root/rtl/host/pcie_packet_width.sv ip/soft_pcie_root/rtl/host/pcie_cdc_packet.sv
 test-x2-datapath:
-	$(PYTHON) -m pytest -q tests/test_x2_datapath.py
+	$(PYTHON) -m pytest -q tests/test_x2_datapath.py tests/test_gen3_x2_receive.py tests/test_gen3_x2_post_port.py tests/test_legacy_x2_packets.py tests/test_legacy_x2_pipe.py

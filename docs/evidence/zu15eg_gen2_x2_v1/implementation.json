@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen2-x2, dp01-passive",
+  "vivado": "2026.1",
+  "scope": "reopened implementation audit and initial physical configuration-space link read",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.351,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.194,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    }
+  },
+  "routing_errors": 0,
+  "unwaived_critical_cdc": 0,
+  "board_pin_audit": "passed",
+  "unused_pins": "PULLNONE",
+  "sha256": {
+    "system.bit": "28f9fcf096c31e694cbd411e49d5c82f40dff046f73efa40a7d763680f70e4a5",
+    "system.xsa": "42fb2f739b81a71709751b57f00574aa24f346401633a8d705e5c37672b3f146",
+    "routed.dcp": "539d89498da2e68ed2ea574fe0ab4da647d572bba10fe859fed25844035ebfbe",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa",
+    "sources.json": "5afa1d10f6e77bdfe21a2a185198ce9cc4368b3a2537af64a6ac2fa103b7780b"
+  },
+  "endpoint_pci_id": "144d:a80d",
+  "link": {
+    "speed_GT_s": 5.0,
+    "width": 2,
+    "source": "endpoint configuration space"
+  },
+  "ram_linux_link_retrain": "failed",
+  "pl_only_warm_link_retrain": "failed",
+  "warm_failure_clock_sample": {
+    "root_status": "0x74",
+    "phy_status": "0x10606e",
+    "rate_status": "0xa",
+    "management_clock_MHz": 50,
+    "window_cycles": 5000000,
+    "heartbeat_bit": 15,
+    "heartbeat_edges": [381, 381, 382],
+    "both_receivers_detected": true
+  },
+  "warm_forced_gen1_control": {
+    "same_audited_bitstream": true,
+    "pl_only_reload": true,
+    "endpoint_pci_id": "144d:a80d",
+    "speed_GT_s": 2.5,
+    "width": 2,
+    "source": "endpoint configuration space",
+    "final_ddr_status": "0xc",
+    "dma_enabled": false
+  },
+  "warm_ram_linux_after_forced_gen1": {
+    "ram_linux_booted": true,
+    "host_driver_bound": false,
+    "nvme_namespace_present": false,
+    "root_status": "0x74",
+    "mailbox_status": "0x0",
+    "ddr_status": "0x4"
+  },
+  "physical_gen2_x2_nvme_io": "passed in completion.json"
+}

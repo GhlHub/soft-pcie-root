@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-22",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "gen3-x2, dp01-passive",
+  "scope": "held Polling.Configuration counters and warm hardware trace",
+  "timing": {
+    "gen1": {
+      "period_ns": 8.0,
+      "wns_ns": 0.33,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    },
+    "gen2": {
+      "period_ns": 4.0,
+      "wns_ns": 0.03,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    },
+    "gen3": {
+      "period_ns": 4.0,
+      "wns_ns": 0.03,
+      "whs_ns": 0.012,
+      "wpws_ns": 0.543
+    }
+  },
+  "sha256": {
+    "sources.json": "4782fe32f9dc59045fcc97b3c83b2a6ada7c517cd905ef488e8864a268984ee8",
+    "routed.dcp": "727ee764d4d8fb4f0ad95764ee007d851bfc29af2f3fa7c68c61480bc43b02b3",
+    "system.bit": "c5a311769d82d80524fadf843b30a590f514b3448a0804843ae5c63c3c3953f5",
+    "psu_init.tcl": "6011781a32ccd96d5f3fee51e15b507ba625a5abf2a027f281731c8af3225efa"
+  },
+  "regression_tests_passed": 2508,
+  "regression_seconds": 383.06,
+  "physical_warm_trace": {
+    "polling_configuration_at_us": 101143,
+    "configuration_complete_at_us": 101210,
+    "eq_phase_1_at_us": 101937,
+    "adaptive_equalization_at_us": 104096,
+    "terminal_gen3_failure_at_us": 130171,
+    "samples": 499410,
+    "max_sample_interval_us": 21,
+    "final_root_status": "0xfc",
+    "final_mailbox_status": "0x0",
+    "final_ddr_status": "0x4",
+    "held_failure_words": [
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0"
+    ],
+    "host_driver_loaded": false
+  },
+  "physical_gen3_x2_nvme_io": "pending"
+}

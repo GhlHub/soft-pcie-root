@@ -1,37 +1,45 @@
 `timescale 1ns / 1ps
-// Independent procedural endpoint partner at the decoded GTH-symbol boundary.
+// Independent procedural endpoint partner at the decoded GTH/PIPE boundary.
 // Normal-polynomial CRC division, byte-parallel scrambling, real packet bytes.
 module tb_root_link #(
-    parameter GEN2_TEST = 0
+    parameter         GEN2_TEST   = 0,
+    parameter integer LINK_WIDTH  = 1,
+    parameter integer LANE1_DELAY = 0
 );
     reg phygen2 = 0, rateready = 1;
     wire targetgen2, speedidle, fallback;
-    reg [7:0] peer_rate = GEN2_TEST ? 6 : 2;
-    reg       clk = 0;
+    wire [1:0] native_rate, applied_rate;
+    wire       native_rate_ready;
+    wire       current_gen2 = LINK_WIDTH == 2 ? applied_rate == 1 : phygen2;
+    reg  [7:0] peer_rate = GEN2_TEST ? 6 : 2;
+    reg        clk = 0;
     always begin
-        #(phygen2 ? 2 : 4);
+        #(current_gen2 === 1'b1 ? 2 : 4);
         clk = ~clk;
     end
     reg rst = 0, enable = 1, phyready = 1, rxidle = 1, detectdone = 0, present = 1, retrain = 0;
-    wire detect, txidle, polarity, up, active, error;
-    wire [ 4:0] state;
-    wire [15:0] phy_tx;
-    wire [ 1:0] phy_tc;
-    reg  [15:0] phy_rx = 0;
-    reg  [ 1:0] phy_rc = 0;
-    reg         peer_enabled = 0;
-    reg         cv = 0;
-    wire        cr;
-    reg  [ 2:0] op = 0;
-    reg  [63:0] addr = 0;
-    reg  [15:0] bdf = 16'h0100;
-    reg  [31:0] cmddata = 0;
-    reg  [ 3:0] be = 15;
-    wire        rspv;
-    reg         rspr = 0;
-    wire [31:0] rspdata;
-    wire [ 2:0] rspstatus;
-    reg  [31:0] atd = 0;
+    wire detect, txidle, up, active, error;
+    wire [LINK_WIDTH-1:0] polarity;
+    wire [           4:0] state;
+    wire [16*LINK_WIDTH-1:0] phy_tx, link_tx, link_rx, shifted_rx;
+    wire [2*LINK_WIDTH-1:0] phy_tc, shifted_rc, link_rx_ctrl;
+    wire [LINK_WIDTH-1:0] shifted_valid, link_rx_valid, link_rx_error, detect_done,
+        receiver_present;
+    reg  [16*LINK_WIDTH-1:0] phy_rx = 0;
+    reg  [ 2*LINK_WIDTH-1:0] phy_rc = 0;
+    reg                      peer_enabled = 0;
+    reg                      cv = 0;
+    wire                     cr;
+    reg  [              2:0] op = 0;
+    reg  [             63:0] addr = 0;
+    reg  [             15:0] bdf = 16'h0100;
+    reg  [             31:0] cmddata = 0;
+    reg  [              3:0] be = 15;
+    wire                     rspv;
+    reg                      rspr = 0;
+    wire [             31:0] rspdata;
+    wire [              2:0] rspstatus;
+    reg  [             31:0] atd = 0;
     reg atv = 0, atl = 0;
     wire        atr;
     reg  [ 1:0] atclass = 2;
@@ -39,34 +47,157 @@ module tb_root_link #(
     wire [31:0] ard;
     wire arv, arl;
     reg arr = 0;
+    for (genvar pl = 0; pl < LINK_WIDTH; pl = pl + 1) begin : peer_skew
+        if (pl == 1 && LANE1_DELAY > 0) begin : delay_lane
+            reg [18:0] pipe[0:LANE1_DELAY-1];
+            always @(posedge clk) begin
+                pipe[0] <= {peer_enabled, phy_rc[2*pl+:2], phy_rx[16*pl+:16]};
+                for (integer i = 1; i < LANE1_DELAY; i = i + 1) pipe[i] <= pipe[i-1];
+            end
+            assign {shifted_valid[pl], shifted_rc[2*pl+:2], shifted_rx[16*pl+:16]} =
+                pipe[LANE1_DELAY-1];
+        end else begin : direct
+            assign shifted_valid[pl]     = peer_enabled;
+            assign shifted_rx[16*pl+:16] = phy_rx[16*pl+:16];
+            assign shifted_rc[2*pl+:2]   = phy_rc[2*pl+:2];
+        end
+    end
+    if (LINK_WIDTH == 2) begin : native_pipe
+        wire phy_detect, failed;
+        wire [  1:0] powerdown;
+        wire [127:0] pipe_tx;
+        wire [ 31:0] adapter_rx;
+        wire [1:0] adapter_valid, adapter_error;
+        reg [1:0] phystatus = 0;
+        gen3_legacy_x2_pipe #(
+            .TIMEOUT_CYCLES(64)
+        ) adapter (
+            .clk               (clk),
+            .rst_n             (rst),
+            .detect_i          (detect),
+            .ready_i           ({2{phyready}}),
+            .phystatus_i       (phystatus),
+            .rxvalid_i         (shifted_valid),
+            .rxstatus_i        (phy_detect ? 6'b011011 : 6'b0),
+            .rxdata_i          ({48'b0, shifted_rx[31:16], 48'b0, shifted_rx[15:0]}),
+            .txdata_i          (link_tx),
+            .rxdata_o          (adapter_rx),
+            .txdata_o          (pipe_tx),
+            .rxvalid_o         (adapter_valid),
+            .rxerror_o         (adapter_error),
+            .detect_o          (phy_detect),
+            .powerdown_o       (powerdown),
+            .detect_done_o     (detect_done),
+            .receiver_present_o(receiver_present),
+            .failed_o          (failed)
+        );
+        assign phy_tx = {pipe_tx[79:64], pipe_tx[15:0]};
+
+        task acknowledge(input [1:0] lane);
+            @(negedge clk);
+            phystatus = lane;
+            @(negedge clk);
+            phystatus = 0;
+        endtask
+        initial begin
+            wait (phy_detect);
+            acknowledge(2'b10);
+            acknowledge(2'b01);
+            wait (powerdown == 0);
+            acknowledge(2'b01);
+            if (detect_done != 0) $fatal(1, "P0 completed before both lanes acknowledged");
+            acknowledge(2'b10);
+            if (GEN2_TEST)
+                forever begin
+                    wait (native_rate != applied_rate);
+                    @(negedge clk);
+                    if (!txidle || !rxidle || !up) $fatal(1, "Unsafe shared RATE command");
+                    phyready = 0;
+                    acknowledge(2'b10);
+                    repeat (4) @(negedge clk);
+                    if (!speedidle || !up || native_rate_ready || native_rate == applied_rate)
+                        $fatal(1, "One lane advanced the link's active rate");
+                    acknowledge(2'b01);
+                    if (native_rate_ready) $fatal(1, "Rate completed before PHY was ready");
+                    phyready = 1;
+                    wait (native_rate == applied_rate);
+                end
+        end
+        if (GEN2_TEST) begin : shared_rate
+            reg [31:0] rx_data_q;
+            reg [ 3:0] rx_ctrl_q;
+            reg [1:0] rx_valid_q, rx_error_q;
+            always @(posedge clk) begin
+                rx_data_q  <= adapter_rx;
+                rx_ctrl_q  <= shifted_rc;
+                rx_valid_q <= adapter_valid & {2{rst && !speedidle}};
+                rx_error_q <= adapter_error & {2{rst && !speedidle}};
+            end
+            assign {link_rx, link_rx_ctrl, link_rx_valid, link_rx_error} = {
+                rx_data_q, rx_ctrl_q, rx_valid_q, rx_error_q
+            };
+            gen3_native_x2_rate #(
+                .IDLE_CYCLES   (5),
+                .TIMEOUT_CYCLES(500)
+            ) controller (
+                .clk            (clk),
+                .rst_n          (rst),
+                .request_i      (speedidle),
+                .target_i       ({1'b0, targetgen2}),
+                .request_ready_o(),
+                .tx_idle_i      (speedidle),
+                .rx_idle_i      ({2{rxidle}}),
+                .phy_ready_i    ({2{phyready}}),
+                .phystatus_i    (phystatus),
+                .phy_rate_o     (native_rate),
+                .applied_rate_o (applied_rate),
+                .rate_ready_o   (native_rate_ready),
+                .busy_o         (),
+                .failed_o       ()
+            );
+        end else begin : fixed_rate
+            assign {native_rate, applied_rate, native_rate_ready} = 5'b00001;
+            assign {link_rx, link_rx_ctrl, link_rx_valid, link_rx_error} = {
+                adapter_rx, shifted_rc, adapter_valid, adapter_error
+            };
+        end
+        always @(posedge clk) if (rst && failed) $fatal(1, "Native PIPE startup failed");
+    end else begin : decoded_pipe
+        assign {native_rate, applied_rate, native_rate_ready} = 5'b00001;
+        assign {detect_done, receiver_present}                = {detectdone, present};
+        assign {link_rx, link_rx_valid, link_rx_error}        = {shifted_rx, shifted_valid, 1'b0};
+        assign link_rx_ctrl                                   = shifted_rc;
+        assign phy_tx                                         = link_tx;
+    end
     pcie_soft_link #(
         .GEN2_ENABLE       (GEN2_TEST),
+        .LINK_WIDTH        (LINK_WIDTH),
         .QUIET_CYCLES      (16),
         .POLL_CYCLES       (100000),
         .CONFIG_CYCLES     (10000),
         .COMPLETION_TIMEOUT(4096)
     ) dut (
         .force_gen1_i      (GEN2_TEST == 0),
-        .phy_gen2_i        (phygen2),
-        .phy_rate_ready_i  (rateready),
+        .phy_gen2_i        (current_gen2),
+        .phy_rate_ready_i  (LINK_WIDTH == 2 ? native_rate_ready : rateready),
         .target_gen2_o     (targetgen2),
         .speed_idle_o      (speedidle),
         .fallback_o        (),
         .clk               (clk),
         .rst_n             (rst),
         .enable_i          (enable),
-        .phy_ready_i       (phyready),
-        .rx_idle_i         (rxidle),
-        .detect_done_i     (detectdone),
-        .receiver_present_i(present),
+        .phy_ready_i       ({LINK_WIDTH{phyready}}),
+        .rx_idle_i         ({LINK_WIDTH{rxidle}}),
+        .detect_done_i     (detect_done),
+        .receiver_present_i(receiver_present),
         .detect_o          (detect),
         .electrical_idle_o (txidle),
         .polarity_o        (polarity),
-        .phy_rx_data_i     (phy_rx),
-        .phy_rx_ctrl_i     (phy_rc),
-        .phy_rx_valid_i    (peer_enabled),
-        .phy_rx_error_i    (1'b0),
-        .phy_tx_data_o     (phy_tx),
+        .phy_rx_data_i     (link_rx),
+        .phy_rx_ctrl_i     (link_rx_ctrl),
+        .phy_rx_valid_i    (link_rx_valid),
+        .phy_rx_error_i    (link_rx_error),
+        .phy_tx_data_o     (link_tx),
         .phy_tx_ctrl_o     (phy_tc),
         .link_up_o         (up),
         .dl_active_o       (active),
@@ -95,13 +226,15 @@ module tb_root_link #(
         .app_rx_ready_i    (arr),
         .error_o           (error)
     );
-    reg [9:0] queue[0:131071];
-    integer producer = 0, consumer = 0;
-    reg [15:0] peer_lfsr = 16'hffff, monitor_lfsr = 16'hffff;
-    reg [ 9:0] symbol;
-    reg [15:0] rxword;
-    reg [ 1:0] rxk;
-    integer lane, skip_count = 0, monitor_training = 0;
+    reg [9:0] queue[0:LINK_WIDTH-1][0:131071];
+    integer tails[0:LINK_WIDTH-1], heads[0:LINK_WIDTH-1];
+    wire    [31:0] producer = tails[0], consumer = heads[0];
+    integer        packet_lane = 0;
+    reg [15:0] peer_lfsr[0:LINK_WIDTH-1], monitor_lfsr[0:LINK_WIDTH-1];
+    reg [              9:0] symbol;
+    reg [16*LINK_WIDTH-1:0] rxword;
+    reg [ 2*LINK_WIDTH-1:0] rxk;
+    integer skip_count = 0, monitor_training[0:LINK_WIDTH-1];
     reg [7:0] byte_value;
     reg       bypass;
     function [7:0] reverse8(input [7:0] x);
@@ -140,40 +273,61 @@ module tb_root_link #(
     function [31:0] swap(input [31:0] x);
         swap = {x[7:0], x[15:8], x[23:16], x[31:24]};
     endfunction
+    task push_lane(input integer physical_lane, input [7:0] x, input k, input scramble);
+        queue[physical_lane][tails[physical_lane]] = {scramble, k, x};
+        tails[physical_lane]                       = tails[physical_lane] + 1;
+    endtask
     task push(input [7:0] x, input k, input scramble);
-        queue[producer] = {scramble, k, x};
-        producer        = producer + 1;
+        push_lane(packet_lane, x, k, scramble);
+        packet_lane = (packet_lane + 1) % LINK_WIDTH;
     endtask
     always @(negedge clk) begin
         if (!rst) begin
-            peer_lfsr = 16'hffff;
-            phy_rx    = 0;
-            phy_rc    = 0;
+            for (integer lane = 0; lane < LINK_WIDTH; lane = lane + 1) begin
+                peer_lfsr[lane] = 16'hffff;
+                heads[lane]     = 0;
+                tails[lane]     = 0;
+            end
+            phy_rx = 0;
+            phy_rc = 0;
         end else if (peer_enabled) begin
             rxword = 0;
             rxk    = 0;
-            for (lane = 0; lane < 2; lane = lane + 1) begin
-                symbol = consumer < producer ? queue[consumer] : 10'h200;
-                if (consumer < producer) consumer = consumer + 1;
-                byte_value = symbol[7:0];
-                if (!symbol[8] && symbol[9]) byte_value = byte_value ^ reverse8(peer_lfsr[15:8]);
-                rxword[lane*8+:8] = byte_value;
-                rxk[lane]         = symbol[8];
-                if (symbol[8] && symbol[7:0] == 8'hbc) peer_lfsr = 16'hffff;
-                else if (!(symbol[8] && symbol[7:0] == 8'h1c)) peer_lfsr = step(peer_lfsr);
+            for (integer lane = 0; lane < LINK_WIDTH; lane = lane + 1) begin
+                for (integer slot = 0; slot < 2; slot = slot + 1) begin
+                    symbol = heads[lane] < tails[lane] ? queue[lane][heads[lane]] : 10'h200;
+                    if (heads[lane] < tails[lane]) heads[lane] = heads[lane] + 1;
+                    byte_value = symbol[7:0];
+                    if (!symbol[8] && symbol[9])
+                        byte_value = byte_value ^ reverse8(peer_lfsr[lane][15:8]);
+                    rxword[16*lane+8*slot+:8] = byte_value;
+                    rxk[2*lane+slot]          = symbol[8];
+                    if (symbol[8] && symbol[7:0] == 8'hbc) peer_lfsr[lane] = 16'hffff;
+                    else if (!(symbol[8] && symbol[7:0] == 8'h1c))
+                        peer_lfsr[lane] = step(peer_lfsr[lane]);
+                end
             end
             phy_rx = rxword;
             phy_rc = rxk;
         end
     end
     task ts(input ts2, input lp, input np);
-        push(8'hbc, 1, 0);
-        push(lp ? 8'hf7 : 8'h00, lp, 0);
-        push(np ? 8'hf7 : 8'h00, np, 0);
-        push(32, 0, 0);
-        push(peer_rate, 0, 0);
-        push(0, 0, 0);
-        repeat (10) push(ts2 ? 8'h45 : 8'h4a, 0, 0);
+        for (integer lane = 0; lane < LINK_WIDTH; lane = lane + 1) begin
+            push_lane(lane, 8'hbc, 1, 0);
+            push_lane(lane, lp ? 8'hf7 : 8'h00, lp, 0);
+            push_lane(lane, np ? 8'hf7 : 8'(lane), np, 0);
+            push_lane(lane, 32, 0, 0);
+            push_lane(lane, peer_rate, 0, 0);
+            push_lane(lane, 0, 0, 0);
+            repeat (10) push_lane(lane, ts2 ? 8'h45 : 8'h4a, 0, 0);
+        end
+    endtask
+    task peer_eieos;
+        for (integer lane = 0; lane < LINK_WIDTH; lane = lane + 1) begin
+            push_lane(lane, 8'hbc, 1, 0);
+            repeat (14) push_lane(lane, 8'hfc, 1, 0);
+            push_lane(lane, 8'h4a, 0, 0);
+        end
     endtask
     task partner_speed(input bit gen2);
         peer_rate = gen2 ? 8'h86 : 8'h82;
@@ -197,11 +351,7 @@ module tb_root_link #(
         rxidle       = 0;
         peer_enabled = 1;
         peer_rate    = 6;
-        if (gen2) begin
-            push(8'hbc, 1, 0);
-            repeat (14) push(8'hfc, 1, 0);
-            push(8'h4a, 0, 0);
-        end
+        if (gen2) peer_eieos();
         repeat (16) ts(0, 0, 0);
         wait (state == 12);
         repeat (40) ts(1, 0, 0);
@@ -225,6 +375,12 @@ module tb_root_link #(
     endtask
     task fc(input [7:0] typ, input [7:0] h, input [11:0] d);
         dllp({d[7:0], h[1:0], 2'b0, d[11:8], 2'b0, h[7:2], typ});
+    endtask
+    task compensated_skp(input integer lane0_skps, input integer lane1_skps);
+        push_lane(0, 8'hbc, 1, 0);
+        push_lane(1, 8'hbc, 1, 0);
+        repeat (lane0_skps) push_lane(0, 8'h1c, 1, 0);
+        repeat (lane1_skps) push_lane(1, 8'h1c, 1, 0);
     endtask
     task ack(input nak, input [11:0] seq);
         dllp({seq[7:0], 4'b0, seq[11:8], 8'b0, nak ? 8'h10 : 8'h00});
@@ -276,33 +432,36 @@ module tb_root_link #(
     always @(posedge clk)
         if (rst) begin
             if (error) errors = errors + 1;
-            for (integer b = 0; b < 2; b = b + 1) begin
-                byte_value = phy_tx[b*8+:8];
+            for (integer b = 0; b < 2 * LINK_WIDTH; b = b + 1) begin
+                integer lane, index;
+                lane       = b % LINK_WIDTH;
+                index      = 2 * lane + b / LINK_WIDTH;
+                byte_value = phy_tx[index*8+:8];
                 bypass     = 0;
-                if (phy_tc[b] && byte_value == 8'hbc) begin
-                    monitor_lfsr     = 16'hffff;
-                    monitor_training = 15;
-                    bypass           = 1;
+                if (phy_tc[index] && byte_value == 8'hbc) begin
+                    monitor_lfsr[lane]     = 16'hffff;
+                    monitor_training[lane] = 15;
+                    bypass                 = 1;
                 end else begin
-                    if (phy_tc[b] && byte_value == 8'h1c) begin
-                        monitor_training = 0;
-                        skip_count       = skip_count + 1;
-                        bypass           = 1;
+                    if (phy_tc[index] && byte_value == 8'h1c) begin
+                        monitor_training[lane] = 0;
+                        skip_count             = skip_count + 1;
+                        bypass                 = 1;
                     end else begin
-                        if (monitor_training != 0) begin
-                            bypass           = 1;
-                            monitor_training = monitor_training - 1;
+                        if (monitor_training[lane] != 0) begin
+                            bypass                 = 1;
+                            monitor_training[lane] = monitor_training[lane] - 1;
                         end
-                        if (!phy_tc[b] && !bypass)
-                            byte_value = byte_value ^ reverse8(monitor_lfsr[15:8]);
-                        monitor_lfsr = step(monitor_lfsr);
+                        if (!phy_tc[index] && !bypass)
+                            byte_value = byte_value ^ reverse8(monitor_lfsr[lane][15:8]);
+                        monitor_lfsr[lane] = step(monitor_lfsr[lane]);
                     end
                 end
-                if (phy_tc[b] && (byte_value == 8'hfb || byte_value == 8'h5c)) begin
+                if (phy_tc[index] && (byte_value == 8'hfb || byte_value == 8'h5c)) begin
                     frame_kind  = byte_value == 8'hfb ? 1 : 2;
                     frame_bytes = 0;
                     if (frame_kind == 1) last_packet_start = $time;
-                end else if (phy_tc[b] && byte_value == 8'hfd && frame_kind != 0) begin
+                end else if (phy_tc[index] && byte_value == 8'hfd && frame_kind != 0) begin
                     if (frame_kind == 1) begin
                         check32 = 32'hffffffff;
                         for (integer n = 0; n < frame_bytes - 4; n = n + 1)
@@ -332,16 +491,18 @@ module tb_root_link #(
                         if (received[0] == 8'hc0) init2_count = init2_count + 1;
                     end
                     frame_kind = 0;
-                end else if (!phy_tc[b] && frame_kind != 0) begin
+                end else if (!phy_tc[index] && frame_kind != 0) begin
                     received[frame_bytes] = byte_value;
                     frame_bytes           = frame_bytes + 1;
                 end
             end
         end else begin
-            monitor_lfsr     = 16'hffff;
-            monitor_training = 0;
-            frame_kind       = 0;
-            frame_bytes      = 0;
+            for (integer lane = 0; lane < LINK_WIDTH; lane = lane + 1) begin
+                monitor_lfsr[lane]     = 16'hffff;
+                monitor_training[lane] = 0;
+            end
+            frame_kind  = 0;
+            frame_bytes = 0;
         end
     task cycles(input integer n);
         repeat (n) begin
@@ -374,16 +535,16 @@ module tb_root_link #(
     always @(posedge clk)
         if (rst && !txidle) begin
             if (eieos_word != 0) begin
-                if (phy_tx !== (eieos_word == 7 ? 16'h4afc : 16'hfcfc) ||
-                    phy_tc !== (eieos_word == 7 ? 2'b01 : 2'b11))
+                if (phy_tx !== {LINK_WIDTH{eieos_word == 7 ? 16'h4afc : 16'hfcfc}} ||
+                    phy_tc !== {LINK_WIDTH{eieos_word == 7 ? 2'b01 : 2'b11}})
                     $fatal(1, "EIEOS encoding/interruption at word %0d", eieos_word);
                 if (eieos_word == 7) eieos_word = 0;
                 else eieos_word++;
-            end else if (phy_tx == 16'hfcbc && phy_tc == 3) begin
+            end else if (phy_tx == {LINK_WIDTH{16'hfcbc}} && (&phy_tc)) begin
                 eieos_seen++;
                 eieos_word = 1;
             end
-            if (phy_tx == 16'h7cbc && phy_tc == 3) eios_seen++;
+            if (phy_tx == {LINK_WIDTH{16'h7cbc}} && (&phy_tc)) eios_seen++;
         end
     integer trace_state = -1;
     always @(posedge clk)
@@ -399,13 +560,7 @@ module tb_root_link #(
                     dut.flow.phase_q,
                     dut.flow.seen_q
                 );
-            if (dut.rx_packet_error)
-                $display(
-                    "TRACE RX error body=%0d tail=%08x crc16=%04x",
-                    dut.receiver.body_q,
-                    dut.receiver.tail_q,
-                    dut.receiver.crc16_q
-                );
+            if (dut.rx_packet_error) $display("TRACE RX packet error");
             if (dut.fc_dllp_valid && dut.fc_dllp_ready)
                 $display(
                     "TRACE TX FC=%02x phase=%0d seen=%b seen2=%b",
@@ -464,9 +619,7 @@ module tb_root_link #(
             peer_enabled = 1;
             peer_rate    = 6;
             // Gen2 EIEOS precedes TS1; independently encoded, not the DUT codec.
-            push(8'hbc, 1, 0);
-            repeat (14) push(8'hfc, 1, 0);
-            push(8'h4a, 0, 0);
+            peer_eieos();
             repeat (16) ts(0, 0, 0);
             wait (state == 12);
             repeat (40) ts(1, 0, 0);
@@ -483,6 +636,13 @@ module tb_root_link #(
         fc(8'hd0, 2, 16);
         fc(8'he0, 0, 0);
         wait (active);
+        if (LINK_WIDTH == 2) begin
+            // The two logical SKP sets arrived together on the wire. The
+            // local elastic buffers changed their decoded lengths independently.
+            compensated_skp(2, 3);
+            fc(8'h80, 2, 16);
+            compensated_skp(3, 2);
+        end
         cycles(30);
         if (errors != 0) $fatal(1, "Unexpected error during link/FC initialization");
         command(2, 0, 0);

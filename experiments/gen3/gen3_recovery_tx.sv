@@ -2,8 +2,10 @@
 // Per-lane recovery source: TS1/TS2, SDS, idle and an optional bounded InitFC1 probe.
 // Configuration changes take effect at TS boundaries. stop emits one full EIOS.
 module gen3_recovery_tx #(
-    parameter integer EXTERNAL_EQ = 0,
-    parameter integer LANE_ID     = 0
+    parameter integer        EXTERNAL_EQ     = 0,
+    parameter integer        LANE_ID         = 0,
+    parameter         [31:0] END_STREAM_WORD = 32'h0090801f,
+    parameter bit            REGISTER_MASK   = 0
 ) (
     input wire clk, reset_i, enable_i, stop_i,
     input wire ts2_i, stream_i,
@@ -83,8 +85,8 @@ module gen3_recovery_tx #(
         eq_fields_i : {^{1'b0, post_i, low_fields}, 1'b0, post_i, low_fields};
     wire [31:0] use_fields = word_index == 0 ? new_fields : fields;
     reg [31:0] plain, encoded, training_plain, training_encoded;
-    reg [22:0] next_lfsr, advanced_lfsr;
-    reg        [31:0] scramble_mask;
+    reg        [22:0] next_lfsr;
+    wire       [31:0] scramble_mask;
     reg signed [10:0] next_balance;
     reg        [ 1:0] correction;
     reg [7:0] value, training_value;
@@ -109,11 +111,44 @@ module gen3_recovery_tx #(
     endfunction
     reg [1:0] header;
     assign header_o = header;
+
+    function automatic [54:0] advance_word(input [22:0] seed);
+        reg [22:0] state;
+        reg [31:0] mask;
+        begin
+            state = seed;
+            for (integer bit_index = 0; bit_index < 32; bit_index = bit_index + 1) begin
+                mask[bit_index] = state[22];
+                state           = {state[21:0], 1'b0} ^ (state[22] ? 23'h210125 : 23'b0);
+            end
+            advance_word = {state, mask};
+        end
+    endfunction
+    wire [54:0] advanced_word = advance_word(lfsr);
+    wire [22:0] advanced_lfsr = advanced_word[54:32];
+    if (REGISTER_MASK) begin : registered_mask
+        // Compute the next word's mask from the already-known LFSR advance.
+        // SKP and cadence gaps hold both states. EIEOS resets both together.
+        localparam [31:0] SEED_MASK = 32'(advance_word(LANE_SEED));
+        wire [31:0] next_mask = 32'(advance_word(advanced_lfsr));
+        reg  [31:0] mask_q;
+        always @(posedge clk) begin
+            if (reset_i || (!running && enable_i && !stop_i)) mask_q <= SEED_MASK;
+            else if (running && cadence != 64) begin
+                if (kind == EIEOS && word_index == 3) mask_q <= SEED_MASK;
+                else if (kind != SKP) mask_q <= next_mask;
+            end
+        end
+        assign scramble_mask = mask_q;
+        wire unused_mask = ^advanced_word[31:0];
+    end else begin : direct_mask
+        assign scramble_mask = advanced_word[31:0];
+    end
     always @* begin
         plain = 32'hff00ff00;
         if (kind == EIOS) plain = 32'h66666666;
         if (kind == SDS) plain = word_index == 0 ? 32'h555555e1 : 32'h55555555;
-        if (kind == DATA) plain = (close_stream && word_index == 3) ? 32'h0090801f : 32'b0;
+        if (kind == DATA) plain = (close_stream && word_index == 3) ? END_STREAM_WORD : 32'b0;
         if (packet_emit) plain = packet_data_i;
         if (fc_first) plain = fc_bytes[31:0];
         if (fc_second) plain = fc_tail;
@@ -132,13 +167,6 @@ module gen3_recovery_tx #(
             if (correction != 0) training_plain[31:24] = balance_o > 0 ? 8'h08 : 8'hf7;
         end
         if (kind == TS1) plain = training_plain;
-        // Fixed transform independent of SKP. Select hold/advance only after
-        // generating the mask, rather than gating every unrolled bit step.
-        advanced_lfsr = lfsr;
-        for (b = 0; b < 32; b = b + 1) begin
-            scramble_mask[b] = advanced_lfsr[22];
-            advanced_lfsr = {advanced_lfsr[21:0], 1'b0} ^ (advanced_lfsr[22] ? 23'h210125 : 23'b0);
-        end
         encoded      = plain;
         next_lfsr    = kind == SKP ? lfsr : advanced_lfsr;
         next_balance = balance_o;

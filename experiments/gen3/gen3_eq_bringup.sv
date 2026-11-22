@@ -434,7 +434,8 @@ module gen3_eq_bringup #(
         data_valid,
         decoded_data,
         data_position,
-        rx_stream
+        rx_stream,
+        /* block_event_o */
     );
     wire packet_active, tlp_valid, tlp_last, response, nak, dllp, tlp_ready;
     wire [31:0] tlp_data, dllp_body;

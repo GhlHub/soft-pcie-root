@@ -1,8 +1,11 @@
 // ZCU104 SSD1 laboratory top; management is independent of the PCIe clock.
 module soft_pcie_root #(
-    parameter integer ENABLE_GEN3    = 0,
-    parameter integer GEN3_TX_PRESET = 4,
-    parameter integer LINK_WIDTH     = 1
+    parameter integer ENABLE_GEN3     = 0,
+    parameter integer GEN3_TX_PRESET  = 4,
+    parameter integer LINK_WIDTH      = 1,
+    parameter integer X2_GEN1_BRINGUP = 0,
+    parameter integer X2_GEN2_BRINGUP = 0,
+    parameter integer X2_GEN3_BRINGUP = 0
 ) (
     (* X_INTERFACE_INFO="xilinx.com:signal:clock:1.0 aclk CLK",
     X_INTERFACE_PARAMETER="ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET aresetn, FREQ_HZ 50000000" *)
@@ -75,9 +78,9 @@ module soft_pcie_root #(
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR AWVALID" *)
     output wire m_ddr_awvalid, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR AWREADY" *)
     input wire m_ddr_awready, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR WDATA" *)
-    output wire [63:0] m_ddr_wdata,
+    output wire [64 + 64*ENABLE_GEN3*(LINK_WIDTH-1) - 1:0] m_ddr_wdata,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR WSTRB" *)
-    output wire [7:0] m_ddr_wstrb,
+    output wire [8 + 8*ENABLE_GEN3*(LINK_WIDTH-1) - 1:0] m_ddr_wstrb,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR WLAST" *)
     output wire m_ddr_wlast, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR WVALID" *)
     output wire m_ddr_wvalid, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR WREADY" *)
@@ -100,7 +103,7 @@ module soft_pcie_root #(
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR ARVALID" *)
     output wire m_ddr_arvalid, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR ARREADY" *)
     input wire m_ddr_arready, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR RDATA" *)
-    input wire [63:0] m_ddr_rdata,
+    input wire [64 + 64*ENABLE_GEN3*(LINK_WIDTH-1) - 1:0] m_ddr_rdata,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR RRESP" *)
     input wire [1:0] m_ddr_rresp,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR RLAST" *)
@@ -113,15 +116,22 @@ module soft_pcie_root #(
     output wire core_resetn_o,
         (* X_INTERFACE_INFO="xilinx.com:signal:interrupt:1.0 irq_o INTERRUPT", X_INTERFACE_PARAMETER="SENSITIVITY LEVEL_HIGH" *)
     output wire irq_o,
-    input wire refclk_p_i, refclk_n_i, rx_p_i, rx_n_i,
-    output wire tx_p_o, tx_n_o, perst_a_o, disable_ssd2_power_o
+    input wire refclk_p_i, refclk_n_i,
+    input wire [LINK_WIDTH-1:0] rx_p_i, rx_n_i,
+    output wire [LINK_WIDTH-1:0] tx_p_o, tx_n_o,
+    output wire perst_a_o, disable_ssd2_power_o
 );
-    // Width is an explicit catalog contract. The x2 training engines are tested
-    // separately; do not silently elaborate the x1 PHY/packet shell for x2.
+    localparam bit X2_STAGE = LINK_WIDTH == 2 && ENABLE_GEN3 &&
+        (X2_GEN1_BRINGUP == 0 || X2_GEN1_BRINGUP == 1) &&
+        (X2_GEN2_BRINGUP == 0 || X2_GEN2_BRINGUP == 1) &&
+        (X2_GEN3_BRINGUP == 0 || X2_GEN3_BRINGUP == 1) &&
+        X2_GEN1_BRINGUP + X2_GEN2_BRINGUP + X2_GEN3_BRINGUP == 1;
+    // Only the explicit ZU15EG stages select the x2 PHY and host interface.
     generate
-        if (LINK_WIDTH != 1) begin : unsupported_integrated_width
+        if (!X2_STAGE && (LINK_WIDTH != 1 || X2_GEN1_BRINGUP != 0 || X2_GEN2_BRINGUP != 0 ||
+                          X2_GEN3_BRINGUP != 0)) begin : unsupported_integrated_width
             initial begin
-                if (LINK_WIDTH != 2) $fatal(1, "LINK_WIDTH must be 1 or 2");
+                if (LINK_WIDTH != 1 && LINK_WIDTH != 2) $fatal(1, "LINK_WIDTH must be 1 or 2");
                 else
                     $fatal(
                         1,
@@ -134,8 +144,8 @@ module soft_pcie_root #(
     endgenerate
     // The catalog checkbox fixes backend and dimensions together at elaboration.
     // Link state never changes packet width or accepted-owner capacity.
-    localparam integer PACKET_DWORDS = ENABLE_GEN3 ? 2 : 1;
-    localparam integer READ_PREFETCH_SLOTS = ENABLE_GEN3 ? 8 : 2;
+    localparam integer PACKET_DWORDS = X2_STAGE ? 4 : ENABLE_GEN3 ? 2 : 1;
+    localparam integer READ_PREFETCH_SLOTS = X2_STAGE ? 16 : ENABLE_GEN3 ? 8 : 2;
     wire enable, cv, cr, rv, rr;
     wire linkup_raw, active_raw, error_raw, linkup, active, error;
     wire [4:0] state_raw;
@@ -278,62 +288,66 @@ module soft_pcie_root #(
         .dma_enable_o (dma_enable),
         .irq_o        (irq_o)
     );
-    pcie_ddr_bridge #(
-        .RX_DWORDS      (PACKET_DWORDS),
-        .TX_DWORDS      (PACKET_DWORDS),
-        .READ_SLOTS     (READ_PREFETCH_SLOTS),
-        .PIPELINED_READS(PACKET_DWORDS == 2)
-    ) ddr (
-        .clk             (core_clk),
-        .rst_n           (mailbox_release_q[2]),
-        .link_active_i   (active),
-        .dma_enable_i    (dma_enable),
-        .rx_last_single_i(rxsingle),
-        .rx_data_i       (rxdata),
-        .rx_valid_i      (rxvalid),
-        .rx_last_i       (rxlast),
-        .rx_ready_o      (rxready),
-        .tx_last_single_o(txsingle),
-        .tx_data_o       (txdata),
-        .tx_valid_o      (txvalid),
-        .tx_last_o       (txlast),
-        .tx_ready_i      (txready),
-        .tx_credits_o    (txcost),
-        .perf_events_o   (perf_events),
-        .msi_valid_o     (msi),
-        .msi_vector_o    (vector),
-        .fault_o         (dma_fault),
-        .idle_o          (dma_idle),
-        .m_axi_awaddr    (m_ddr_awaddr),
-        .m_axi_awlen     (m_ddr_awlen),
-        .m_axi_awsize    (m_ddr_awsize),
-        .m_axi_awburst   (m_ddr_awburst),
-        .m_axi_awcache   (m_ddr_awcache),
-        .m_axi_awprot    (m_ddr_awprot),
-        .m_axi_awvalid   (m_ddr_awvalid),
-        .m_axi_awready   (m_ddr_awready),
-        .m_axi_wdata     (m_ddr_wdata),
-        .m_axi_wstrb     (m_ddr_wstrb),
-        .m_axi_wlast     (m_ddr_wlast),
-        .m_axi_wvalid    (m_ddr_wvalid),
-        .m_axi_wready    (m_ddr_wready),
-        .m_axi_bresp     (m_ddr_bresp),
-        .m_axi_bvalid    (m_ddr_bvalid),
-        .m_axi_bready    (m_ddr_bready),
-        .m_axi_araddr    (m_ddr_araddr),
-        .m_axi_arlen     (m_ddr_arlen),
-        .m_axi_arsize    (m_ddr_arsize),
-        .m_axi_arburst   (m_ddr_arburst),
-        .m_axi_arcache   (m_ddr_arcache),
-        .m_axi_arprot    (m_ddr_arprot),
-        .m_axi_arvalid   (m_ddr_arvalid),
-        .m_axi_arready   (m_ddr_arready),
-        .m_axi_rdata     (m_ddr_rdata),
-        .m_axi_rresp     (m_ddr_rresp),
-        .m_axi_rlast     (m_ddr_rlast),
-        .m_axi_rvalid    (m_ddr_rvalid),
-        .m_axi_rready    (m_ddr_rready)
-    );
+    generate
+        if (!X2_STAGE) begin : x1_ddr
+            pcie_ddr_bridge #(
+                .RX_DWORDS      (PACKET_DWORDS),
+                .TX_DWORDS      (PACKET_DWORDS),
+                .READ_SLOTS     (READ_PREFETCH_SLOTS),
+                .PIPELINED_READS(PACKET_DWORDS == 2)
+            ) ddr (
+                .clk             (core_clk),
+                .rst_n           (mailbox_release_q[2]),
+                .link_active_i   (active),
+                .dma_enable_i    (dma_enable),
+                .rx_last_single_i(rxsingle),
+                .rx_data_i       (rxdata),
+                .rx_valid_i      (rxvalid),
+                .rx_last_i       (rxlast),
+                .rx_ready_o      (rxready),
+                .tx_last_single_o(txsingle),
+                .tx_data_o       (txdata),
+                .tx_valid_o      (txvalid),
+                .tx_last_o       (txlast),
+                .tx_ready_i      (txready),
+                .tx_credits_o    (txcost),
+                .perf_events_o   (perf_events),
+                .msi_valid_o     (msi),
+                .msi_vector_o    (vector),
+                .fault_o         (dma_fault),
+                .idle_o          (dma_idle),
+                .m_axi_awaddr    (m_ddr_awaddr),
+                .m_axi_awlen     (m_ddr_awlen),
+                .m_axi_awsize    (m_ddr_awsize),
+                .m_axi_awburst   (m_ddr_awburst),
+                .m_axi_awcache   (m_ddr_awcache),
+                .m_axi_awprot    (m_ddr_awprot),
+                .m_axi_awvalid   (m_ddr_awvalid),
+                .m_axi_awready   (m_ddr_awready),
+                .m_axi_wdata     (m_ddr_wdata),
+                .m_axi_wstrb     (m_ddr_wstrb),
+                .m_axi_wlast     (m_ddr_wlast),
+                .m_axi_wvalid    (m_ddr_wvalid),
+                .m_axi_wready    (m_ddr_wready),
+                .m_axi_bresp     (m_ddr_bresp),
+                .m_axi_bvalid    (m_ddr_bvalid),
+                .m_axi_bready    (m_ddr_bready),
+                .m_axi_araddr    (m_ddr_araddr),
+                .m_axi_arlen     (m_ddr_arlen),
+                .m_axi_arsize    (m_ddr_arsize),
+                .m_axi_arburst   (m_ddr_arburst),
+                .m_axi_arcache   (m_ddr_arcache),
+                .m_axi_arprot    (m_ddr_arprot),
+                .m_axi_arvalid   (m_ddr_arvalid),
+                .m_axi_arready   (m_ddr_arready),
+                .m_axi_rdata     (m_ddr_rdata),
+                .m_axi_rresp     (m_ddr_rresp),
+                .m_axi_rlast     (m_ddr_rlast),
+                .m_axi_rvalid    (m_ddr_rvalid),
+                .m_axi_rready    (m_ddr_rready)
+            );
+        end
+    endgenerate
     pcie_root_csr csr (
         .aclk              (aclk),
         .aresetn           (aresetn),
@@ -401,99 +415,75 @@ module soft_pcie_root #(
         {root_status, root_result}
     );
     assign {status, result} = host_response;
-    wire [31:0] root_rxdata;
-    wire root_rxvalid, root_rxlast, root_rxready;
-    wire [42:0] root_tx_payload;
-    wire root_txvalid, root_txlast, root_txready;
-
-    wire [32*PACKET_DWORDS:0] packed_rxdata;
-    wire packed_rxvalid, packed_rxlast, packed_rxready;
     generate
-        if (PACKET_DWORDS == 2) begin : wide_rx
-            pcie_rx_pack rx_pack (
-                .clk      (link_clk),
-                .rst_n    (link_release_q[2]),
-                .s_data_i (root_rxdata),
-                .s_valid_i(root_rxvalid),
-                .s_last_i (root_rxlast),
-                .s_ready_o(root_rxready),
-                .m_data_o (packed_rxdata),
-                .m_valid_o(packed_rxvalid),
-                .m_last_o (packed_rxlast),
-                .m_ready_i(packed_rxready)
+        if (X2_STAGE) begin : legacy_x2_mode
+            wire [63:0] packet_tx, packet_rx;
+            wire [1:0] tx_words, rx_words;
+            wire tx_valid, tx_last, tx_ready, rx_valid, rx_last, rx_ready;
+            wire [8:0] tx_credits;
+            wire rx_link_fault, tx_link_fault;
+            assign rx_cross_fault = rx_link_fault || tx_link_fault;
+            assign fallback       = 0;
+            pcie_x2_host_path host_path (
+                .clk              (core_clk),
+                .link_clk         (link_clk),
+                .rst_n            (aresetn),
+                .link_active_i    (active),
+                .dma_enable_i     (dma_enable),
+                .rx_cross_fault_o (rx_link_fault),
+                .tx_cross_fault_o (tx_link_fault),
+                .tx_source_fault_o(tx_cross_fault),
+                .link_rx_data_i   (packet_rx),
+                .link_rx_words_i  (rx_words),
+                .link_rx_valid_i  (rx_valid),
+                .link_rx_last_i   (rx_last),
+                .link_rx_ready_o  (rx_ready),
+                .link_tx_data_o   (packet_tx),
+                .link_tx_words_o  (tx_words),
+                .link_tx_valid_o  (tx_valid),
+                .link_tx_last_o   (tx_last),
+                .link_tx_ready_i  (tx_ready),
+                .link_tx_credits_o(tx_credits),
+                .msi_valid_o      (msi),
+                .msi_vector_o     (vector),
+                .perf_events_o    (perf_events),
+                .fault_o          (dma_fault),
+                .idle_o           (dma_idle),
+                .m_axi_awaddr     (m_ddr_awaddr),
+                .m_axi_awlen      (m_ddr_awlen),
+                .m_axi_awsize     (m_ddr_awsize),
+                .m_axi_awburst    (m_ddr_awburst),
+                .m_axi_awcache    (m_ddr_awcache),
+                .m_axi_awprot     (m_ddr_awprot),
+                .m_axi_awvalid    (m_ddr_awvalid),
+                .m_axi_awready    (m_ddr_awready),
+                .m_axi_wdata      (m_ddr_wdata),
+                .m_axi_wstrb      (m_ddr_wstrb),
+                .m_axi_wlast      (m_ddr_wlast),
+                .m_axi_wvalid     (m_ddr_wvalid),
+                .m_axi_wready     (m_ddr_wready),
+                .m_axi_bresp      (m_ddr_bresp),
+                .m_axi_bvalid     (m_ddr_bvalid),
+                .m_axi_bready     (m_ddr_bready),
+                .m_axi_araddr     (m_ddr_araddr),
+                .m_axi_arlen      (m_ddr_arlen),
+                .m_axi_arsize     (m_ddr_arsize),
+                .m_axi_arburst    (m_ddr_arburst),
+                .m_axi_arcache    (m_ddr_arcache),
+                .m_axi_arprot     (m_ddr_arprot),
+                .m_axi_arvalid    (m_ddr_arvalid),
+                .m_axi_arready    (m_ddr_arready),
+                .m_axi_rdata      (m_ddr_rdata),
+                .m_axi_rresp      (m_ddr_rresp),
+                .m_axi_rlast      (m_ddr_rlast),
+                .m_axi_rvalid     (m_ddr_rvalid),
+                .m_axi_rready     (m_ddr_rready)
             );
-        end else begin : narrow_rx
-            assign packed_rxdata  = {1'b0, root_rxdata};
-            assign packed_rxvalid = root_rxvalid;
-            assign packed_rxlast  = root_rxlast;
-            assign root_rxready   = packed_rxready;
-        end
-    endgenerate
-    pcie_cdc_packet #(
-        .WIDTH(32 * PACKET_DWORDS + 1),
-        .WORDS(64 / PACKET_DWORDS),
-        .SLOTS(4)
-    ) rx_crossing (
-        link_clk,
-        core_clk,
-        aresetn,
-        packed_rxdata,
-        packed_rxvalid,
-        packed_rxlast,
-        packed_rxready,
-        rx_cross_fault,
-        {rxsingle, rxdata},
-        rxvalid,
-        rxlast,
-        rxready
-    );
-    wire [32*PACKET_DWORDS+3:0] crossed_tx;
-    wire crossed_valid, crossed_last, crossed_ready;
-    pcie_cdc_packet #(
-        .WIDTH(32 * PACKET_DWORDS + 4),
-        .WORDS(64 / PACKET_DWORDS),
-        .SLOTS(4)
-    ) tx_crossing (
-        core_clk,
-        link_clk,
-        aresetn,
-        {txcost[2:0], txsingle, txdata},
-        txvalid,
-        txlast,
-        txready,
-        tx_cross_fault,
-        crossed_tx,
-        crossed_valid,
-        crossed_last,
-        crossed_ready
-    );
-    generate
-        if (PACKET_DWORDS == 2) begin : wide_tx
-            pcie_tx_unpack tx_unpack (
-                .clk      (link_clk),
-                .rst_n    (link_release_q[2]),
-                .s_data_i (crossed_tx),
-                .s_valid_i(crossed_valid),
-                .s_last_i (crossed_last),
-                .s_ready_o(crossed_ready),
-                .m_data_o (root_tx_payload),
-                .m_valid_o(root_txvalid),
-                .m_last_o (root_txlast),
-                .m_ready_i(root_txready)
-            );
-        end else begin : narrow_tx
-            assign root_tx_payload = {2'd2, 6'b0, crossed_tx[35:33], crossed_tx[31:0]};
-            assign root_txvalid    = crossed_valid;
-            assign root_txlast     = crossed_last;
-            assign crossed_ready   = root_txready;
-        end
-    endgenerate
-    generate
-        if (ENABLE_GEN3) begin : gen3_mode
-            gen3_native_root #(
-                .TX_PRESET(GEN3_TX_PRESET)
+            gen3_native_x2 #(
+                .GEN2_ENABLE(X2_GEN2_BRINGUP | X2_GEN3_BRINGUP),
+                .GEN3_ENABLE(X2_GEN3_BRINGUP),
+                .TX_PRESET  (GEN3_TX_PRESET)
             ) root_port (
-                .freerun_clk_i       (aclk),
                 .reset_i             (!aresetn),
                 .enable_i            (enable),
                 .refclk_p_i          (refclk_p_i),
@@ -504,15 +494,12 @@ module soft_pcie_root #(
                 .tx_n_o              (tx_n_o),
                 .core_clk_o          (link_clk),
                 .perst_a_o           (perst_a_o),
-                .perst_b_o           (),
                 .disable_ssd2_power_o(disable_ssd2_power_o),
+                .link_up_o           (linkup_raw),
+                .dl_active_o         (active_raw),
                 .force_gen1_i        (force_gen1),
                 .gen2_o              (gen2),
                 .rate_busy_o         (rate_busy),
-                .fallback_o          (fallback),
-                .retrain_i           (1'b0),
-                .link_up_o           (linkup_raw),
-                .dl_active_o         (active_raw),
                 .state_o             (state_raw),
                 .diagnostic_o        (phy_diagnostic),
                 .completion_debug_o  (completion_debug),
@@ -527,66 +514,202 @@ module soft_pcie_root #(
                 .rsp_ready_i         (root_rr),
                 .rsp_data_o          (root_result),
                 .rsp_status_o        (root_status),
-                .app_tx_data_i       (root_tx_payload[31:0]),
-                .app_tx_valid_i      (root_txvalid),
-                .app_tx_last_i       (root_txlast),
-                .app_tx_ready_o      (root_txready),
-                .app_tx_class_i      (root_tx_payload[42:41]),
-                .app_tx_credits_i    (root_tx_payload[40:32]),
-                .app_rx_data_o       (root_rxdata),
-                .app_rx_valid_o      (root_rxvalid),
-                .app_rx_last_o       (root_rxlast),
-                .app_rx_ready_i      (root_rxready),
+                .app_tx_data_i       (packet_tx),
+                .app_tx_words_i      (tx_words),
+                .app_tx_credits_i    (tx_credits),
+                .app_tx_valid_i      (tx_valid),
+                .app_tx_last_i       (tx_last),
+                .app_tx_ready_o      (tx_ready),
+                .app_rx_data_o       (packet_rx),
+                .app_rx_words_o      (rx_words),
+                .app_rx_valid_o      (rx_valid),
+                .app_rx_last_o       (rx_last),
+                .app_rx_ready_i      (rx_ready),
                 .error_o             (error_raw)
             );
-        end else begin : gen2_mode
-            pcie_soft_root_port root_port (
-                .freerun_clk_i       (aclk),
-                .reset_i             (!aresetn),
-                .enable_i            (enable),
-                .refclk_p_i          (refclk_p_i),
-                .refclk_n_i          (refclk_n_i),
-                .rx_p_i              (rx_p_i),
-                .rx_n_i              (rx_n_i),
-                .tx_p_o              (tx_p_o),
-                .tx_n_o              (tx_n_o),
-                .core_clk_o          (link_clk),
-                .perst_a_o           (perst_a_o),
-                .perst_b_o           (),
-                .disable_ssd2_power_o(disable_ssd2_power_o),
-                .force_gen1_i        (force_gen1),
-                .gen2_o              (gen2),
-                .rate_busy_o         (rate_busy),
-                .fallback_o          (fallback),
-                .retrain_i           (1'b0),
-                .link_up_o           (linkup_raw),
-                .dl_active_o         (active_raw),
-                .state_o             (state_raw),
-                .diagnostic_o        (phy_diagnostic),
-                .completion_debug_o  (completion_debug),
-                .cmd_valid_i         (root_cv),
-                .cmd_ready_o         (root_cr),
-                .cmd_op_i            (root_command[118:116]),
-                .cmd_address_i       (root_command[115:52]),
-                .cmd_bdf_i           (root_command[51:36]),
-                .cmd_data_i          (root_command[35:4]),
-                .cmd_be_i            (root_command[3:0]),
-                .rsp_valid_o         (root_rv),
-                .rsp_ready_i         (root_rr),
-                .rsp_data_o          (root_result),
-                .rsp_status_o        (root_status),
-                .app_tx_data_i       (root_tx_payload[31:0]),
-                .app_tx_valid_i      (root_txvalid),
-                .app_tx_last_i       (root_txlast),
-                .app_tx_ready_o      (root_txready),
-                .app_tx_class_i      (root_tx_payload[42:41]),
-                .app_tx_credits_i    (root_tx_payload[40:32]),
-                .app_rx_data_o       (root_rxdata),
-                .app_rx_valid_o      (root_rxvalid),
-                .app_rx_last_o       (root_rxlast),
-                .app_rx_ready_i      (root_rxready),
-                .error_o             (error_raw)
+        end else begin : x1_packets
+            wire [31:0] root_rxdata;
+            wire root_rxvalid, root_rxlast, root_rxready;
+            wire [42:0] root_tx_payload;
+            wire root_txvalid, root_txlast, root_txready;
+
+            wire [32*PACKET_DWORDS:0] packed_rxdata;
+            wire packed_rxvalid, packed_rxlast, packed_rxready;
+            if (PACKET_DWORDS == 2) begin : wide_rx
+                pcie_rx_pack rx_pack (
+                    .clk      (link_clk),
+                    .rst_n    (link_release_q[2]),
+                    .s_data_i (root_rxdata),
+                    .s_valid_i(root_rxvalid),
+                    .s_last_i (root_rxlast),
+                    .s_ready_o(root_rxready),
+                    .m_data_o (packed_rxdata),
+                    .m_valid_o(packed_rxvalid),
+                    .m_last_o (packed_rxlast),
+                    .m_ready_i(packed_rxready)
+                );
+            end else begin : narrow_rx
+                assign packed_rxdata  = {1'b0, root_rxdata};
+                assign packed_rxvalid = root_rxvalid;
+                assign packed_rxlast  = root_rxlast;
+                assign root_rxready   = packed_rxready;
+            end
+            pcie_cdc_packet #(
+                .WIDTH(32 * PACKET_DWORDS + 1),
+                .WORDS(64 / PACKET_DWORDS),
+                .SLOTS(4)
+            ) rx_crossing (
+                link_clk,
+                core_clk,
+                aresetn,
+                packed_rxdata,
+                packed_rxvalid,
+                packed_rxlast,
+                packed_rxready,
+                rx_cross_fault,
+                {rxsingle, rxdata},
+                rxvalid,
+                rxlast,
+                rxready
             );
+            wire [32*PACKET_DWORDS+3:0] crossed_tx;
+            wire crossed_valid, crossed_last, crossed_ready;
+            pcie_cdc_packet #(
+                .WIDTH(32 * PACKET_DWORDS + 4),
+                .WORDS(64 / PACKET_DWORDS),
+                .SLOTS(4)
+            ) tx_crossing (
+                core_clk,
+                link_clk,
+                aresetn,
+                {txcost[2:0], txsingle, txdata},
+                txvalid,
+                txlast,
+                txready,
+                tx_cross_fault,
+                crossed_tx,
+                crossed_valid,
+                crossed_last,
+                crossed_ready
+            );
+            if (PACKET_DWORDS == 2) begin : wide_tx
+                pcie_tx_unpack tx_unpack (
+                    .clk      (link_clk),
+                    .rst_n    (link_release_q[2]),
+                    .s_data_i (crossed_tx),
+                    .s_valid_i(crossed_valid),
+                    .s_last_i (crossed_last),
+                    .s_ready_o(crossed_ready),
+                    .m_data_o (root_tx_payload),
+                    .m_valid_o(root_txvalid),
+                    .m_last_o (root_txlast),
+                    .m_ready_i(root_txready)
+                );
+            end else begin : narrow_tx
+                assign root_tx_payload = {2'd2, 6'b0, crossed_tx[35:33], crossed_tx[31:0]};
+                assign root_txvalid    = crossed_valid;
+                assign root_txlast     = crossed_last;
+                assign crossed_ready   = root_txready;
+            end
+            if (ENABLE_GEN3) begin : gen3_mode
+                gen3_native_root #(
+                    .TX_PRESET(GEN3_TX_PRESET)
+                ) root_port (
+                    .freerun_clk_i       (aclk),
+                    .reset_i             (!aresetn),
+                    .enable_i            (enable),
+                    .refclk_p_i          (refclk_p_i),
+                    .refclk_n_i          (refclk_n_i),
+                    .rx_p_i              (rx_p_i),
+                    .rx_n_i              (rx_n_i),
+                    .tx_p_o              (tx_p_o),
+                    .tx_n_o              (tx_n_o),
+                    .core_clk_o          (link_clk),
+                    .perst_a_o           (perst_a_o),
+                    .perst_b_o           (),
+                    .disable_ssd2_power_o(disable_ssd2_power_o),
+                    .force_gen1_i        (force_gen1),
+                    .gen2_o              (gen2),
+                    .rate_busy_o         (rate_busy),
+                    .fallback_o          (fallback),
+                    .retrain_i           (1'b0),
+                    .link_up_o           (linkup_raw),
+                    .dl_active_o         (active_raw),
+                    .state_o             (state_raw),
+                    .diagnostic_o        (phy_diagnostic),
+                    .completion_debug_o  (completion_debug),
+                    .cmd_valid_i         (root_cv),
+                    .cmd_ready_o         (root_cr),
+                    .cmd_op_i            (root_command[118:116]),
+                    .cmd_address_i       (root_command[115:52]),
+                    .cmd_bdf_i           (root_command[51:36]),
+                    .cmd_data_i          (root_command[35:4]),
+                    .cmd_be_i            (root_command[3:0]),
+                    .rsp_valid_o         (root_rv),
+                    .rsp_ready_i         (root_rr),
+                    .rsp_data_o          (root_result),
+                    .rsp_status_o        (root_status),
+                    .app_tx_data_i       (root_tx_payload[31:0]),
+                    .app_tx_valid_i      (root_txvalid),
+                    .app_tx_last_i       (root_txlast),
+                    .app_tx_ready_o      (root_txready),
+                    .app_tx_class_i      (root_tx_payload[42:41]),
+                    .app_tx_credits_i    (root_tx_payload[40:32]),
+                    .app_rx_data_o       (root_rxdata),
+                    .app_rx_valid_o      (root_rxvalid),
+                    .app_rx_last_o       (root_rxlast),
+                    .app_rx_ready_i      (root_rxready),
+                    .error_o             (error_raw)
+                );
+            end else begin : gen2_mode
+                pcie_soft_root_port root_port (
+                    .freerun_clk_i       (aclk),
+                    .reset_i             (!aresetn),
+                    .enable_i            (enable),
+                    .refclk_p_i          (refclk_p_i),
+                    .refclk_n_i          (refclk_n_i),
+                    .rx_p_i              (rx_p_i),
+                    .rx_n_i              (rx_n_i),
+                    .tx_p_o              (tx_p_o),
+                    .tx_n_o              (tx_n_o),
+                    .core_clk_o          (link_clk),
+                    .perst_a_o           (perst_a_o),
+                    .perst_b_o           (),
+                    .disable_ssd2_power_o(disable_ssd2_power_o),
+                    .force_gen1_i        (force_gen1),
+                    .gen2_o              (gen2),
+                    .rate_busy_o         (rate_busy),
+                    .fallback_o          (fallback),
+                    .retrain_i           (1'b0),
+                    .link_up_o           (linkup_raw),
+                    .dl_active_o         (active_raw),
+                    .state_o             (state_raw),
+                    .diagnostic_o        (phy_diagnostic),
+                    .completion_debug_o  (completion_debug),
+                    .cmd_valid_i         (root_cv),
+                    .cmd_ready_o         (root_cr),
+                    .cmd_op_i            (root_command[118:116]),
+                    .cmd_address_i       (root_command[115:52]),
+                    .cmd_bdf_i           (root_command[51:36]),
+                    .cmd_data_i          (root_command[35:4]),
+                    .cmd_be_i            (root_command[3:0]),
+                    .rsp_valid_o         (root_rv),
+                    .rsp_ready_i         (root_rr),
+                    .rsp_data_o          (root_result),
+                    .rsp_status_o        (root_status),
+                    .app_tx_data_i       (root_tx_payload[31:0]),
+                    .app_tx_valid_i      (root_txvalid),
+                    .app_tx_last_i       (root_txlast),
+                    .app_tx_ready_o      (root_txready),
+                    .app_tx_class_i      (root_tx_payload[42:41]),
+                    .app_tx_credits_i    (root_tx_payload[40:32]),
+                    .app_rx_data_o       (root_rxdata),
+                    .app_rx_valid_o      (root_rxvalid),
+                    .app_rx_last_o       (root_rxlast),
+                    .app_rx_ready_i      (root_rxready),
+                    .error_o             (error_raw)
+                );
+            end
         end
     endgenerate
 endmodule

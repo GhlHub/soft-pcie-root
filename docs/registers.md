@@ -6,8 +6,10 @@ Use the Linux host driver for normal operation.
 
 The version 1.1 catalog checkbox is a synthesis-time configuration, not a new register
 or ABI version. In these configurable builds, DBR1 offset 0x90 reports 0x00000201 for
-Gen3 disabled (one DWORD/beat, two slots), or 0x00000802 for Gen3 enabled (two
-DWORDs/beat, eight slots). It reports built capacity, not negotiated link speed. See
+Gen3 disabled (one DWORD/beat, two slots), 0x00000802 for Gen3 x1 (two
+DWORDs/beat, eight slots), or 0x00001004 for the ZU15EG x2 development
+stages (four DWORDs/beat, sixteen slots). It reports built capacity, independent of
+negotiated link speed. See
 [catalog selection](ip-guide.md#optional-gen3-packaging).
 
 | Example address | Block |
@@ -26,7 +28,7 @@ DWORDs/beat, eight slots). It reports built capacity, not negotiated link speed.
 | 0x08 | RO | bit 0 link; bit 1 DL active; bit 2 error; bits 7:3 informational LTSSM |
 | 0x0C | RO | PHY diagnostic levels and heartbeat counter width |
 | 0x10 | RW | bit 0 enable; bit 1 force Gen1 (change while disabled) |
-| 0x18 / 0x1C | RO | Measured link-clock sample / management measurement window |
+| 0x18 / 0x1C | RO | Host core clock heartbeat sample / management measurement window |
 | 0x20 / 0x24 | RW | Command address low/high |
 | 0x28 | RW | Command write data |
 | 0x2C | RW | bits 2:0 opcode, 7:4 byte enables, 31:16 BDF |
@@ -35,6 +37,14 @@ DWORDs/beat, eight slots). It reports built capacity, not negotiated link speed.
 | 0x38 | RO | Result data |
 | 0x40–0x4C | RO | Completion diagnostic DWORDs |
 | 0x50 | RO | bit 0 Gen2, bit 1 rate-idle/busy, bit 2 fallback, bit 3 Gen2 capable |
+
+In `gen2-x2`, bit 0 reflects the shared PIPE rate after both lanes acknowledge
+the command. It can update during Recovery, while bit 1 remains set until
+the link returns to L0. The Gen1-only stage always reports bit 0 clear.
+The `gen3-x2` stage also clears bit 0 at Gen3. Gen3 x2 uses state 20 for
+Phase 1, state 21 for adaptive equalization, and state 18 for L0.
+The heartbeat for the ZU15EG split-clock profiles measures the fixed 125 MHz
+host clock.
 
 Opcodes 0/1 are memory read/write; 2/3 configuration Type 0 read/write. Historical
 Type 1 opcode encodings 4/5 exist in the mailbox but Type 1 topology is unsupported.
@@ -84,6 +94,37 @@ the previous native training/Recovery diagnostic format is retained. These
 registers are passive, non-atomic diagnostic samples; read stable repeated values
 and never use them as a reset or ownership interface.
 
+### Gen3 x2 Polling.Configuration diagnostics
+
+A Gen3 x2 Polling.Configuration failure before link ownership leaves an
+`XPC1` record at SRP1 0x40–0x4C. Offset 0x44 contains the elapsed link clock
+cycles. Offsets 0x48 and 0x4C contain lane 1 and lane 0, respectively. Bits
+31:27 give the longest consecutive qualifying TS2 burst. Bits 26:22 give the
+number of locally completed TS2s after the first qualifying TS2, capped at
+31. Bits 21:17 record whether the lane saw TS1, qualified TS2, unqualified
+TS2, a PHY receive error, or a malformed training sequence. Bit 16 gives the
+inverted flag of the last decoded TS. Bits 15:8 and 7:0 hold its rate and
+control bytes. A lane without a decoded TS reports zero for the last-TS fields.
+
+### Gen3 x2 equalization failure diagnostics
+
+Before the packet port starts, a failed Gen3 x2 equalization attempt exposes a
+held `XEQ1` record at SRP1 0x40–0x4C. At 0x44, bits 31:30 give the Phase 1 or
+Phase 2/3 controller state and bits 29:0 give the elapsed link clock cycles.
+Offset 0x48 describes lane 1 and 0x4C describes lane 0. Each lane word contains
+the last TS rate byte in bits 15:8. Bits 7:0 are alignment, Phase 1 completion,
+Phase 2/3 completion, PHY ready, TS event, qualified TS, Phase 1 failure and
+Phase 2/3 failure, in descending order.
+
+Bits 31:16 hold receive error context or equalization status. A nonzero code in
+31:29 identifies a decoder error. Codes 1–5 mean invalid sync header, a start
+inside a previous block, invalid SKP, an orphan continuation, or an unexpected
+ordered set. Bits 28:21 capture the first byte of the failing word. The header,
+start bit and word index occupy bits 20:19, 18 and 17:16. With code zero, bits
+28:26 and 25:22 hold the Phase 1 and adaptive failure reasons. Bits 21:20 hold
+the last received EC, and bits 19:16 hold valid, start, and the header. Once the
+packet port starts, its normal completion diagnostics resume.
+
 ## DBR1 offsets (S_MEM+0)
 
 | Offset | Access | Meaning |
@@ -96,7 +137,7 @@ and never use them as a reset or ownership interface.
 | 0x28 | WO | MSI acknowledge, write-one-to-clear |
 | 0x80 | RW | PRF1 counters: bit 0 enable, bit 1 clear strobe |
 | 0x84 | RO | Counter overflow bitmap |
-| 0x88 / 0x8C | RO | Profiling magic: PRF1 0x50524631 or wide-path PRF2 0x50524632 / host clock 125000000 Hz |
+| 0x88 / 0x8C | RO | Profiling magic PRF1 `0x50524631`, PRF2 `0x50524632`, or PRF3 `0x50524633` (x2 development) / host clock 125000000 Hz |
 | 0x90 | RO | New configurable build: bits 7:0 packet DWORDs/beat; bits 15:8 read slots; upper bits zero. Only read on a known new image; older PRF1 images lack this offset. |
 | 0x100–0x17C | RO | 32 profiling counters, see below |
 

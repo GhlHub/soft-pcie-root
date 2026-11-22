@@ -5,23 +5,27 @@
 Never vendor generated output. Fail on changed insertion anchors. Without the
 startup flag, existing assignments remain unchanged.
 """
+import argparse
 import hashlib
 import json
 from pathlib import Path
-import sys
 
 def replace_once(text, old, new):
     if text.count(old) != 1:
         raise SystemExit(f'Expected exactly one insertion anchor: {old!r}')
     return text.replace(old, new)
 
-def instrument(base, out, startup_reference=False):
+def instrument(base, out, startup_reference=False, module_name='gen3_reference_phy',
+               shared_cdr_hold=False):
     out.mkdir()
     evidence = {}
-    for relative in ['source/gen3_reference_phy_gt_phy_rst.v',
-                     'source/gen3_reference_phy_gt_phy_wrapper.v',
-                     'source/gen3_reference_phy_core_top.v',
-                     'synth/gen3_reference_phy.v']:
+    paths = [f'source/{module_name}_gt_phy_rst.v',
+             f'source/{module_name}_gt_phy_wrapper.v',
+             f'source/{module_name}_core_top.v',
+             f'synth/{module_name}.v']
+    if shared_cdr_hold:
+        paths.append(f'source/{module_name}_gt_cdr_ctrl_on_eidle.v')
+    for relative in paths:
         original = (base / relative).read_text()
         text = original
         if relative.endswith('_rst.v'):
@@ -42,6 +46,17 @@ def instrument(base, out, startup_reference=False):
                 text = replace_once(text,
                     "assign PHY_TXOUTCLKSEL = 3'h5; //rst_cpllreset ? 3'h3 : 3'h5;",
                     "assign PHY_TXOUTCLKSEL = rst_cpllreset ? 3'h3 : 3'h5;")
+            if shared_cdr_hold:
+                # All CDR control instances sample the common request in
+                # PHY_REFCLK. Move the unchanged-depth synchronizer before
+                # lane fanout so both state machines get the same sample.
+                anchor = '    wire        [PHY_LANE-1:0]          gt_rxcdrhold;'
+                text = replace_once(text, anchor, anchor + '\n'
+                    '    wire phy_refclk_cdr_hold;\n'
+                    f'    {module_name}_sync #(.WIDTH(1), .STAGE(3)) sync_shared_cdr_hold (\n'
+                    '        .CLK(PHY_REFCLK), .D(PHY_RXCDRHOLD), .Q(phy_refclk_cdr_hold));')
+                text = replace_once(text, '.CDRCTRL_RXCDRHOLD_IN                       (PHY_RXCDRHOLD)',
+                                    '.CDRCTRL_RXCDRHOLD_IN                       (phy_refclk_cdr_hold)')
             text = replace_once(text, '    input                               PHY_REFCLK,',
                                 '    output wire [63:0] EQ_DIAG,\n    input                               PHY_REFCLK,')
             text = replace_once(text, 'phy_rst_i\n(', 'phy_rst_i\n(\n    .EQ_DIAG(EQ_DIAG[31:0]),')
@@ -60,6 +75,13 @@ always @(posedge pclk) eq_pclk_count <= eq_pclk_count + 1'b1;
 '''
             added += '\n'.join(f'assign EQ_DIAG[{32+i}] = {s};' for i, s in enumerate(signals))
             text = replace_once(text, 'endmodule', added + "\nassign EQ_DIAG[63:43] = 0;\nendmodule")
+        elif relative.endswith('_cdr_ctrl_on_eidle.v'):
+            text = replace_once(text, 'parameter integer SYNC_STAGE                 = 3,',
+                                'parameter integer SYNC_STAGE                 = 3, // Shared wrapper depth')
+            text = replace_once(text,
+                f'{module_name}_sync #(.WIDTH (1), .STAGE (SYNC_STAGE)) sync_rxcdrreset_in  '
+                '(.CLK (CDRCTRL_CLK), .D (CDRCTRL_RXCDRHOLD_IN),    .Q (rxcdrhold_in_r));',
+                'assign rxcdrhold_in_r = CDRCTRL_RXCDRHOLD_IN;')
         elif relative.endswith('_core_top.v'):
             text = replace_once(text, '   input  wire                         phy_refclk,',
                                 '   output wire [63:0] eq_diag,\n   input  wire                         phy_refclk,')
@@ -74,6 +96,12 @@ always @(posedge pclk) eq_pclk_count <= eq_pclk_count + 1'b1;
     (out / 'instrumentation.json').write_text(json.dumps(evidence, indent=2)+'\n')
 
 if __name__ == '__main__':
-    if len(sys.argv) not in (3,4) or (len(sys.argv)==4 and sys.argv[3]!='--startup-reference'):
-        raise SystemExit('Usage: instrument_eq_phy.py generated-ip output [--startup-reference]')
-    instrument(Path(sys.argv[1]), Path(sys.argv[2]), len(sys.argv)==4)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('base', type=Path)
+    parser.add_argument('output', type=Path)
+    parser.add_argument('--startup-reference', action='store_true')
+    parser.add_argument('--module-name', default='gen3_reference_phy')
+    parser.add_argument('--shared-cdr-hold', action='store_true')
+    args = parser.parse_args()
+    instrument(args.base, args.output, args.startup_reference, args.module_name,
+               args.shared_cdr_hold)

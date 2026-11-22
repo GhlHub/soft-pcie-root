@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-21",
+  "device": "xczu15eg-ffvb1156-2-i build target",
+  "path": "FMC DP0, GTH bank 228 REFCLK0",
+  "adapter": "installed model unconfirmed, both reference clocks active",
+  "ssd": "Samsung SSD 990 EVO 1TB",
+  "endpoint_pci_id": "144d:a80d",
+  "linux": "6.6.70",
+  "deployment": "volatile JTAG and RAM Linux, FMC reset and power sidebands undriven",
+  "direct_read_sha256_matches_across_all_rates": true,
+  "rates": [
+    {
+      "speed_GT_s": 2.5,
+      "link_width": 1,
+      "direct_reads": 2,
+      "bytes_per_read": 268435456,
+      "test_bytes_written": 0,
+      "bitstream_sha256": "37f87f314401867b4711d8afb556d6d947b483e10edbe3374086bfc5fde01870"
+    },
+    {
+      "speed_GT_s": 5.0,
+      "link_width": 1,
+      "direct_reads": 2,
+      "bytes_per_read": 268435456,
+      "test_bytes_written": 0,
+      "bitstream_sha256": "37f87f314401867b4711d8afb556d6d947b483e10edbe3374086bfc5fde01870"
+    },
+    {
+      "speed_GT_s": 8.0,
+      "link_width": 1,
+      "direct_reads": 2,
+      "bytes_per_read": 268435456,
+      "test_bytes_written": 0,
+      "bitstream_sha256": "c5508db48971717c963debbb1f5c5c7e365a2d0f8e07ab0d35e064f9bfe8c075"
+    }
+  ],
+  "gen3_x1_sequential_read": {
+    "fio_version": "3.38",
+    "ioengine": "libaio",
+    "direct": true,
+    "jobs": 1,
+    "block_bytes": 1048576,
+    "offset_bytes": 0,
+    "region_bytes": 4294967296,
+    "target_seconds_per_job": 30,
+    "test_bytes_written": 0,
+    "results": [
+      {"queue_depth": 1, "bytes_per_second": 556565588, "runtime_ms": 30001, "fio_error": 0},
+      {"queue_depth": 8, "bytes_per_second": 707042613, "runtime_ms": 30002, "fio_error": 0}
+    ]
+  },
+  "final_state": {
+    "speed_GT_s": 8.0,
+    "link_width": 1,
+    "namespace_inflight": [
+      0,
+      0
+    ],
+    "configuration_status": "0x2",
+    "root_status": "0x93",
+    "ddr_status": "0xc",
+    "nvme_interrupt_delivery_observed": true
+  },
+  "open": [
+    "physical VADJ measurement for this setup",
+    "card-specific reset and power sidebands",
+    "integrated x2",
+    "write integrity, endurance and compliance"
+  ]
+}

@@ -1,20 +1,19 @@
 # Verification and release scope
 
-On `dev/pcie-x2`, the 2026-11-08 regression passed **2,100 tests in 274.11
-seconds**, including 257 new Gen3 x2 packet/host datapath checks. Lint/real-XPM
-and all 147 HDL formatting checks passed. The previous checkpoint also passed
-metadata-only Vivado width validation. Shared x2 training stages and the separate
-64-bit packet / 128-bit host/DDR paths are simulated; the root still explicitly
-blocks x2 elaboration pending PHY/rate-change and root integration. Existing x1
-widths are unchanged. See [scope and remaining work](x2-development.md).
-The subsequent local [OOC resource measurement](x2-resource-measurement.md)
-routes separate x2 blocks. It does not qualify an integrated root or CDC.
-The subsequent [RX timing repair](x2-rx-timing-fix.md) uses 1,517 LUTs,
-496 registers and one BRAM with +0.081/+0.047 ns internal setup/hold slack.
-Its frozen-source regression passed 2,153 tests in 290.42 seconds; lint/XPM
-and all 147 HDL formatting checks passed.
-Interface timing and integrated x2 remain open. Physical x2 verification still
-awaits ZU15EG board availability.
+On `dev/pcie-x2`, the 2026-11-22 regression passed **2,510 tests in 392.45
+seconds**, with lint and real-XPM elaboration also passing. The integrated
+ZU15EG Gen1, Gen2 and Gen3 x2 profiles passed independent route audits and
+negotiated their intended link rates on the board. Each passed two 256 MiB
+direct reads with matching checksums and zero SSD writes. The Gen3 x2 image
+passed one warm startup with +0.024 ns setup and +0.011 ns hold slack. Read
+testing reached 921.21 MB/s across two workers. Cold-start repeatability and
+broader qualification remain open. The ordinary catalog retains its x2
+elaboration guard. [ZU15EG hardware results](../examples/zu15eg/README.md)
+[Gen3 x2 implementation evidence](evidence/zu15eg_gen3_x2_v1/packet-receiver-start.json)
+
+Earlier checkpoints cover [standalone x2 routes](x2-resource-measurement.md)
+and the [RX timing repair](x2-rx-timing-fix.md). Their measurements retain
+their original scope. [Development and remaining work](x2-development.md)
 
 The latest [adaptive review-fix image](adaptive-equalization.md#review-fix-hardware-validation--2026-11-02)
 passed fresh synthesis/route, independent audit, three controlled Gen3 startups,

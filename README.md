@@ -67,10 +67,11 @@ early-quarantine software branch has model coverage but has not been deployed.
 `dev/pcie-x2` integrates the two-lane PHY and a 128-bit host/DDR path for the
 staged ZU15EG builds. Gen1, Gen2 and Gen3 x2 negotiated the intended rate and
 passed read-only NVMe checks on that board. Gen3 x2 reached **921.21 MB/s**
-in a 30-second, two-worker read test. The ordinary IP catalog defaults to x1
-and retains its x2 elaboration guard. The x1 baseline is tagged
+in a 30-second, two-worker read test. The ZU15EG Vivado catalog package
+offers Gen1/Gen2 x1, Gen1/Gen2 x2, Gen3 x1 and Gen3 x2. It defaults to
+Gen1/Gen2 x1. The x1 baseline is tagged
 `x1-hardware-validated-2026-11-08`.
-[ZU15EG build and results](examples/zu15eg/README.md) · [x2 development scope](docs/x2-development.md)
+[ZU15EG catalog and board results](examples/zu15eg/README.md#vivado-ip-catalog) · [x2 development scope](docs/x2-development.md)
 
 ## Configuration and earlier results
 
@@ -143,10 +144,11 @@ a board.
 ## Scope and limitations
 
 One direct endpoint, function 0 only; up to 16 MiB of endpoint BAR space; noncoherent
-DMA to lower 2 GiB DDR in the example; 32 MSI/MSI-X vectors. The DDR master is 64-bit
-AXI at 125 MHz; the ZCU104 interconnect converts to 128-bit PS HP0. Default
-Gen1/Gen2 packaging has two read and two write owners, with 128 bytes of read
-prefetch. Gen3 has eight read and two write owners, with 512 bytes.
+DMA to lower 2 GiB DDR in the example; 32 MSI/MSI-X vectors. The DDR master
+runs at 125 MHz with 64-bit AXI for x1 and 128-bit AXI for x2. The ZCU104
+interconnect converts the x1 master to 128-bit PS HP0. The default Gen1/Gen2
+x1 mode has two read owners and 128 bytes of read prefetch. Gen3 x1 has eight
+read owners and 512 bytes of read prefetch. Both x2 modes have 16 read owners.
 
 No PCIe compliance certification, switch topology, Type 1 routing, multifunction,
 INTx, hotplug, ASPM/AER or safe live PL replacement. Accepted AXI requests must

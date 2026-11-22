@@ -39,6 +39,39 @@ puts PASS
     assert r.stdout.strip()=='PASS'
 
 
+def test_zu15eg_catalog_modes(tmp_path):
+    script = tmp_path / 'catalog.tcl'
+    script.write_text(r'''
+array set props {}
+proc set_property {key value object} {global props; set props($object,$key) $value}
+proc get_property {key object} {global props; return $props($object,$key)}
+source [lindex $argv 0]
+# Exercise mode changes on the same instance, including return to the default.
+foreach {mode width native gen2_x2 gen3_x2} {0 1 0 0 0  3 2 1 0 1  1 2 1 1 0  2 1 1 0 0  0 1 0 0 0} {
+ set_property value $mode mode
+ if {[validate_PARAM_VALUE.PCIE_MODE mode] ne "true"} {error "Catalog mode $mode rejected"}
+ foreach {parameter expected} [list LINK_WIDTH $width ENABLE_GEN3 $native X2_GEN2_BRINGUP $gen2_x2 X2_GEN3_BRINGUP $gen3_x2] {
+  update_MODELPARAM_VALUE.$parameter $parameter mode
+  if {[get_property value $parameter] != $expected} {error "Mode $mode mapped incorrectly to $parameter"}
+ }
+ update_PARAM_VALUE.GEN3_TX_PRESET preset mode
+ if {[get_property enabled preset] ne [expr {$mode in {2 3} ? "true" : "false"}]} {error "Gen3 preset enabled for the wrong mode"}
+}
+foreach mode {-1 4 1.5 unsupported} {
+ set_property value $mode mode
+ if {[validate_PARAM_VALUE.PCIE_MODE mode] ne "false"} {error "Unsupported mode accepted"}
+}
+foreach {value expected} {0 true 4 true 10 true -1 false 11 false invalid false} {
+ set_property value $value preset
+ if {[validate_PARAM_VALUE.GEN3_TX_PRESET preset] ne $expected} {error "Wrong preset validation for $value"}
+}
+puts PASS
+''')
+    gui = ROOT / 'ip/soft_pcie_root/xgui/soft_pcie_root_catalog.tcl'
+    result = subprocess.run(['tclsh', str(script), str(gui)], text=True, capture_output=True, check=True)
+    assert result.stdout.strip() == 'PASS'
+
+
 @pytest.mark.parametrize('width,gen3,gen1_stage,gen2_stage,gen3_stage', [
     (1, 0, 0, 0, 0), (1, 1, 0, 0, 0), (2, 1, 0, 0, 0), (2, 1, 1, 0, 0), (2, 0, 1, 0, 0),
     (3, 1, 0, 0, 0), (2, 1, 0, 1, 0), (2, 1, 1, 1, 0), (2, 0, 0, 1, 0), (1, 1, 0, 1, 0),

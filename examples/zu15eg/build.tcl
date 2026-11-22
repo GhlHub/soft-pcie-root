@@ -24,7 +24,9 @@ if {[file isfile $width_file]} {
  set package_width [string trim [read $input]]
  close $input
 } else {set package_width 1}
-if {$package_width != $link_width} {error "Packaged native PHY width $package_width differs from expected width $link_width"}
+set catalog [expr {$package_width eq {1 2}}]
+if {$link_width ni $package_width} {error "Package provides lane widths $package_width; expected $link_width"}
+if {$catalog && $backend eq "gen1-x2"} {error "Use gen2-x2 for the four-mode catalog or the fixed Gen1 x2 package"}
 set source_check [list python3 [file join $root scripts host_sources.py]]
 exec {*}$source_check check [file join $package_dir sources.json]
 file mkdir $out
@@ -45,11 +47,17 @@ set_property -dict [list CONFIG.PSU__USE__M_AXI_GP0 {1} CONFIG.PSU__USE__M_AXI_G
  CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} CONFIG.PSU__FPGA_PL0_ENABLE {1} \
  CONFIG.PSU__USE__S_AXI_GP0 {0} CONFIG.PSU__USE__S_AXI_GP1 {0} CONFIG.PSU__USE__S_AXI_GP2 {1} CONFIG.PSU__SAXIGP2__DATA_WIDTH {128} CONFIG.PSU__USE__S_AXI_GP3 {0} \
  CONFIG.PSU__USE__S_AXI_GP4 {0} CONFIG.PSU__USE__S_AXI_GP5 {0} CONFIG.PSU__USE__S_AXI_GP6 {0}] [get_bd_cells ps]
-create_bd_cell -type ip -vlnv soft-pcie.org:user:soft_pcie_root:1.1 pcie
-set_property -dict [list CONFIG.ENABLE_GEN3 $enable_gen3 CONFIG.LINK_WIDTH $link_width] [get_bd_cells pcie]
-foreach {mode parameter} {gen1-x2 X2_GEN1_BRINGUP gen2-x2 X2_GEN2_BRINGUP gen3-x2 X2_GEN3_BRINGUP} {
- if {[get_property CONFIG.$parameter [get_bd_cells pcie]] != ($backend eq $mode)} {
-  error "Packaged IP stage does not match $backend"
+if {$catalog} {
+ create_bd_cell -type ip -vlnv soft-pcie.org:user:soft_pcie_root:1.2 pcie
+ set modes [dict create legacy 0 gen2-x2 1 gen3 2 gen3-x2 3]
+ set_property CONFIG.PCIE_MODE [dict get $modes $backend] [get_bd_cells pcie]
+} else {
+ create_bd_cell -type ip -vlnv soft-pcie.org:user:soft_pcie_root:1.1 pcie
+ set_property -dict [list CONFIG.ENABLE_GEN3 $enable_gen3 CONFIG.LINK_WIDTH $link_width] [get_bd_cells pcie]
+ foreach {mode parameter} {gen1-x2 X2_GEN1_BRINGUP gen2-x2 X2_GEN2_BRINGUP gen3-x2 X2_GEN3_BRINGUP} {
+  if {[get_property CONFIG.$parameter [get_bd_cells pcie]] != ($backend eq $mode)} {
+   error "Packaged IP stage does not match $backend"
+  }
  }
 }
 # The DPLL yields the nominal 100 MHz with this board's PS reference,

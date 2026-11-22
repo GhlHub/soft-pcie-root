@@ -38,6 +38,30 @@ If the chain scan fails, power off, remove the card and compare the scan
 after powering up again. If the FPGA reappears, check the card's TDI-to-TDO
 continuity before proceeding with the card fitted.
 
+## Vivado IP catalog
+
+Generate version 1.2 with all four modes using a fresh output directory.
+The example selects the corresponding catalog mode from its build profile.
+
+```sh
+vivado -mode batch -source ip/soft_pcie_root/package.tcl \
+  -tclargs build/zu15eg_catalog_1_2 0 zu15eg catalog
+vivado -mode batch -source examples/zu15eg/build.tcl \
+  -tclargs build/zu15eg_gen3_x2 build/zu15eg_catalog_1_2/core dp01-passive gen3-x2
+```
+
+| Build profile | PCIe mode |
+| --- | --- |
+| `legacy` | Gen1/Gen2 x1 (default) |
+| `gen2-x2` | Gen1/Gen2 x2 |
+| `gen3` | Gen3 x1 |
+| `gen3-x2` | Gen3 x2 |
+
+Use the stage-specific package below for the fixed-rate `gen1-x2` build.
+Choose the FMC pin profile for the installed adapter. The hardware results
+on this page identify the stage-specific images used for those measurements.
+[Vivado customization and AXI interface](../../ip/soft_pcie_root/README.md#zu15eg-catalog)
+
 ## Build x1
 
 From the repository root with Vivado 2026.1 on PATH, use fresh output

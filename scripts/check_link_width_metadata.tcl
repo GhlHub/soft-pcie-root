@@ -19,6 +19,8 @@ close $f
 set begin [string first {set width [ipx::get_user_parameters LINK_WIDTH} $packaging]
 set end [string first {set preset [ipx::get_user_parameters GEN3_TX_PRESET} $packaging $begin]
 if {$begin < 0 || $end <= $begin} {error "Cannot locate production width metadata block"}
+set native_width 1
+set stage ""
 eval [string range $packaging $begin [expr {$end-1}]]
 source $root/ip/soft_pcie_root/xgui/soft_pcie_root.tcl
 set user [ipx::get_user_parameters LINK_WIDTH -of_objects $core]

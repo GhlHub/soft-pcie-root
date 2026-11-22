@@ -11,8 +11,9 @@ host/DDR path. All three staged ZU15EG profiles passed reopened route audits
 and negotiated their intended rates on the physical board with a Samsung
 990 EVO 1 TB. Read-only NVMe integrity and throughput checks passed at Gen1,
 Gen2 and Gen3 x2. The successful Gen2 and Gen3 runs enabled PCIe before the
-Linux driver probe. The ordinary catalog defaults to x1 and retains its x2
-elaboration guard.
+Linux driver probe. The ZU15EG version 1.2 catalog includes both x2 rate
+backends and both x1 choices, with Gen1/Gen2 x1 as the default.
+[ZU15EG catalog](../examples/zu15eg/README.md#vivado-ip-catalog)
 [Gen1 x2 evidence](evidence/zu15eg_gen1_x2_v1/completion.json)
 [Gen2 x2 evidence](evidence/zu15eg_gen2_x2_v1/completion.json)
 [Gen3 x2 evidence](evidence/zu15eg_gen3_x2_v1/completion.json)

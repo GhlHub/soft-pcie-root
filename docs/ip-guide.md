@@ -22,17 +22,18 @@ flowchart LR
 
 ## Protocol and buffering
 
+### ZU15EG catalog
+
+Version 1.2 of `soft-pcie.org:user:soft_pcie_root` provides a **PCIe mode**
+dropdown for ZU15EG. Choose Gen1/Gen2 x1 (default), Gen1/Gen2 x2, Gen3 x1,
+or Gen3 x2. The selection fixes the lane count, rate backend and AXI contract
+at customization. The board build flow accepts this catalog and also supports
+the stage-specific packages used for the documented hardware tests.
+[Catalog generation and interface widths](../ip/soft_pcie_root/README.md#zu15eg-catalog) · [ZU15EG build profiles](../examples/zu15eg/README.md#vivado-ip-catalog)
+
 ### Optional Gen3 packaging
 
-On `dev/pcie-x2`, Configuration exposes **Link width (x2 training
-development)** (`LINK_WIDTH`) with choices 1 and 2 and a default of 1. The
-callback propagates the value to RTL and requires `ENABLE_GEN3` for x2.
-The ordinary catalog retains its x2 elaboration guard. The ZU15EG board flow
-generates a stage-specific PHY and enables x2 through the `gen1-x2`, `gen2-x2`,
-or `gen3-x2` build profile. Each profile has passed read-only NVMe testing.
-[ZU15EG build profiles](../examples/zu15eg/README.md) · [x2 development](x2-development.md)
-
-Vivado now has one catalog definition, `soft-pcie.org:user:soft_pcie_root:1.1`, with a
+The x1 catalog, `soft-pcie.org:user:soft_pcie_root:1.1`, provides a
 **Gen3 (`ENABLE_GEN3`)** checkbox. It defaults off. Generate a fresh local
 repository once, containing both locally generated PHY backends:
 

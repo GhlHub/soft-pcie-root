@@ -7,6 +7,35 @@ its module identifier only. Subsequent payload banking, packet-width, prefetch a
 from that baseline; see [verification status](../../docs/verification.md) for the
 source provenance and physical qualification of each revision.
 
+## ZU15EG catalog
+
+From the repository root, generate the four-mode IP with Vivado 2026.1.
+
+```sh
+vivado -mode batch -source ip/soft_pcie_root/package.tcl \
+  -tclargs build/zu15eg_catalog_1_2 0 zu15eg catalog
+```
+
+Add `build/zu15eg_catalog_1_2/core` to Vivado's IP repositories and add
+**Soft PCIe Root Port (ZU15EG)** version 1.2 to the block design. Set
+**PCIe mode** on the **Configuration** page and regenerate output products.
+
+| `CONFIG.PCIE_MODE` | Selection | `M_DDR` at 125 MHz | Outstanding DDR reads |
+| ---: | --- | ---: | ---: |
+| 0 | Gen1/Gen2 x1 (default) | 64 bits | 2 |
+| 1 | Gen1/Gen2 x2 | 128 bits | 16 |
+| 2 | Gen3 x1 | 64 bits | 8 |
+| 3 | Gen3 x2 | 128 bits | 16 |
+
+The preset field is available in the two Gen3 selections. Gen1/Gen2 x2
+uses the two-lane PHY and starts at Gen1 before negotiating Gen2. To force
+Gen1, set SRP1 control bit 1 while the port is disabled. The two x2
+selections require both FMC lanes. The packaged block-design cell exposes
+the selected AXI width and read capacity. Use the board example for the
+corresponding pin and CDC constraints. [ZU15EG board integration](../../examples/zu15eg/README.md#vivado-ip-catalog)
+
+## ZCU104 x1 catalog
+
 Run `make ip IP_OUTPUT=build/ip_v1` from the repository root. Add `build/ip_v1/core` to
 Vivado's IP repositories, or use the supplied ZCU104 example. The packager generates
 both PHY backends locally and imports their generated RTL, retaining vendor notices. A
@@ -17,10 +46,8 @@ tool/device setup; it does not depend on the laboratory workspace.
 The packaged configuration fixes management 50 MHz, host 125 MHz, reference 100 MHz, and
 one UltraScale+ GTH channel. Its supplied GT configuration selects X0Y15 on XCZU7EV,
 matching ZCU104. Other lane/device mappings need regenerated GT configuration and
-reviewed constraints. Development exposes `LINK_WIDTH=1/2`, default 1; choice 2
-requires Gen3 and is a training-development setting. The root explicitly rejects
-x2 elaboration until its PHY and packet/AXI backend is integrated. The functional
-package and interfaces below remain x1. Arbitrary AXI clocks are unsupported.
+reviewed constraints. The interfaces below describe the ZCU104 x1 package.
+Arbitrary AXI clocks are unsupported.
 Version 1.1 provides one catalog entry with a
 **Gen3 (`ENABLE_GEN3`)** checkbox, default off; see [optional Gen3
 packaging](../../docs/ip-guide.md#optional-gen3-packaging). Physical measurements by

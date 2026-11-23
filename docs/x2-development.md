@@ -1,9 +1,8 @@
 # x2 development
 
-Work is on `dev/pcie-x2`. The preserved x1 baseline is commit `4d99851`,
-annotated tag `x1-hardware-validated-2026-11-08`. That tag labels the existing
-hardware-validated x1 lineage and its documented limits; it is not a new
-hardware run or a frozen qualification of all development changes.
+The x2 implementation is integrated into `main`. Commit `4d99851` and the
+annotated tag `x1-hardware-validated-2026-11-08` identify the x1 baseline
+and its documented hardware validation scope.
 
 The ZU15EG `gen1-x2` package connects the two-lane native PHY at X1Y4/X1Y5 to
 the Gen1 x2 link, a fixed 64-bit link-side packet interface and the 128-bit
@@ -283,16 +282,13 @@ writes and a healthy idle finish.
    its internal constraints. Gen1 x2 verified the integrated wide host path.
    Sustained DDR throughput at Gen3 x2 remains to be measured separately
    from end-to-end NVMe throughput.
-5. Extend the ordinary catalog's `LINK_WIDTH` selection to the complete x2
-   backend after the Gen1, Gen2 and Gen3 stages pass. Preserve the x1 defaults
-   and interface dimensions.
-6. Add independent end-to-end x2 peer simulation: Gen1 startup through Gen3,
+5. Add independent end-to-end x2 peer simulation covering Gen1 startup through Gen3,
    negotiated width/rate, per-lane EQ, sustained striped packets, token
    boundaries, corrupted lane data, finite credits, replay/NAK/sequence wrap,
-   AXI stalls/errors, MSI ordering and packet-active Recovery. Test both GUI
-   choices and reject unsupported parameter combinations during customization.
-7. Repeat package generation, implementation, independent checkpoint/CDC
-   audit and negotiated-link board checks after catalog integration.
+   AXI stalls/errors, MSI ordering and packet-active Recovery. Cover all four
+   catalog modes and validate parameter combinations during customization.
+6. Route the version 1.2 catalog board designs, reopen checkpoints for
+   timing and CDC audits, and verify negotiated links on hardware.
 
 The widening in items 3 and 4 is a build-time choice, not a runtime response
 to negotiated speed. Existing Gen1/Gen2 x1 and Gen3 x1 builds retain their

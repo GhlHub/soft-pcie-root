@@ -1,95 +1,142 @@
 # Soft PCIe Root Port
 
-**Gen3 x1 PCIe in FPGA logic: 737.37 MB/s read and 563.84 MB/s write with an NVMe SSD under Linux.**
+**PCIe Gen1, Gen2 and Gen3 in FPGA logic, with x1 and x2 links on ZU15EG.**
 
-A GTH transceiver and custom SystemVerilog implement the PCIe root port, with
-no hard PCIe controller or vendor PCIe controller IP. A custom Linux PCI host
-driver connects it to the standard Linux NVMe driver.
+Custom SystemVerilog implements the PCIe root port and drives one or two
+GTHE4 transceivers. A custom Linux PCI host driver connects it to the
+standard Linux NVMe driver.
 
-![Gen3 x1 soft PCIe: 737.37 MB/s sequential read and 563.84 MB/s sequential write](docs/media/linkedin-soft-pcie.png)
+![ZU15EG Gen3 sequential reads reached 734.56 MB/s at x1 and 920.87 MB/s at x2](docs/media/linkedin-gen3-x1-vs-x2.png)
 
-Current development adds bounded same-rate Recovery, adaptive Phase 2/3
-equalization, startup-only Gen2 fallback and prompt configuration-fault reporting.
-The latest review-fix image passed fresh route/audit and three controlled Gen3
-startups with NVMe I/O on 2026-11-02. It measured 737.37 MB/s read and 563.84 MB/s
-write at QD8. It became the verified SD boot default on 2026-11-03; unattended
-warm boot and CRC passed. A subsequent [hardware coverage campaign](docs/hardware-coverage.md)
-passed forced startup fallback, one injected same-rate Recovery under CRC reads,
-and 33 verified I/O matrix jobs. Full Recovery qualification remains open.
-See [adaptive equalization and fallback](docs/adaptive-equalization.md) and the
-[design-review follow-up](docs/review-followup.md).
+## ZU15EG x1 and x2 results
 
-## Current Gen3 x1 results
+The ZU15EG and Samsung 990 EVO 1 TB SSD ran matched x1 and x2 sequential
+read tests under Linux. Each result is the median of two 30-second runs with
+1 MiB direct I/O through fio/libaio at aggregate queue depth 8. Each worker
+was pinned to its own Cortex-A53 core and used a separate SSD range.
 
-The adaptive review-fix image passed fresh synthesis, place-and-route, independent
-checkpoint audit and physical validation on **2026-11-02**. These measurements
-cover the complete ZCU104 PL example, including its AXI interconnects.
+| PCIe rate | fio workers | x1 read (MB/s) | x2 read (MB/s) | x2 gain |
+| --- | ---: | ---: | ---: | ---: |
+| Gen1 (2.5 GT/s) | 4 | 213.76 | 305.74 | 43.03% |
+| Gen2 (5.0 GT/s) | 4 | 427.19 | 590.74 | 38.28% |
+| Gen3 (8.0 GT/s) | 2 | 734.56 | 920.87 | 25.36% |
 
-| Item | Current measured result |
+The staged images negotiated the intended rate and width and passed
+read-only NVMe checksum checks with zero SSD writes. The successful Gen2
+and Gen3 x2 runs enabled the port before the Linux driver probed it. The
+routed Gen3 x2 board design used 50,677 LUTs, 29,620 flip-flops, 3.5 BRAM
+tiles and two GTH channels. [ZU15EG hardware results](examples/zu15eg/README.md#gen1-x2-development-stage) ·
+[Gen1 data](docs/evidence/zu15eg_gen1_x2_v1/four-core-comparison.json) ·
+[Gen2 data](docs/evidence/zu15eg_gen2_x2_v1/four-core-comparison.json) ·
+[Gen3 data](docs/evidence/zu15eg_gen3_x2_v1/two-thread-comparison.json)
+
+## Build and test
+
+Use Linux, Python 3.12+, GCC, Icarus Verilog, Verilator and **Vivado 2026.1**
+with Zynq UltraScale+ device support. Source Vivado's `settings64.sh` before
+running the Vivado commands. AMD XPM and GT Wizard support come from that
+installation.
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+make test lint
+```
+
+### ZU15EG Vivado IP catalog
+
+Generate catalog version **1.2** using a fresh output directory.
+
+```sh
+vivado -mode batch -source ip/soft_pcie_root/package.tcl \
+  -tclargs build/zu15eg_catalog_1_2 0 zu15eg catalog
+```
+
+Add `build/zu15eg_catalog_1_2/core` to Vivado's IP repositories. In the
+block design, add **Soft PCIe Root Port (ZU15EG)** and select **PCIe mode**
+on its **Configuration** page.
+
+| PCIe mode | DDR AXI at 125 MHz | Outstanding DDR reads |
+| --- | ---: | ---: |
+| **Gen1/Gen2 x1 (default)** | 64 bits | 2 |
+| Gen1/Gen2 x2 | 128 bits | 16 |
+| Gen3 x1 | 64 bits | 8 |
+| Gen3 x2 | 128 bits | 16 |
+
+The ZU15EG example builds the selected mode with the corresponding board
+constraints. Choose the FMC pin profile for your adapter and verify the
+carrier's 1.8 V VADJ before programming. [ZU15EG build commands](examples/zu15eg/README.md#vivado-ip-catalog) · [IP integration guide](ip/soft_pcie_root/README.md#zu15eg-catalog)
+
+### ZCU104 x1 example
+
+`make ip` produces catalog version **1.1** for ZCU104. Its **Gen3
+(`ENABLE_GEN3`)** checkbox defaults off for Gen1/Gen2 x1. Use fresh output
+directories for the package, implementation and audit.
+
+```sh
+make ip IP_OUTPUT=build/ip_v1
+make hardware OUTPUT=build/zcu104_v1 IP_REPO=build/ip_v1/core
+make hardware-audit HARDWARE_OUTPUT=build/zcu104_v1 AUDIT_OUTPUT=build/audit_v1
+```
+
+For Gen3 x1, use the same package with the Gen3 board recipe.
+
+```sh
+vivado -mode batch -source experiments/gen3/build_host.tcl \
+  -tclargs build/zcu104_gen3_next build/ip_v1/core
+```
+
+The documented ZCU104 tests used Opsero OP047 Rev D. The supplied U-Boot
+power initializer recognizes OP047 only. [ZCU104 board setup](examples/zcu104/README.md#build-the-packaged-ip-example) · [Adapter compatibility](examples/zcu104/README.md#adapter-compatibility)
+
+## ZCU104 Gen3 x1 results
+
+The adaptive review-fix image passed an independent route audit and
+physical validation on 2026-11-02. The measurements cover the complete
+ZCU104 PL example, including its AXI interconnects.
+
+| Item | Measured result |
 | --- | --- |
-| FPGA / adapter | ZCU104, XCZU7EV-2; Opsero OP047 Rev D, SSD1 |
+| FPGA / adapter | ZCU104 with XCZU7EV-2, Opsero OP047 Rev D, SSD in socket SSD1 |
 | SSD | Samsung 990 EVO 1 TB |
 | Link | **Gen3 x1, 8 GT/s** |
 | Software | Linux 6.6.70, custom PCI host driver, standard NVMe driver |
 | Sequential read / write, QD8 | **737.37 / 563.84 MB/s** |
 | Sequential read / write, QD1 | **591.48 / 339.90 MB/s** |
-| Workload | 1 MiB, direct/libaio, one job, 30 seconds per workload; decimal MB/s |
-| Resources | **16,116 LUTs, 12,367 FFs**, 3 BRAM tiles, one GTH; no DSP or URAM |
+| Workload | 1 MiB direct I/O through libaio, one job, 30 seconds per workload, decimal MB/s |
+| Resources | **16,116 LUTs, 12,367 FFs**, 3 BRAM tiles, one GTH, zero DSPs and URAMs |
 | Routed Gen3 setup / hold slack | **+0.041 / +0.010 ns** |
-| Hardware checks | Three controlled Gen3 startups; 28,000 configuration reads; eight NVMe performance/integrity jobs; SD warm boot and CRC |
+| Hardware checks | Three controlled Gen3 startups, 28,000 configuration reads, eight NVMe performance and integrity jobs, SD warm boot and CRC |
 
 Existing and fresh data CRC, sector-offset CRC, post-flush verification and exact
 write accounting passed. SMART error and unsafe-shutdown counters were unchanged.
-The timeout fix prevents a completion accepted on the timeout cycle from leaving
-the requester faulted. That exact collision is verified in simulation; it was
-not deliberately injected on the SSD.
+The image uses adaptive Phase 2/3 equalization and startup-only Gen2
+fallback. It became the verified SD boot default on 2026-11-03. Follow-up
+testing exercised forced fallback, one same-rate Recovery event during CRC
+reads and 33 verified I/O jobs. [Hardware evidence](docs/evidence/adaptive_review_v1/completion.json) · [SD boot evidence](docs/evidence/adaptive_review_v1/default-boot.json) · [Hardware coverage campaign](docs/hardware-coverage.md)
 
-[Exact hardware evidence](docs/evidence/adaptive_review_v1/completion.json) ·
-[Verification scope](docs/verification.md) ·
-[Performance history](docs/performance-history.md)
+The earlier ZCU104 Gen2 ACK-retirement build measured **428.30 MB/s read**
+and **260.21 MB/s write** at QD8. A fresh default Gen2 package build with
+the requester timeout fix remains open. [Performance history](docs/performance-history.md#comparable-physical-benchmarks)
 
-The Gen3 path uses 64-bit host packet transfers, eight 64-byte DDR read-prefetch
-slots, an eight-entry replay store and concurrent normal ACK retirement.
-The latest full regression passed **1,719 tests**, including 994 independent
-Gen3 training, packet, corruption, ownership and rollover cases.
-See the [Gen3 coverage matrix](docs/gen3-verification-matrix.md).
+## Verification and scope
 
-**Gen3 x1 is hardware-validated on the documented ZCU104/NVMe setup.**
-Full Recovery, cold-cycle qualification, broader
-SSD interoperability and PCIe compliance are not established. The current image
-passed temporary JTAG testing and subsequently became the
-[verified SD default](docs/evidence/adaptive_review_v1/default-boot.json).
-No QSPI update was needed. The existing Linux driver remains deployed; the new
-early-quarantine software branch has model coverage but has not been deployed.
+The staged ZU15EG x2 builds passed reopened route audits. The integrated
+x2 regression checkpoint passed **2,510 tests** and real-XPM lint and
+elaboration. All four version 1.2 catalog selections passed block-design
+output generation and IP synthesis. Board routing and physical checks
+for images generated with version 1.2 remain open. [ZU15EG hardware results](examples/zu15eg/README.md#gen3-x2-development-stage) · [Verification history](docs/verification.md)
 
-## x2 development branch
+Cold-start repeatability, full Recovery, broader SSD interoperability and
+PCIe compliance remain open. The frozen release scope is Gen1/Gen2 x1.
+`make release-check` verifies the frozen source baseline. The shared RTL
+changes on `main` fall outside that frozen baseline. [Verification and release scope](docs/verification.md#limits-and-reproducing-measurements)
 
-`dev/pcie-x2` integrates the two-lane PHY and a 128-bit host/DDR path for the
-staged ZU15EG builds. Gen1, Gen2 and Gen3 x2 negotiated the intended rate and
-passed read-only NVMe checks on that board. Gen3 x2 reached **921.21 MB/s**
-in a 30-second, two-worker read test. The ZU15EG Vivado catalog package
-offers Gen1/Gen2 x1, Gen1/Gen2 x2, Gen3 x1 and Gen3 x2. It defaults to
-Gen1/Gen2 x1. The x1 baseline is tagged
-`x1-hardware-validated-2026-11-08`.
-[ZU15EG catalog and board results](examples/zu15eg/README.md#vivado-ip-catalog) · [x2 development scope](docs/x2-development.md)
-
-## Configuration and earlier results
-
-The unified Vivado **Gen3 (`ENABLE_GEN3`)** checkbox selects Gen3 at build
-time. It defaults off, selecting Gen1/Gen2 x1 with 32-bit host packet paths and
-two DDR read-prefetch slots. Both selections retain a 64-bit/125 MHz DDR AXI
-interface in the x1 builds. The PHY targets UltraScale+ GTHE4.
-[Packaging and integration](docs/ip-guide.md#optional-gen3-packaging)
-
-The frozen release remains Gen1/Gen2 x1. The latest measured Gen2 ACK-retirement
-build achieved **428.30/260.21 MB/s** at QD8; a fresh Gen2 backend build containing
-the requester fix is still outstanding. Historical Gen2/Gen3 results and timing
-improvements remain in the [performance history](docs/performance-history.md).
-They are separate runs, not interleaved statistical comparisons.
-
-OP047 Rev D is the tested adapter. Its successor OP063 has not been qualified;
-the power initializer currently recognizes OP047 only. See
-[adapter compatibility](examples/zcu104/README.md#adapter-compatibility).
+The design supports one direct endpoint with function 0, up to 16 MiB of
+endpoint BAR space, noncoherent DMA to the lower 2 GiB of DDR in the
+examples, and 32 MSI/MSI-X vectors. Accepted AXI requests must drain before
+a local reset. Switch topology, Type 1 routing, multifunction, INTx, hotplug,
+ASPM/AER and safe live PL replacement are outside this scope. [Integration guide](docs/ip-guide.md) · [Register contract](docs/registers.md) · [Roadmap](docs/roadmap.md)
 
 ## Repository layout
 
@@ -97,64 +144,12 @@ the power initializer currently recognizes OP047 only. See
 | --- | --- |
 | `ip/soft_pcie_root/` | Reusable RTL and Vivado IP packager |
 | `examples/zcu104/` | IP-based block design, physical constraints and audit |
-| `examples/zu15eg/` | ZU15EG x1 and staged x2 board builds |
+| `examples/zu15eg/` | ZU15EG x1 and x2 catalog and staged board builds |
 | `software/driver/` | GPL-2.0-only Linux PCI host driver |
 | `software/linux/` | Reproducible Buildroot/Linux/U-Boot example configuration |
 | `tests/` | Protocol, ownership, DMA, CDC and software regressions |
 | `docs/` | IP guide, register contract, validation and release notes |
 | `docs/media/` | Editable graphic, PNG and LinkedIn draft |
-
-## Build and test
-
-Use Linux, Python 3.12+, GCC, Icarus Verilog, Verilator and **Vivado 2026.1** with
-Zynq UltraScale+ device/board support. Source Vivado's `settings64.sh` first.
-AMD XPM and GT Wizard/primitive simulation support come from that installation;
-no generated AMD IP is committed here.
-
-```sh
-python3 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
-make test lint
-make ip IP_OUTPUT=build/ip_v1
-make hardware OUTPUT=build/zcu104_v1 IP_REPO=build/ip_v1/core
-make hardware-audit HARDWARE_OUTPUT=build/zcu104_v1 AUDIT_OUTPUT=build/audit_v1
-```
-
-Outputs must be fresh. `make ip` creates a local IP repository with VLNV
-`soft-pcie.org:user:soft_pcie_root:1.1` (a local identifier, not a service URL). The
-example instantiates that packaged IP. Its **Gen3 (`ENABLE_GEN3`)** checkbox selects
-the backend at customization time (default off). The frozen source provenance is checked
-separately from generated build hashes. `make release-check` is a strict check of the
-frozen Gen1/Gen2 baseline and is expected to reject this development tree's shared RTL
-changes. Its historical manifests are preserved; do not regenerate them to label
-Gen3 as a qualified release. See [IP
-integration](ip/soft_pcie_root/README.md) and [ZCU104 setup](examples/zcu104/README.md).
-Those hardware commands select the default Gen1/Gen2 backend. For the Gen3
-configuration featured above, use the same fresh IP package with:
-
-```sh
-vivado -mode batch -source experiments/gen3/build_host.tcl \
-  -tclargs build/zcu104_gen3_next build/ip_v1/core
-```
-
-See [Gen3 reproduction](experiments/gen3/README.md#current-design-and-reproduction)
-for source-manifest checks and build constraints. These commands do not program
-a board.
-
-## Scope and limitations
-
-One direct endpoint, function 0 only; up to 16 MiB of endpoint BAR space; noncoherent
-DMA to lower 2 GiB DDR in the example; 32 MSI/MSI-X vectors. The DDR master
-runs at 125 MHz with 64-bit AXI for x1 and 128-bit AXI for x2. The ZCU104
-interconnect converts the x1 master to 128-bit PS HP0. The default Gen1/Gen2
-x1 mode has two read owners and 128 bytes of read prefetch. Gen3 x1 has eight
-read owners and 512 bytes of read prefetch. Both x2 modes have 16 read owners.
-
-No PCIe compliance certification, switch topology, Type 1 routing, multifunction,
-INTx, hotplug, ASPM/AER or safe live PL replacement. Accepted AXI requests must
-finish; local reset cannot cancel them. Use a disposable, unmounted SSD for
-bring-up. See [integration and reset contract](docs/ip-guide.md),
-[registers](docs/registers.md) and [future work](docs/roadmap.md).
 
 ## Licensing
 

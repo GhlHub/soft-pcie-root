@@ -1,9 +1,9 @@
 # Performance graphics
 
-The current [Gen3 x1 graphic](linkedin-soft-pcie.png) is the README lead image
-and is suitable for sharing. Its editable [SVG](linkedin-soft-pcie.svg) and
-[renderer](../../scripts/render_graphic.py) use the adaptive review-fix hardware
-[evidence](../evidence/adaptive_review_v1/completion.json) as the numeric source.
+The [ZCU104 Gen3 x1 graphic](linkedin-soft-pcie.png) presents the adaptive
+review-fix benchmarks. Its editable [SVG](linkedin-soft-pcie.svg) and
+[renderer](../../scripts/render_graphic.py) use the recorded
+[hardware measurements](../evidence/adaptive_review_v1/completion.json).
 Regenerate with `python3 scripts/render_graphic.py` (Pillow and DejaVu Sans).
 
 It shows **737.37 MB/s read / 563.84 MB/s write**, sequential 1 MiB, QD8,
@@ -22,8 +22,8 @@ scope. See the [current post draft](linkedin-gen3-current.md).
 
 ## Gen3 x1 and x2 comparison
 
-The [Gen3 comparison graphic](linkedin-gen3-x1-vs-x2.png) shows
-**734.56 MB/s at x1** and **920.87 MB/s at x2**, a **25.4% gain** in
+The [Gen3 comparison graphic](linkedin-gen3-x1-vs-x2.png) leads the project
+README and shows **734.56 MB/s at x1** and **920.87 MB/s at x2**, a **25.4% gain** in
 sequential read throughput. Each figure is the median of two 30-second
 runs on the same ZU15EG with a Samsung 990 EVO 1 TB SSD under Linux.
 Each fio thread used 1 MiB direct reads at QD4, with one thread pinned to

@@ -1,15 +1,18 @@
 # Verification and release scope
 
-On `dev/pcie-x2`, the 2026-11-22 regression passed **2,510 tests in 392.45
+The integrated x2 regression on 2026-11-22 passed **2,510 tests in 392.45
 seconds**, with lint and real-XPM elaboration also passing. The integrated
 ZU15EG Gen1, Gen2 and Gen3 x2 profiles passed independent route audits and
 negotiated their intended link rates on the board. Each passed two 256 MiB
 direct reads with matching checksums and zero SSD writes. The Gen3 x2 image
 passed one warm startup with +0.024 ns setup and +0.011 ns hold slack. Read
 testing reached 921.21 MB/s across two workers. Cold-start repeatability and
-broader qualification remain open. The ordinary catalog retains its x2
-elaboration guard. [ZU15EG hardware results](../examples/zu15eg/README.md)
+broader qualification remain open. [ZU15EG hardware results](../examples/zu15eg/README.md)
 [Gen3 x2 implementation evidence](evidence/zu15eg_gen3_x2_v1/packet-receiver-start.json)
+
+The ZU15EG version 1.2 Vivado catalog passed block-design output generation
+and IP synthesis for all four modes. Routed timing and physical checks
+remain open for board images generated from this catalog. [Catalog modes](../examples/zu15eg/README.md#vivado-ip-catalog)
 
 Earlier checkpoints cover [standalone x2 routes](x2-resource-measurement.md)
 and the [RX timing repair](x2-rx-timing-fix.md). Their measurements retain

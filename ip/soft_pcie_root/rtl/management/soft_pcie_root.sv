@@ -5,7 +5,8 @@ module soft_pcie_root #(
     parameter integer LINK_WIDTH      = 1,
     parameter integer X2_GEN1_BRINGUP = 0,
     parameter integer X2_GEN2_BRINGUP = 0,
-    parameter integer X2_GEN3_BRINGUP = 0
+    parameter integer X2_GEN3_BRINGUP = 0,
+    parameter integer DDR_ADDR_WIDTH  = 36
 ) (
     (* X_INTERFACE_INFO="xilinx.com:signal:clock:1.0 aclk CLK",
     X_INTERFACE_PARAMETER="ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET aresetn, FREQ_HZ 50000000" *)
@@ -64,7 +65,7 @@ module soft_pcie_root #(
     input wire s_mem_rready,
         (* X_INTERFACE_PARAMETER="XIL_INTERFACENAME M_DDR, NUM_READ_OUTSTANDING 2, NUM_WRITE_OUTSTANDING 2" *)
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR AWADDR" *)
-    output wire [31:0] m_ddr_awaddr,
+    output wire [DDR_ADDR_WIDTH-1:0] m_ddr_awaddr,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR AWLEN" *)
     output wire [7:0] m_ddr_awlen,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR AWSIZE" *)
@@ -89,7 +90,7 @@ module soft_pcie_root #(
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR BVALID" *)
     input wire m_ddr_bvalid, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR BREADY" *)
     output wire m_ddr_bready, (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR ARADDR" *)
-    output wire [31:0] m_ddr_araddr,
+    output wire [DDR_ADDR_WIDTH-1:0] m_ddr_araddr,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR ARLEN" *)
     output wire [7:0] m_ddr_arlen,
         (* X_INTERFACE_INFO="xilinx.com:interface:aximm:1.0 M_DDR ARSIZE" *)
@@ -128,6 +129,10 @@ module soft_pcie_root #(
         X2_GEN1_BRINGUP + X2_GEN2_BRINGUP + X2_GEN3_BRINGUP == 1;
     // Only the explicit ZU15EG stages select the x2 PHY and host interface.
     generate
+        if (DDR_ADDR_WIDTH != 32 && DDR_ADDR_WIDTH != 36) begin : unsupported_ddr_width
+            initial $fatal(1, "DDR_ADDR_WIDTH must be 32 or 36");
+            soft_pcie_unsupported_ddr_address_width unavailable_ddr_width ();
+        end
         if (!X2_STAGE && (LINK_WIDTH != 1 || X2_GEN1_BRINGUP != 0 || X2_GEN2_BRINGUP != 0 ||
                           X2_GEN3_BRINGUP != 0)) begin : unsupported_integrated_width
             initial begin
@@ -294,7 +299,8 @@ module soft_pcie_root #(
                 .RX_DWORDS      (PACKET_DWORDS),
                 .TX_DWORDS      (PACKET_DWORDS),
                 .READ_SLOTS     (READ_PREFETCH_SLOTS),
-                .PIPELINED_READS(PACKET_DWORDS == 2)
+                .PIPELINED_READS(PACKET_DWORDS == 2),
+                .DDR_ADDR_WIDTH (DDR_ADDR_WIDTH)
             ) ddr (
                 .clk             (core_clk),
                 .rst_n           (mailbox_release_q[2]),
@@ -424,7 +430,7 @@ module soft_pcie_root #(
             wire rx_link_fault, tx_link_fault;
             assign rx_cross_fault = rx_link_fault || tx_link_fault;
             assign fallback       = 0;
-            pcie_x2_host_path host_path (
+            pcie_x2_host_path #(.DDR_ADDR_WIDTH(DDR_ADDR_WIDTH)) host_path (
                 .clk              (core_clk),
                 .link_clk         (link_clk),
                 .rst_n            (aresetn),

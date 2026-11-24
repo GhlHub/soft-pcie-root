@@ -8,7 +8,8 @@ module pcie_ddr_bridge #(
     parameter integer RX_DWORDS       = 1,
                       TX_DWORDS       = 1,
                       READ_SLOTS      = 2,
-    parameter integer PIPELINED_READS = 0
+    parameter integer PIPELINED_READS = 0,
+    parameter integer DDR_ADDR_WIDTH  = 32
 ) (
     input wire clk, rst_n, link_active_i, dma_enable_i,
     input wire [32*RX_DWORDS-1:0] rx_data_i,
@@ -26,7 +27,7 @@ module pcie_ddr_bridge #(
     output reg fault_o,
     output wire idle_o,
     output wire [31:0] perf_events_o,
-    output wire [31:0] m_axi_awaddr,
+    output wire [DDR_ADDR_WIDTH-1:0] m_axi_awaddr,
     output wire [7:0] m_axi_awlen,
     output wire [2:0] m_axi_awsize,
     output wire [1:0] m_axi_awburst,
@@ -41,7 +42,7 @@ module pcie_ddr_bridge #(
     input wire [1:0] m_axi_bresp,
     input wire m_axi_bvalid,
     output wire m_axi_bready,
-    output wire [31:0] m_axi_araddr,
+    output wire [DDR_ADDR_WIDTH-1:0] m_axi_araddr,
     output wire [7:0] m_axi_arlen,
     output wire [2:0] m_axi_arsize,
     output wire [1:0] m_axi_arburst,
@@ -81,17 +82,17 @@ module pcie_ddr_bridge #(
     reg prepare_bank_q, write_bank_q;
     reg [63:0] write_payload_q;
     reg write_valid_q, write_last_q;
-    reg [ 1:0] write_state_q;
-    reg [31:2] write_address_q;
-    reg [ 5:0] write_length_q;
+    reg [               1:0] write_state_q;
+    reg [DDR_ADDR_WIDTH-1:2] write_address_q;
+    reg [               5:0] write_length_q;
     reg [3:0] write_first_be_q, write_last_be_q;
-    wire        write_busy = write_state_q != W_IDLE;
-    reg  [31:0] address_q;
-    reg  [10:0] remaining_q;
-    reg  [ 4:0] chunk_q;
-    reg  [12:0] byte_count_q;
-    reg  [15:0] requester_q;
-    reg  [ 7:0] tag_q;
+    wire                      write_busy = write_state_q != W_IDLE;
+    reg  [DDR_ADDR_WIDTH-1:0] address_q;
+    reg  [              10:0] remaining_q;
+    reg  [               4:0] chunk_q;
+    reg  [              12:0] byte_count_q;
+    reg  [              15:0] requester_q;
+    reg  [               7:0] tag_q;
     reg [3:0] first_be_q, last_be_q;
     reg [2:0] status_q;
     reg [6:0] lower_q;
@@ -102,10 +103,10 @@ module pcie_ddr_bridge #(
     reg [SLOT_BITS:0] read_slots_q, read_pending_q;
     reg read_run_q, read_abort_q, ar_offer_q;
     reg [SLOT_BITS-1:0] read_issue_q, read_response_q, read_tx_q;
-    reg [31:0] issue_address_q;
-    reg [10:0] issue_remaining_q;
-    reg [ 4:0] slot_chunk_q      [0:READ_SLOTS-1];
-    reg        slot_offset_q     [0:READ_SLOTS-1];
+    reg [DDR_ADDR_WIDTH-1:0] issue_address_q;
+    reg [              10:0] issue_remaining_q;
+    reg [               4:0] slot_chunk_q      [0:READ_SLOTS-1];
+    reg                      slot_offset_q     [0:READ_SLOTS-1];
     reg [READ_SLOTS-1:0] slot_done_q, slot_bad_q;
     // Per-completion metadata survives admission of the following request.
     // These arrays, like packet RAM, are deliberately not reset.
@@ -189,7 +190,10 @@ module pcie_ddr_bridge #(
     wire semantic_bad = h0[31] || h0[22:20] != 0 || h0[18] || h0[15:12] != 0 || h0[11:10] != 0 ||
         addr[1:0] != 0 || be_bad;
     wire [12:0] end_page = {1'b0, addr[11:0]} + ({2'b0, length_dw} << 2);
-    wire ddr_range = addr[63:31] == 0 &&
+    // The upper DDR bank starts at bit 35. Bits [34:31] select unmapped space.
+    localparam [63:0] DDR_UPPER_BASE = 64'h0000_0008_0000_0000;
+    localparam [32:0] DDR_BANK_BIT   = DDR_ADDR_WIDTH == 36 ? DDR_UPPER_BASE[63:31] : 33'd0;
+    wire ddr_range = (addr[63:31] & ~DDR_BANK_BIT) == 0 &&
         ({1'b0, addr[30:0]} + ({21'b0, length_dw} << 2)) <= 32'h80000000;
     wire [5:0] header_dw = four ? 6'd4 : 6'd3;
     wire shape_bad = overflow_q ||
@@ -387,7 +391,7 @@ module pcie_ddr_bridge #(
             m_axi_wstrb <= fetch_strobe;
             write_last_q <= {1'b0, write_index_q} == write_beats - 1'b1;
         end
-    assign m_axi_awaddr  = {write_address_q[31:3], 3'b0};
+    assign m_axi_awaddr  = {write_address_q[DDR_ADDR_WIDTH-1:3], 3'b0};
     assign m_axi_awlen   = {1'b0, write_beats} - 1'b1;
     assign m_axi_awsize  = 3;
     assign m_axi_awburst = 1;
@@ -397,7 +401,7 @@ module pcie_ddr_bridge #(
     assign m_axi_wlast   = write_last_q;
     assign m_axi_wvalid  = write_state_q == W_DATA && write_valid_q;
     assign m_axi_bready  = write_out_q != 0;
-    assign m_axi_araddr  = {issue_address_q[31:3], 3'b0};
+    assign m_axi_araddr  = {issue_address_q[DDR_ADDR_WIDTH-1:3], 3'b0};
     assign m_axi_arlen   = {3'b0, issue_beats} - 1'b1;
     assign m_axi_arsize  = 3;
     assign m_axi_arburst = 1;
@@ -491,7 +495,7 @@ module pcie_ddr_bridge #(
                 if (check_ready) begin
                     requester_q  <= h1[31:16];
                     tag_q        <= h1[15:8];
-                    address_q    <= addr[31:0];
+                    address_q    <= addr[DDR_ADDR_WIDTH-1:0];
                     remaining_q  <= length_dw;
                     first_be_q   <= fbe;
                     last_be_q    <= lbe;
@@ -572,7 +576,7 @@ module pcie_ddr_bridge #(
                         if (tx_last_o) begin
                             if (status_q == 0 && remaining_q > {6'b0, chunk_q}) begin
                                 remaining_q  <= remaining_q - {6'b0, chunk_q};
-                                address_q    <= address_q + ({27'b0, chunk_q} << 2);
+                                address_q    <= address_q + (DDR_ADDR_WIDTH'(chunk_q) << 2);
                                 byte_count_q <= byte_count_q - chunk_bytes;
                                 lower_q      <= (address_q[6:0] + ({2'b0, chunk_q} << 2));
                                 first_be_q   <= 15;
@@ -649,7 +653,7 @@ module pcie_ddr_bridge #(
                 if (write_launch) begin
                     write_state_q    <= W_ADDR;
                     write_index_q    <= 0;
-                    write_address_q  <= addr[31:2];
+                    write_address_q  <= addr[DDR_ADDR_WIDTH-1:2];
                     write_length_q   <= length_dw[5:0];
                     write_first_be_q <= fbe;
                     write_last_be_q  <= lbe;
@@ -737,7 +741,7 @@ module pcie_ddr_bridge #(
                     issue_first_be_q
                 )};
                 issue_first_be_q <= 15;
-                issue_address_q <= issue_address_q + ({27'b0, issue_chunk} << 2);
+                issue_address_q <= issue_address_q + (DDR_ADDR_WIDTH'(issue_chunk) << 2);
                 issue_remaining_q <= issue_remaining_q - {6'b0, issue_chunk};
             end
             if (r_accept) begin

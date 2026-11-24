@@ -3,16 +3,26 @@ set gt [get_cells -hier -quiet -filter {REF_NAME == GTHE4_CHANNEL}]
 set zu15eg [string match xczu15eg-ffvb1156-2-* [get_property PART [current_project]]]
 set native_x2 [llength [get_cells -hier -quiet -filter {REF_NAME == gen3_native_x2 || ORIG_REF_NAME == gen3_native_x2}]]
 if {$native_x2} {
- if {!$zu15eg || [lsort [get_property LOC $gt]] ne {GTHE4_CHANNEL_X1Y4 GTHE4_CHANNEL_X1Y5}} {
+ if {[info exists native_lane_sites]} {
+  if {[llength $gt] != [llength $native_lane_sites]} {error "Wrong GTH channel count"}
+  foreach channel $gt {
+   if {![regexp {gen_gthe4_channel_inst\[([01])\]\.GTHE4_CHANNEL_PRIM_INST$} $channel -> lane]} {
+    error "Cannot identify native lane for $channel"
+   }
+   set_property LOC [lindex $native_lane_sites $lane] $channel
+  }
+ } elseif {!$zu15eg || [lsort [get_property LOC $gt]] ne {GTHE4_CHANNEL_X1Y4 GTHE4_CHANNEL_X1Y5}} {
   error "Native x2 must use the generated DP0 and DP1 GT locations"
  }
  lassign {rx_cdc tx_cdc} rx_fifo tx_fifo
 } else {
- set_property LOC [expr {$zu15eg ? "GTHE4_CHANNEL_X1Y4" : "GTHE4_CHANNEL_X0Y15"}] $gt
+ set_property LOC [expr {[info exists native_lane_sites] ? [lindex $native_lane_sites 0] :
+                         $zu15eg ? "GTHE4_CHANNEL_X1Y4" : "GTHE4_CHANNEL_X0Y15"}] $gt
  lassign {rx_crossing tx_crossing} rx_fifo tx_fifo
 }
 set rb [get_cells -hier -quiet -filter {REF_NAME == IBUFDS_GTE4}]
-set_property LOC [expr {$zu15eg ? "GTHE4_COMMON_X1Y1" : "GTHE4_COMMON_X0Y3"}] $rb
+set_property LOC [expr {[info exists native_refclk_site] ? $native_refclk_site :
+                        $zu15eg ? "GTHE4_COMMON_X1Y1" : "GTHE4_COMMON_X0Y3"}] $rb
 set_property BEL IBUFDS0_GTHE4 $rb
 # Native PHY XDC defines the 4 ns TXOUTCLK and rate mode.
 set txclock [get_pins -of_objects $gt -filter {REF_PIN_NAME == TXOUTCLK}]

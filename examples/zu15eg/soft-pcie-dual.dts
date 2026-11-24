@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: Apache-2.0
+#include "soft-pcie.dts"
+
+/ {
+ model = "XCZU15EG Core V1.0 / F V1.0 dual soft PCIe NVMe host";
+
+ soft_pcie_b: pcie@a0001000 {
+  compatible = "ngt,zcu104-soft-pcie-1.0";
+  device_type = "pci";
+  #address-cells = <3>;
+  #size-cells = <2>;
+  reg = <0 0xa0001000 0 0x1000>, <0 0xa4000000 0 0x1000>;
+  reg-names = "config", "host";
+  bus-range = <1 1>;
+  linux,pci-domain = <2>;
+  // Each root emits PIO at PCI address 0xa3000000 in its own domain.
+  ranges = <0x02000000 0 0xa3000000 0 0xa5000000 0 0x01000000>;
+  dma-ranges = <0x02000000 0 0 0 0 0 0x80000000>;
+  interrupt-parent = <&gic>;
+  interrupts = <GIC_SPI 90 IRQ_TYPE_LEVEL_HIGH>;
+ };
+};

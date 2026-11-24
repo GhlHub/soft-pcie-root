@@ -1,0 +1,298 @@
+{
+  "date": "2026-11-24",
+  "board": "ZU15EG, xczu15eg-ffvb1156-2-i",
+  "comparison": "same four-worker read workload and IRQ condition with the 2 GiB and 4 GiB DMA images",
+  "workload": "30-second direct sequential libaio, 1 MiB and QD4 per worker, two workers per drive",
+  "reference": "gen3-x2-irq-affinity.json",
+  "queue_limits": {
+    "nvme0n1": {
+      "max_sectors_kb": 252,
+      "max_hw_sectors_kb": 252,
+      "max_segments": 64
+    },
+    "nvme1n1": {
+      "max_sectors_kb": 252,
+      "max_hw_sectors_kb": 252,
+      "max_segments": 64
+    }
+  },
+  "verified_upper_ddr_buffers": [
+    {
+      "device": "/dev/nvme0n1",
+      "pages": 256,
+      "first_physical_address": "0x803e4f000",
+      "bytes_per_read": 1048576,
+      "repeated_read_fnv1a": "5f599c338221021c"
+    },
+    {
+      "device": "/dev/nvme1n1",
+      "pages": 256,
+      "first_physical_address": "0x803df8000",
+      "bytes_per_read": 1048576,
+      "repeated_read_fnv1a": "801d91470626d0a3"
+    }
+  ],
+  "repeat_256_mib_sha256": {
+    "/dev/nvme0n1": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+    "/dev/nvme1n1": "e3282bfc910dd3630be6eaa8ba02feac62c14cf3ae8e6cd288aa2067ebcdccf4"
+  },
+  "swiotlb_observations": {
+    "before": {
+      "io_tlb_used": 0,
+      "io_tlb_used_hiwater": 0
+    },
+    "after_upper_read": {
+      "io_tlb_used": 0,
+      "io_tlb_used_hiwater": 0
+    },
+    "after_checksum": {
+      "io_tlb_used": 0,
+      "io_tlb_used_hiwater": 0
+    },
+    "after_fio": {
+      "io_tlb_used": 0,
+      "io_tlb_used_hiwater": 0
+    }
+  },
+  "runs": [
+    {
+      "profile": "gen3-x2",
+      "bitstream_sha256": "b4d60f1a2dd54b64f54f7a2354be5df779f9f5ca667b1c7ae2bc36906a51beeb",
+      "device_tree_sha256": "5c76eaa1e92d44559188d2ed67f5306c2ebbabaa90e569475eaa262dc0632759",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 29,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 13710131200,
+              "runtime_ms": 30008,
+              "bandwidth_bytes_per_second": 456882537
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 13710131200,
+              "runtime_ms": 30009,
+              "bandwidth_bytes_per_second": 456867313
+            }
+          ],
+          "bandwidth_bytes_per_second": 913749850
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 13029605376,
+              "runtime_ms": 30009,
+              "bandwidth_bytes_per_second": 434189922
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 13027508224,
+              "runtime_ms": 30007,
+              "bandwidth_bytes_per_second": 434148972
+            }
+          ],
+          "bandwidth_bytes_per_second": 868338894
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1782088744,
+      "condition": "control",
+      "parent_irq_cpu": {
+        "A": 0,
+        "B": 0
+      },
+      "parent_irq_deltas": {
+        "A": [
+          130692,
+          0,
+          0,
+          0
+        ],
+        "B": [
+          123111,
+          0,
+          0,
+          0
+        ]
+      },
+      "cpu_utilization": [
+        {
+          "cpu": 0,
+          "busy_percent": 9.78,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 0.0
+        },
+        {
+          "cpu": 1,
+          "busy_percent": 11.47,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 2.02
+        },
+        {
+          "cpu": 2,
+          "busy_percent": 10.6,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 2.52
+        },
+        {
+          "cpu": 3,
+          "busy_percent": 9.85,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 1.82
+        }
+      ],
+      "fio_worker_system_cpu_percent": [
+        9.944346,
+        10.627166,
+        8.597707,
+        9.114844
+      ],
+      "lower_ddr_baseline_bandwidth_bytes_per_second": 1501111230,
+      "gain_percent": 18.717967621893017
+    },
+    {
+      "profile": "gen3-x2",
+      "bitstream_sha256": "b4d60f1a2dd54b64f54f7a2354be5df779f9f5ca667b1c7ae2bc36906a51beeb",
+      "device_tree_sha256": "5c76eaa1e92d44559188d2ed67f5306c2ebbabaa90e569475eaa262dc0632759",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 29,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 13711179776,
+              "runtime_ms": 30008,
+              "bandwidth_bytes_per_second": 456917481
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 13709082624,
+              "runtime_ms": 30009,
+              "bandwidth_bytes_per_second": 456832371
+            }
+          ],
+          "bandwidth_bytes_per_second": 913749852
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 13029605376,
+              "runtime_ms": 30008,
+              "bandwidth_bytes_per_second": 434204391
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 13027508224,
+              "runtime_ms": 30009,
+              "bandwidth_bytes_per_second": 434120038
+            }
+          ],
+          "bandwidth_bytes_per_second": 868324429
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1782074281,
+      "condition": "split",
+      "parent_irq_cpu": {
+        "A": 0,
+        "B": 2
+      },
+      "parent_irq_deltas": {
+        "A": [
+          130712,
+          0,
+          0,
+          0
+        ],
+        "B": [
+          0,
+          0,
+          124249,
+          0
+        ]
+      },
+      "cpu_utilization": [
+        {
+          "cpu": 0,
+          "busy_percent": 9.85,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 0.0
+        },
+        {
+          "cpu": 1,
+          "busy_percent": 11.9,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 2.63
+        },
+        {
+          "cpu": 2,
+          "busy_percent": 8.45,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 0.0
+        },
+        {
+          "cpu": 3,
+          "busy_percent": 10.98,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 2.46
+        }
+      ],
+      "fio_worker_system_cpu_percent": [
+        11.027427,
+        10.183951,
+        8.674643,
+        9.96401
+      ],
+      "lower_ddr_baseline_bandwidth_bytes_per_second": 1440100128,
+      "gain_percent": 23.746553892397127
+    }
+  ],
+  "final_state": "Both SSDs idle at Gen3 x2, A parent IRQ on CPU 0, B on CPU 2"
+}

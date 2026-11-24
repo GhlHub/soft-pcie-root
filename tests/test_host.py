@@ -1,9 +1,13 @@
 from pathlib import Path
 import subprocess
+import pytest
 R=Path(__file__).resolve().parents[1]
-def test_ddr_bridge(tmp_path):
+@pytest.mark.parametrize('address_bits', [32, 36])
+def test_ddr_bridge(tmp_path, address_bits):
  exe=tmp_path/'ddr.vvp'
- subprocess.run(['iverilog','-g2012','-s','tb_ddr_bridge','-o',exe,R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',R/'tests/host/tb_ddr_bridge.sv'],check=True)
+ subprocess.run(['iverilog','-g2012','-s','tb_ddr_bridge',
+   f'-Ptb_ddr_bridge.DDR_ADDR_WIDTH={address_bits}',
+   '-o',exe,R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',R/'tests/host/tb_ddr_bridge.sv'],check=True)
  r=subprocess.run(['vvp',exe],capture_output=True,text=True,timeout=30)
  assert r.returncode==0,r.stdout+r.stderr
  assert 'PASS DDR:' in r.stdout
@@ -110,11 +114,13 @@ def test_rx64_ddr_lanes_and_rate(tmp_path):
      assert 'PASS PIPELINE:' in run.stdout
 
 
-def test_wide_prefetch_ownership(tmp_path):
+@pytest.mark.parametrize('address_bits', [32, 36])
+def test_wide_prefetch_ownership(tmp_path, address_bits):
  for slots in (2, 4, 8, 16):
   exe=tmp_path/f'wide-prefetch-{slots}.vvp'
   subprocess.run(['iverilog','-g2012','-s','tb_ddr_bridge',
     '-Ptb_ddr_bridge.RX_DWORDS=2','-Ptb_ddr_bridge.TX_DWORDS=2',
+    f'-Ptb_ddr_bridge.DDR_ADDR_WIDTH={address_bits}',
     f'-Ptb_ddr_bridge.READ_SLOTS={slots}','-Ptb_ddr_bridge.PIPELINED_READS=1',
     '-o',exe,R/'ip/soft_pcie_root/rtl/host/pcie_ddr_bridge.sv',
     R/'ip/soft_pcie_root/rtl/host/pcie_tx_unpack.sv',R/'tests/host/tb_ddr_bridge.sv'],check=True)

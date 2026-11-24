@@ -57,7 +57,7 @@ revision are in the [performance history](../../docs/performance-history.md).
 | --- | --- | --- |
 | `S_AXI` | Slave | 32-bit AXI4-Lite, 12-bit address, SRP1 management/config |
 | `S_MEM` | Slave | 32-bit AXI4-Lite, 25-bit address, DBR1 + BAR PIO window |
-| `M_DDR` | Master | 64-bit AXI4, 32-bit address, ordered same-ID bursts, max 8 beats |
+| `M_DDR` | Master | 64-bit AXI4, 36-bit address, ordered same-ID bursts, max 8 beats |
 | `aclk`, `aresetn` | Inputs | Independent 50 MHz management, global active-low reset |
 | `host_clk_i` | Input | Stable 125 MHz host/DDR clock |
 | `core_clk_o`, `core_resetn_o` | Outputs | Host clock alias and synchronized host reset release |
@@ -66,6 +66,9 @@ revision are in the [performance history](../../docs/performance-history.md).
 | `perst_a_o` | Output | FPGA-facing active-high reset; card inverts to PERST# |
 | `disable_ssd2_power_o` | Output | Fixed-high legacy example helper; not a second PCIe port |
 | `irq_o` | Output | Level-high aggregate MSI/MSI-X interrupt |
+
+All PCIe modes default to 36-bit AXI DDR addresses. The board address map
+and device tree determine which DDR banks Linux can use for DMA.
 
 AXI bus associations and memory maps are present in generated `component.xml`.
 `core_clk_o` is the host 125 MHz clock, **not** the variable-rate GTH link clock.

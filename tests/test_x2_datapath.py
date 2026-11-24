@@ -81,8 +81,9 @@ def run_bench(tmp_path, name, parameters=()):
     assert 'PASS' in run.stdout
 
 
-def test_ddr_x2_ownership(tmp_path):
-    run_bench(tmp_path,'tb_ddr_bridge_x2')
+@pytest.mark.parametrize('addr_width', [32, 36])
+def test_ddr_x2_ownership(tmp_path, addr_width):
+    run_bench(tmp_path, 'tb_ddr_bridge_x2', [f'DDR_ADDR_WIDTH={addr_width}'])
 
 
 @pytest.mark.parametrize('four',[0,1])
@@ -207,12 +208,17 @@ endmodule'''
 
 @pytest.mark.parametrize('offset',range(4))
 @pytest.mark.parametrize('link_half,host_half',[(2,4),(3,5)])
-def test_x2_host_cdc(tmp_path,offset,link_half,host_half):
-    address=4096+4*offset
+@pytest.mark.parametrize('addr_width,upper', [(32, False), (36, False), (36, True)])
+def test_x2_host_cdc(tmp_path,offset,link_half,host_half,addr_width,upper):
+    base = 4096 + ((1 << 35) if upper else 0)
+    address = base + 4 * offset
+    address_header = address.to_bytes(8 if upper else 4, 'big')
+    write_header = 0x60000020 if upper else 0x40000020
+    read_header = 0x20000020 if upper else 0x00000020
     payload=b''.join((0xabc00000+i).to_bytes(4,'little') for i in range(32))
-    write=(0x40000020).to_bytes(4,'big')+bytes.fromhex('01005aff')+address.to_bytes(4,'big')+payload
+    write=write_header.to_bytes(4,'big')+bytes.fromhex('01005aff')+address_header+payload
     msi=bytes.fromhex('4000000101005a0ffee00000')+(17).to_bytes(4,'little')
-    read=bytes.fromhex('0000002001005aff')+address.to_bytes(4,'big')
+    read=read_header.to_bytes(4,'big')+bytes.fromhex('01005aff')+address_header
     sends=[]
     for packet in [write,msi,read]:
         for i in range(0,len(packet),8):
@@ -233,13 +239,13 @@ always #{host_half} if(run_host)clk=~clk;
 always #{link_half} if(run_link)link_clk=~link_clk;
 reg rst_n=0;reg [63:0] rxdata;reg [1:0] rxwords;reg rxvalid=0,rxlast=0;
 wire rxready;wire [63:0] txdata;wire [1:0] txwords;wire txvalid,txlast;reg txready=0;
-wire [8:0] credits;wire [31:0] awaddr,araddr;wire [7:0] awlen,arlen;wire [2:0] awsize,arsize;
+wire [8:0] credits;wire [{addr_width-1}:0] awaddr,araddr;wire [7:0] awlen,arlen;wire [2:0] awsize,arsize;
 wire awvalid,wvalid,wlast,bready,arvalid,rready;wire [127:0] wdata;wire [15:0] wstrb;
 reg awready=0,wready=0,bvalid=0,arready=0,rvalid=0,rlast=0;reg [127:0] rdata;
 wire fault,idle,msi,rf,tf;wire [4:0] vector;
 reg [7:0] mem[0:8191];integer wa=0,wi=0,ra=0,ri=0,rl=0,cycle=0,bdelay=0,irqs=0,index=0;
 reg writing=0,reading=0;reg [63:0] ex[0:{len(expected)-1}];integer nw[0:{len(expected)-1}],le[0:{len(expected)-1}],ce[0:{len(expected)-1}];
-pcie_x2_host_path dut(
+pcie_x2_host_path #(.DDR_ADDR_WIDTH({addr_width})) dut(
  .clk(clk),.link_clk(link_clk),.rst_n(rst_n),.link_active_i(1'b1),.dma_enable_i(1'b1),
  .link_rx_data_i(rxdata),.link_rx_words_i(rxwords),.link_rx_valid_i(rxvalid),.link_rx_last_i(rxlast),.link_rx_ready_o(rxready),
  .link_tx_data_o(txdata),.link_tx_words_o(txwords),.link_tx_valid_o(txvalid),.link_tx_last_o(txlast),.link_tx_ready_i(txready),.link_tx_credits_o(credits),
@@ -253,8 +259,8 @@ always @(negedge clk)begin cycle=cycle+1;awready=!writing&&cycle%3!=0;wready=wri
 always @(posedge clk)if(rst_n)begin
  if(fault||rf||tf)$fatal(1,"host path fault");
  if(awvalid&&awready)begin
-  if(awsize!=4||awaddr!=4096||awlen!=({offset}+32+3)/4-1)$fatal(1,"AW geometry");
-  wa<=awaddr;wi<=0;writing<=1;
+  if(awsize!=4||awaddr!={addr_width}'h{base:x}||awlen!=({offset}+32+3)/4-1)$fatal(1,"AW geometry");
+  wa<=awaddr[12:0];wi<=0;writing<=1;
  end
  if(wvalid&&wready)begin
   for(integer b=0;b<16;b=b+1)if(wstrb[b])mem[wa+16*wi+b]<=wdata[8*b+:8];
@@ -264,8 +270,9 @@ always @(posedge clk)if(rst_n)begin
  if(bvalid&&bready)bvalid<=0;
  if(msi)begin if(vector!=17||writing||bvalid||bdelay!=0)$fatal(1,"MSI B fence");irqs<=irqs+1;end
  if(arvalid&&arready)begin
-  if(arsize!=4||arlen>3||araddr[3:0]!=0)$fatal(1,"AR geometry");
-  ra<=araddr;ri<=0;rl<=arlen;reading<=1;
+  if(arsize!=4||arlen>3||araddr[3:0]!=0||
+     araddr<{addr_width}'h{base:x}||araddr>={addr_width}'h{base+144:x})$fatal(1,"AR geometry");
+  ra<=araddr[12:0];ri<=0;rl<=arlen;reading<=1;
  end
  if(reading&&(!rvalid||rready)&&cycle%3!=0)begin
   for(integer b=0;b<16;b=b+1)rdata[8*b+:8]<=mem[ra+16*ri+b];
@@ -293,7 +300,7 @@ initial begin
  #300;run_link=1;
  for(integer n=0;n<1000;n=n+1)begin @(negedge link_clk);txready=n%7<5;end
  if(index!={len(expected)}||irqs!=1)$fatal(1,"CDC counts %d %d",index,irqs);
- for(integer b=4096;b<4096+144;b=b+1)if((b<{address}||b>={address+128})&&mem[b]!==8'hcc)$fatal(1,"CDC write guard");
+ for(integer b=4096;b<4096+144;b=b+1)if((b<{4096+4*offset}||b>={4096+4*offset+128})&&mem[b]!==8'hcc)$fatal(1,"CDC write guard");
  $display("PASS x2 CDC host");$finish;
 end
 initial begin #100000;$fatal(1,"watchdog");end

@@ -2,7 +2,9 @@
 // Gen3 x2 only. clk is 125 MHz host/DDR; link_clk is 250 MHz aggregate link.
 // link_active_i and dma_enable_i must already be synchronized to host clk.
 // rst_n is GLOBAL cold reset. Never reset CDC or accepted AXI ownership for Recovery.
-module pcie_x2_host_path (
+module pcie_x2_host_path #(
+    parameter integer DDR_ADDR_WIDTH = 32
+) (
     input wire clk, link_clk, rst_n, link_active_i, dma_enable_i,
     output wire rx_cross_fault_o, tx_cross_fault_o, tx_source_fault_o,
     input wire [63:0] link_rx_data_i,
@@ -21,7 +23,7 @@ module pcie_x2_host_path (
     // Bridge idle only; CDC/adapters can still own packets. Not permission to reset.
     output wire idle_o,
     output wire [31:0] perf_events_o,
-    output wire [31:0] m_axi_awaddr,
+    output wire [DDR_ADDR_WIDTH-1:0] m_axi_awaddr,
     output wire [7:0] m_axi_awlen,
     output wire [2:0] m_axi_awsize,
     output wire [1:0] m_axi_awburst,
@@ -36,7 +38,7 @@ module pcie_x2_host_path (
     input wire [1:0] m_axi_bresp,
     input wire m_axi_bvalid,
     output wire m_axi_bready,
-    output wire [31:0] m_axi_araddr,
+    output wire [DDR_ADDR_WIDTH-1:0] m_axi_araddr,
     output wire [7:0] m_axi_arlen,
     output wire [2:0] m_axi_arsize,
     output wire [1:0] m_axi_arburst,
@@ -159,7 +161,7 @@ module pcie_x2_host_path (
     assign tx_cross_fault_o  = unpack_fault || tx_fault_sync[2];
     assign tx_source_fault_o = tx_fault_source_q;
     wire unused = ^{unused_rx_meta, unpack_words[2], unpack_meta[10:9]};
-    pcie_ddr_bridge_x2 bridge (
+    pcie_ddr_bridge_x2 #(.DDR_ADDR_WIDTH(DDR_ADDR_WIDTH)) bridge (
         .rst_n(host_release_q[2]),
         .*
     );

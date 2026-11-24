@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 module tb_ddr_bridge_x2;
     parameter RX_DWORDS = 4, TX_DWORDS = 4, READ_SLOTS = 16, PIPELINED_READS = 1;
+    parameter DDR_ADDR_WIDTH = 32;
     reg     [127:0] pack_data = 0;
     integer         pack_count = 0;
     reg     [  2:0] rxwords = 4;
@@ -18,7 +19,7 @@ module tb_ddr_bridge_x2;
     wire [31:0] perf;
     wire msi, fault, idle;
     wire [4:0] vector;
-    wire [31:0] awaddr, araddr;
+    wire [DDR_ADDR_WIDTH-1:0] awaddr, araddr;
     wire [127:0] wdata;
     wire [7:0] awlen, arlen;
     wire [2:0] awsize, awprot, arsize, arprot;
@@ -44,7 +45,8 @@ module tb_ddr_bridge_x2;
         .RX_DWORDS      (RX_DWORDS),
         .TX_DWORDS      (TX_DWORDS),
         .READ_SLOTS     (READ_SLOTS),
-        .PIPELINED_READS(PIPELINED_READS)
+        .PIPELINED_READS(PIPELINED_READS),
+        .DDR_ADDR_WIDTH (DDR_ADDR_WIDTH)
     ) dut (
         .clk          (clk),
         .rst_n        (rst),
@@ -325,6 +327,21 @@ module tb_ddr_bridge_x2;
             end
         end
     endtask
+    task reject_ddr_address(input [63:0] address);
+        integer prior;
+        reset();
+        prior = reads;
+        header(0, 1, address, 1, 15, 0);
+        completion(0, 0, 0, 0, 1);
+        wait (idle);
+        if (reads != prior || !fault) $fatal(1, "DDR range bypass on read: %h", address);
+        reset();
+        prior = writes;
+        header(1, 1, address, 1, 15, 0);
+        send(32'hffffffff, 1);
+        wait (idle);
+        if (writes != prior || !fault) $fatal(1, "DDR range bypass on write: %h", address);
+    endtask
     integer prior, offset, n, left, chunk, byteleft;
     initial begin
         for (n = 0; n < 8192; n = n + 1) mem[n] = (n * 7 + 3) & 255;
@@ -394,12 +411,13 @@ module tb_ddr_bridge_x2;
         if (!fault) $fatal(1, "Missing AXI RRESP fault");
         inject_r = 0;
         reset();
-        // Out-of-range/high-address reads return UR and never reach AXI.
-        prior = reads;
-        header(0, 1, 64'h100000040, 4, 15, 15);
-        completion(0, 0, 0, 0, 1);
-        wait (idle);
-        if (reads != prior || !fault) $fatal(1, "DDR range bypass");
+        // Reject the gap, the ends of both banks, and addresses that would alias
+        // upper DDR if the bridge truncated the address before validating it.
+        reject_ddr_address(64'h0000_0000_8000_0000);
+        reject_ddr_address(64'h0000_0001_0000_0040);
+        reject_ddr_address(64'h0000_0008_8000_0000);
+        reject_ddr_address(64'h0000_0018_0000_0040);
+        if (DDR_ADDR_WIDTH == 32) reject_ddr_address(64'h0000_0008_0000_0040);
         reset();
         // Crossing 4KiB and malformed payload cannot modify memory.
         prior = writes;

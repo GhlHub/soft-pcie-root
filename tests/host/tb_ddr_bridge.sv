@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 module tb_ddr_bridge;
     parameter RX_DWORDS = 1, TX_DWORDS = 1, READ_SLOTS = 2, PIPELINED_READS = 0;
+    parameter DDR_ADDR_WIDTH = 32;
     reg        pair_half = 0;
     reg [31:0] pair_low;
     reg        rxsingle = 0;
@@ -18,8 +19,11 @@ module tb_ddr_bridge;
     wire [31:0] perf;
     wire msi, fault, idle;
     wire [4:0] vector;
-    wire [31:0] awaddr, araddr;
-    wire [63:0] wdata;
+    wire [DDR_ADDR_WIDTH-1:0] awaddr, araddr;
+    reg  [DDR_ADDR_WIDTH-1:0] bank_base = 0;
+    wire [DDR_ADDR_WIDTH-1:0] model_awaddr = awaddr - bank_base;
+    wire [DDR_ADDR_WIDTH-1:0] model_araddr = araddr - bank_base;
+    wire [              63:0] wdata;
     wire [7:0] awlen, arlen;
     wire [2:0] awsize, awprot, arsize, arprot;
     wire [1:0] awburst, arburst;
@@ -58,7 +62,8 @@ module tb_ddr_bridge;
         .RX_DWORDS      (RX_DWORDS),
         .TX_DWORDS      (TX_DWORDS),
         .READ_SLOTS     (READ_SLOTS),
-        .PIPELINED_READS(PIPELINED_READS)
+        .PIPELINED_READS(PIPELINED_READS),
+        .DDR_ADDR_WIDTH (DDR_ADDR_WIDTH)
     ) dut (
         .clk             (clk),
         .rst_n           (rst),
@@ -155,10 +160,10 @@ module tb_ddr_bridge;
             if (w_accepted_q - b_out_q > 2 || ar_in_q - r_out_q > READ_SLOTS)
                 $fatal(1, "Outstanding AXI bound exceeded");
             if (awvalid && awready) begin
-                if (awsize != 3 || awaddr[2:0] != 0 || awburst != 1 ||
-                    awaddr + 8 * (awlen + 1) > 8192 || awaddr[11:0] + 8 * (awlen + 1) > 4096)
+                if (awsize != 3 || awaddr[2:0] != 0 || awburst != 1 || model_awaddr >= 8192 ||
+                    model_awaddr + 8 * (awlen + 1) > 8192 || awaddr[11:0] + 8 * (awlen + 1) > 4096)
                     $fatal(1, "Bad AXI write burst");
-                wa           <= awaddr;
+                wa           <= model_awaddr[31:0];
                 wl           <= awlen + 1;
                 wi           <= 0;
                 writing      <= 1;
@@ -185,9 +190,10 @@ module tb_ddr_bridge;
             end
             if (arvalid && arready) begin
                 if (arsize != 3 || araddr[2:0] != 0 || arburst != 1 || arlen > 7 ||
-                    araddr + 8 * (arlen + 1) > 8192 || araddr[5:0] + 8 * (arlen + 1) > 64)
+                    model_araddr >= 8192 || model_araddr + 8 * (arlen + 1) > 8192 ||
+                    araddr[5:0] + 8 * (arlen + 1) > 64)
                     $fatal(1, "Bad AXI read/RCB burst");
-                ra_queue[ar_in_q%READ_SLOTS] <= araddr;
+                ra_queue[ar_in_q%READ_SLOTS] <= model_araddr[31:0];
                 rl_queue[ar_in_q%READ_SLOTS] <= arlen + 1;
                 ar_in_q                      <= ar_in_q + 1;
                 reads                        <= reads + 1;
@@ -237,7 +243,7 @@ module tb_ddr_bridge;
         held_bridge    <= {bridge_data, bridge_last, bridge_single, cost};
     end
     reg aw_stalled = 0, w_stalled = 0, ar_stalled = 0, tx_stalled = 0;
-    reg [42:0] held_aw, held_ar;
+    reg [DDR_ADDR_WIDTH+10:0] held_aw, held_ar;
     reg [72:0] held_w;
     reg [32:0] held_tx;
     always @(posedge clk) begin
@@ -344,8 +350,9 @@ module tb_ddr_bridge;
         repeat (20) @(negedge clk);
         if (!idle || fault) $fatal(1, "Initial inactive link must not own or fault DMA");
         active = 1;
-        // Maximum MPS128 four-DWORD write with byte-enable edge masks.
-        header(1, 1, 4096, 32, 4'hc, 4'h3);
+        // Exercise 4-DWORD TLPs in upper DDR when the address port supports it.
+        if (DDR_ADDR_WIDTH == 36) bank_base = DDR_ADDR_WIDTH'(64'h0000_0008_0000_0000);
+        header(1, 1, 64'(bank_base) + 4096, 32, 4'hc, 4'h3);
         for (n = 0; n < 32; n = n + 1) send(32'hba000000 + n, n == 31);
         wait (idle);
         @(negedge clk);
@@ -353,7 +360,7 @@ module tb_ddr_bridge;
             mem[4220] !== 31 || mem[4223] !== 8'h7c)
             $fatal(1, "Write byte enable corruption");
         // Full write then MSI must wait for the actual DDR write response.
-        header(1, 0, 4096, 32, 15, 15);
+        header(1, DDR_ADDR_WIDTH == 36, 64'(bank_base) + 4096, 32, 15, 15);
         for (n = 0; n < 32; n = n + 1) send(32'hba000000 + n, n == 31);
         header(1, 1, 64'hfee00000, 1, 15, 0);
         send(17, 1);
@@ -361,7 +368,7 @@ module tb_ddr_bridge;
         repeat (3) @(negedge clk);
         if (interrupts != 1 || fault) $fatal(1, "MSI/DMA status");
         // Misaligned-to-RCB 512-byte read, first/last enabled-byte edges.
-        header(0, 1, 4100, 128, 4'hc, 4'h7);
+        header(0, 1, 64'(bank_base) + 4100, 128, 4'hc, 4'h7);
         left     = 128;
         offset   = 4100;
         byteleft = 509;
@@ -375,6 +382,7 @@ module tb_ddr_bridge;
         end
         wait (idle);
         if (fault) $fatal(1, "Read fault");
+        bank_base = 0;
         // Encoded zero length means 4096 bytes, not an empty request.
         header(0, 0, 0, 1024, 15, 15);
         for (n = 0; n < 64; n = n + 1) completion(4096 - n * 64, (n * 64) & 127, 16, n * 64, 0);
@@ -411,6 +419,12 @@ module tb_ddr_bridge;
         completion(0, 0, 0, 0, 1);
         wait (idle);
         if (reads != prior || !fault) $fatal(1, "DDR range bypass");
+        reset();
+        prior = writes;
+        header(1, 1, 64'h0000_0018_0000_0040, 1, 15, 0);
+        send(32'hffffffff, 1);
+        wait (idle);
+        if (writes != prior || !fault) $fatal(1, "DDR address aliased upper bank after truncation");
         reset();
         // Crossing 4KiB and malformed payload cannot modify memory.
         prior = writes;

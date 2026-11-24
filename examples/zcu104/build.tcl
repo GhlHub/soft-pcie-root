@@ -50,6 +50,7 @@ foreach name {tx_p_o tx_n_o perst_a_o disable_ssd2_power_o} {
 assign_bd_address -offset 0xA0000000 -range 4K -target_address_space [get_bd_addr_spaces ps/Data] [get_bd_addr_segs pcie/S_AXI/reg0] -force
 assign_bd_address -offset 0xA2000000 -range 32M -target_address_space [get_bd_addr_spaces ps/Data] [get_bd_addr_segs pcie/S_MEM/reg0] -force
 assign_bd_address -offset 0x00000000 -range 2G -target_address_space [get_bd_addr_spaces pcie/M_DDR] [get_bd_addr_segs ps/SAXIGP2/HP0_DDR_LOW] -force
+exclude_bd_addr_seg -target_address_space [get_bd_addr_spaces pcie/M_DDR] [get_bd_addr_segs ps/SAXIGP2/HP0_DDR_HIGH]
 validate_bd_design
 if {[get_property CONFIG.DATA_WIDTH [get_bd_intf_pins pcie/M_DDR]]!=64} {error "DDR bridge AXI must be64-bit"}
 if {[get_property CONFIG.FREQ_HZ [get_bd_intf_pins pcie/M_DDR]]!=125000000} {error "DDR bridge AXI must run at125MHz"}

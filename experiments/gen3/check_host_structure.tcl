@@ -9,19 +9,35 @@ if {$x2_gen3} {
   }
  }
 }
+if {[info exists host_scope]} {current_instance}
+set hp_index [expr {[info exists host_hp_index] ? $host_hp_index : 2}]
+set addr_width [expr {[info exists host_ddr_addr_width] ? $host_ddr_addr_width : 36}]
+set hp_port HP[expr {$hp_index - 2}]
 set ps [get_cells -hier -filter {REF_NAME == PS8}]
 if {[llength $ps]!=1} {error "Expected one PS8"}
-foreach pin {SAXIGP2RCLK SAXIGP2WCLK} {
+foreach pin [list SAXIGP${hp_index}RCLK SAXIGP${hp_index}WCLK] {
  set hpclk [get_pins -of_objects $ps -filter "REF_PIN_NAME == $pin"]
- if {[llength $hpclk]!=1} {error "Missing HP0 clock $pin"}
+ if {[llength $hpclk]!=1} {error "Missing $hp_port clock $pin"}
  set clocks [get_clocks -of_objects $hpclk]
- if {[llength $clocks]!=1 || abs([get_property PERIOD $clocks]-8.0)>0.001} {error "HP0 must be clocked at125MHz: $clocks"}
+ if {[llength $clocks]!=1 || abs([get_property PERIOD $clocks]-8.0)>0.001} {error "$hp_port must be clocked at 125 MHz: $clocks"}
 }
-foreach field {SAXIGP2WDATA SAXIGP2RDATA} {
+foreach field [list SAXIGP${hp_index}WDATA SAXIGP${hp_index}RDATA] {
  set pins [get_pins -of_objects $ps -filter "REF_PIN_NAME =~ ${field}*"]
- if {[llength $pins]!=128} {error "HP0 data width wrong for $field: [llength $pins]"}
+ if {[llength $pins]!=128} {error "$hp_port data width wrong for $field: [llength $pins]"}
 }
-puts "GEN3_HOST_STRUCTURE_PASS HP0_128bit_125MHz DDR_completer_present"
+if {[info exists host_full_ddr] && $host_full_ddr} {
+ foreach channel {AW AR} {
+  set field [format {SAXIGP%s%sADDR[35]} $hp_index $channel]
+  set pin [get_pins -of_objects $ps -filter "REF_PIN_NAME == $field"]
+  set net [get_nets -quiet -of_objects $pin]
+  if {[llength $pin] != 1 || [llength $net] != 1 || [get_property TYPE $net] in {GROUND POWER}} {
+   error "DDR bank bit is missing or constant on $field"
+  }
+ }
+ puts "GEN3_HIGH_DDR_STRUCTURE_PASS ${hp_port} read_and_write_bank_bit35"
+}
+if {[info exists host_scope]} {current_instance $host_scope}
+puts "GEN3_HOST_STRUCTURE_PASS ${hp_port}_128bit_125MHz DDR_completer_present"
 
 set packet_fifos [expr {$x2_native ? [list rx_cdc tx_cdc] : [list rx_crossing tx_crossing]}]
 foreach fifo $packet_fifos {
@@ -35,7 +51,7 @@ foreach fifo $packet_fifos {
   set length_capture [get_cells -hier -regexp [format {.*%s/read_length_q_reg\[[0-9]+\]} $fifo]]
   if {[llength $length_capture]!=5} {error "Missing clock-local packet length capture $fifo"}
  } else {
-  set packet_ram [get_cells -hier -filter "NAME =~ */$fifo/data_q_reg && REF_NAME =~ RAMB*"]
+  set packet_ram [get_cells -hier -filter "(NAME =~ */$fifo/data_q_reg || NAME =~ *.$fifo/data_q_reg) && REF_NAME =~ RAMB*"]
   if {[llength $packet_ram]!=1} {error "Missing clocked packet RAM $fifo"}
   set bus_width 72
   if {[get_property READ_WIDTH_A $packet_ram]!=$bus_width || [get_property WRITE_WIDTH_B $packet_ram]!=$bus_width ||
@@ -70,8 +86,8 @@ puts "DDR_OWNERSHIP_STRUCTURE_PASS write_B_owners read_R_owners completion_slots
 set writer [get_cells -hier -regexp [format {.*%s/FSM_onehot_write_state_q_reg\[[0-2]\]$} $bridge]]
 if {[llength $writer]!=3} {error "Missing independent DDR write execution state"}
 set write_address [get_cells -hier -regexp [format {.*%s/write_address_q_reg\[[0-9]+\]$} $bridge]]
-# Exclude the physical replicas of the alignment bit from the 30-bit count.
-if {[llength $write_address] != 30} {error "Missing independent DWORD-aligned DDR write address"}
+# The exact register names exclude physical replicas of the alignment bit.
+if {[llength $write_address] != $addr_width - 2} {error "Missing independent DWORD-aligned DDR write address"}
 puts "DDR_WRITE_PIPELINE_STRUCTURE_PASS independent_writer held_address preparation_state"
 
 
@@ -114,7 +130,8 @@ set gt [get_cells -hier -filter {REF_NAME == GTHE4_CHANNEL}]
 if {[llength $gt]!=1 + $x2_native} {error "Wrong native GTH count"}
 if {[llength [get_cells -hier -quiet -filter {REF_NAME =~ PCIE*}]]} {error "Unexpected PCIe hard controller"}
 if {$x2_native} {
- if {[lsort [get_property LOC $gt]] ne {GTHE4_CHANNEL_X1Y4 GTHE4_CHANNEL_X1Y5}} {error "Wrong x2 lane locations"}
+ set expected_lanes [expr {[info exists gt_sites] ? $gt_sites : {GTHE4_CHANNEL_X1Y4 GTHE4_CHANNEL_X1Y5}}]
+ if {[lsort [get_property LOC $gt]] ne $expected_lanes} {error "Wrong x2 lane locations"}
  set pclk [get_pins -hier -filter {NAME =~ */phy_clk_i/bufg_gt_pclk/O}]
  set clocks [get_clocks -of_objects $pclk]
  set period [expr {$x2_gen2 ? 4.0 : 8.0}]

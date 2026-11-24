@@ -2,7 +2,7 @@
 # The ZU15EG catalog contains the legacy PHY and both native PHY widths.
 # The original x1 and fixed-stage entry points still generate version 1.1.
 if {[llength $argv] < 1 || [llength $argv] > 4} {
- error "Supply fresh output directory, optional default ENABLE_GEN3 (0 or 1), board (zcu104 or zu15eg), and optional catalog, gen1-x2, gen2-x2 or gen3-x2 profile"
+ error "Supply fresh output directory, optional default ENABLE_GEN3 (0 or 1), board (zcu104 or zu15eg), and optional catalog, gen1-x2, gen2-x2, gen3-x2, dual-x1, dual-gen3, dual-<x2 stage> or dual-gen3-x2-full-ddr profile"
 }
 set enable_gen3 0
 if {[llength $argv] >= 2} {set enable_gen3 [lindex $argv 1]}
@@ -11,10 +11,22 @@ set board zcu104
 if {[llength $argv] >= 3} {set board [lindex $argv 2]}
 set native_width 1
 set stage ""
+set board_placed 0
 if {[llength $argv] == 4} {
  set stage [lindex $argv 3]
- if {$stage eq "catalog"} {
-  if {$board ne "zu15eg" || $enable_gen3} {error "Use 0 zu15eg catalog for the four-mode package"}
+ if {[string match dual-* $stage]} {
+  if {$board ne "zu15eg"} {error "Dual-root packages require zu15eg"}
+  set board_placed 1
+  set stage [string range $stage 5 end]
+  if {$stage eq "gen3-x2-full-ddr"} {
+   set stage gen3-x2
+  }
+ }
+ if {$board_placed && $stage in {x1 gen3}} {
+  if {$enable_gen3 != ($stage eq "gen3")} {error "Use ENABLE_GEN3=0 for dual-x1 or 1 for dual-gen3"}
+  set stage ""
+ } elseif {!$board_placed && $stage eq "catalog"} {
+  if {$board ne "zu15eg" || $enable_gen3} {error "Use 0 zu15eg $stage"}
  } elseif {$stage ni {gen1-x2 gen2-x2 gen3-x2} || $board ne "zu15eg" || !$enable_gen3} {
   error "The x2 stages require zu15eg and ENABLE_GEN3=1"
  } else {
@@ -118,6 +130,15 @@ set width [ipx::get_user_parameters LINK_WIDTH -of_objects $core]
 if {[llength $width]!=1} {error "Missing inferred LINK_WIDTH parameter"}
 set_property -dict [list value_format long value_resolve_type user value $native_width display_name {Link width (x2 training development)} value_validation_type range_long value_validation_range_minimum 1 value_validation_range_maximum 2] $width
 set_property value $native_width [ipx::get_hdl_parameters LINK_WIDTH -of_objects $core]
+# Use the RTL address-width default for all catalog modes and board profiles.
+set ddr_model [ipx::get_hdl_parameters DDR_ADDR_WIDTH -of_objects $core]
+set ddr_addr_width [get_property value $ddr_model]
+set_property value $ddr_addr_width [ipx::get_user_parameters DDR_ADDR_WIDTH -of_objects $core]
+# A fixed package aperture avoids the 4 KiB placeholder Vivado infers for a
+# parameterized AXI address port. Board address assignments select the RAM.
+set ddr_space [ipx::get_address_spaces M_DDR -of_objects $core]
+set_property -dict [list RANGE_RESOLVE_TYPE immediate RANGE_DEPENDENCY {} RANGE_FORMAT bitString \
+ RANGE_BIT_STRING_LENGTH [expr {$ddr_addr_width + 1}] RANGE [format 0x%X [expr {1 << $ddr_addr_width}]]] $ddr_space
 foreach {mode parameter} {gen1-x2 X2_GEN1_BRINGUP gen2-x2 X2_GEN2_BRINGUP gen3-x2 X2_GEN3_BRINGUP} {
  set selected [expr {$stage eq $mode}]
  set_property value $selected [ipx::get_user_parameters $parameter -of_objects $core]
@@ -148,7 +169,8 @@ puts $stream {<: setOutputDirectory "./" :>}
 puts $stream {<: setFileName "[getComponentNameString]_phy" :>}
 puts $stream {<: setFileExtension ".xdc" :>}
 puts $stream {<: setFileProcessingOrder early :>}
-proc write_native_constraints {stream phy stage} {
+if {$board_placed} {puts $stream {<: set component [getComponentNameString] :>}}
+proc write_native_constraints {stream phy stage {placement_width 0}} {
  lassign $phy base native_name
  foreach native_xdc [list $base/source/ip_pcie_phy.xdc $base/ip_0/synth/${native_name}_gt.xdc] {
   set input [open $native_xdc r];set text [read $input];close $input
@@ -158,6 +180,15 @@ proc write_native_constraints {stream phy stage} {
        ($stage eq "gen1-x2" && [regsub {create_clock -name txoutclk -period 4 } $text {create_clock -name txoutclk -period 8 } text] != 1) ||
        ($stage eq "gen2-x2" && [regsub -all {set_case_analysis 0 (\[get_pins -filter \{REF_PIN_NAME=~[TR]XRATE\[0\]\})} $text {set_case_analysis 1 \1} text] != 2)} {
     error "Unexpected native PHY rate constraints"
+   }
+  }
+  if {$placement_width} {
+   if {[file tail $native_xdc] eq "ip_pcie_phy.xdc"} {
+    if {[regsub -all {create_clock -name (intclk|txoutclk) } $text {create_clock -name <=:$component:>_\1 } text] != 2} {
+     error "Expected a startup clock and a link clock in the native PHY constraints"
+    }
+   } elseif {[regsub -all -line {^[ \t]*set_property LOC GTHE4_CHANNEL_[^\n]+\n} $text {} text] != $placement_width} {
+    error "Expected $placement_width native GTH channel placements"
    }
   }
   puts $stream $text
@@ -176,11 +207,18 @@ if {$catalog} {
 } else {
  puts $stream {<: set native [getBooleanValue "ENABLE_GEN3"] :>}
  puts $stream "<: if {\$native} \{ :>"
- write_native_constraints $stream $phys($native_width) $stage
+ write_native_constraints $stream $phys($native_width) $stage [expr {$board_placed ? $native_width : 0}]
 }
 puts $stream "<: \} else \{ :>"
 set input [open $legacy/synth/pcie_gen1_gt.xdc r]
-puts $stream [read $input];close $input
+set legacy_xdc [read $input]
+close $input
+# The dual-root board constraints place each instance on a different GTH.
+# Keep all of the wizard's other constraints, including CPLL calibration.
+if {$board_placed && [regsub -all -line {^[ \t]*set_property LOC GTHE4_CHANNEL_[^\n]+\n} $legacy_xdc {} legacy_xdc] != 1} {
+ error "Expected exactly one legacy GT channel placement"
+}
+puts $stream $legacy_xdc
 puts $stream "<: \} :>"
 close $stream
 set group [ipx::get_file_groups xilinx_anylanguagesynthesis -of_objects $core]
@@ -200,4 +238,9 @@ close $target_file
 set width_file [open [file join $output native-width.txt] w]
 puts $width_file $widths
 close $width_file
+if {$board_placed} {
+ set placement_file [open [file join $output board-placed-gth.txt] w]
+ puts $placement_file [lindex $argv 3]
+ close $placement_file
+}
 puts "SOFT_PCIE_IP_PACKAGED [file join $output core component.xml]"

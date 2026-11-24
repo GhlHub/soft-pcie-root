@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-23",
+  "part": "xczu15eg-ffvb1156-2-i",
+  "profile": "dp04-passive dual Gen1 x1",
+  "deployment": "volatile JTAG, RAM Linux 6.6.70",
+  "bitstream_sha256": "58e08ac81086913a80be4688c1916bbcab02cccfab6cdddc65e8d23bc8423338",
+  "device_tree_sha256": "b7ad928b3a8e7fd229011331dcc3fd63ef3ca1d5c960cdf4f6e228673e4af483",
+  "slots": [
+    {
+      "socket": "A",
+      "bdf": "0001:01:00.0",
+      "ssd_model": "Samsung SSD 990 EVO 1TB",
+      "gen": 1,
+      "width": 1,
+      "two_256_mib_reads_sha256": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02",
+      "write_sectors_delta": 0,
+      "fio_read_bytes": 6419382272,
+      "fio_read_runtime_ms": 30037,
+      "fio_read_bandwidth_bytes_per_second": 213715826
+    },
+    {
+      "socket": "B",
+      "bdf": "0002:01:00.0",
+      "ssd_model": "Samsung SSD 990 PRO 2TB",
+      "gen": 1,
+      "width": 1,
+      "two_256_mib_reads_sha256": "e3282bfc910dd3630be6eaa8ba02feac62c14cf3ae8e6cd288aa2067ebcdccf4",
+      "write_sectors_delta": 0,
+      "fio_read_bytes": 6450839552,
+      "fio_read_runtime_ms": 30036,
+      "fio_read_bandwidth_bytes_per_second": 214770260
+    }
+  ],
+  "workload": {
+    "fio_version": "fio-3.38",
+    "ioengine": "libaio",
+    "operation": "sequential direct read",
+    "jobs_per_device": 1,
+    "queue_depth_per_device": 8,
+    "block_bytes": 1048576,
+    "range_bytes_per_device": 4294967296,
+    "runtime_seconds": 30,
+    "cpu_pinning": [
+      0,
+      1
+    ],
+    "common_active_one_second_samples": 29
+  },
+  "aggregate_read_bandwidth_bytes_per_second": 428486086,
+  "final_state": "both links active, both DMA bridges idle",
+  "scope": "one successful two-drive session following guarded warm restart, no SSD, SD or flash writes"
+}

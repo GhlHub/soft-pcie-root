@@ -97,14 +97,17 @@ module gen3_native_root #(
     wire [63:0] phy_diag;
     (* ASYNC_REG="TRUE" *)reg  [ 2:0] release_sync = 0;
     (* ASYNC_REG="TRUE" *) reg [1:0] ready_sync = 0, idle_sync = 3;
+    // Distribute the synchronized startup release without replicating the CDC stage.
+    (* MAX_FANOUT = 128 *) reg link_release = 0;
     always @(posedge pclk) begin
         release_sync <= {release_sync[1:0], release_ssd};
+        link_release <= release_sync[2];
         ready_sync   <= {ready_sync[0], !phystatus_rst};
         idle_sync    <= {idle_sync[0], rx_idle};
     end
     (* ASYNC_REG="TRUE" *) reg [2:0] policy_sync_q = 0;
     always @(posedge pclk) policy_sync_q <= {policy_sync_q[1:0], force_gen1_i};
-    wire reset = !release_sync[2];
+    wire reset = !link_release;
     wire [127:0] status, last_ts;
     wire fallback_selected, startup_failed;
     reg        gen3_owned = 0;

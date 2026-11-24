@@ -31,6 +31,11 @@ at customization. The board build flow accepts this catalog and also supports
 the stage-specific packages used for the documented hardware tests.
 [Catalog generation and interface widths](../ip/soft_pcie_root/README.md#zu15eg-catalog) · [ZU15EG build profiles](../examples/zu15eg/README.md#vivado-ip-catalog)
 
+The AXI DDR master uses 36-bit addresses by default in every PCIe mode. The
+board address map and Linux device tree determine which DDR banks are available
+for DMA. The ZU15EG full-DDR profile maps both 2 GiB banks.
+[ZU15EG full-DDR profile](../examples/zu15eg/README.md#dual-gen3-x2-with-4-gib-of-dma-accessible-ddr)
+
 ### Optional Gen3 packaging
 
 The x1 catalog, `soft-pcie.org:user:soft_pcie_root:1.1`, provides a

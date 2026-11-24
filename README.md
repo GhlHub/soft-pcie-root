@@ -132,9 +132,11 @@ PCIe compliance remain open. The frozen release scope is Gen1/Gen2 x1.
 `make release-check` verifies the frozen source baseline. The shared RTL
 changes on `main` fall outside that frozen baseline. [Verification and release scope](docs/verification.md#limits-and-reproducing-measurements)
 
-The design supports one direct endpoint with function 0, up to 16 MiB of
-endpoint BAR space, noncoherent DMA to the lower 2 GiB of DDR in the
-examples, and 32 MSI/MSI-X vectors. Accepted AXI requests must drain before
+The design supports one direct endpoint per root port with function 0, up to
+16 MiB of endpoint BAR space, noncoherent DMA, and 32 MSI/MSI-X vectors.
+The AXI DDR master defaults to 36-bit addressing. Standard example profiles
+map the lower 2 GiB of DDR, and the ZU15EG full-DDR profile maps both banks.
+Accepted AXI requests must drain before
 a local reset. Switch topology, Type 1 routing, multifunction, INTx, hotplug,
 ASPM/AER and safe live PL replacement are outside this scope. [Integration guide](docs/ip-guide.md) · [Register contract](docs/registers.md) · [Roadmap](docs/roadmap.md)
 

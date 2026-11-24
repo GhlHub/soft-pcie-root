@@ -1,0 +1,242 @@
+{
+  "date": "2026-11-23",
+  "method": "one 30-second control then split trial on the same Gen3 x2 RAM Linux boot",
+  "previous_combined_bytes_per_second": 1523473200,
+  "combined_throughput_change_percent": -4.064395814292854,
+  "runs": [
+    {
+      "profile": "gen3-x2",
+      "bitstream_sha256": "48332600f0143ab9a32a513be1a28ff13d59bc27aeb36a2e2fcb033d09b813a5",
+      "device_tree_sha256": "b7ad928b3a8e7fd229011331dcc3fd63ef3ca1d5c960cdf4f6e228673e4af483",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 27,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 9473884160,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 315775086
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 12294553600,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 409791133
+            }
+          ],
+          "bandwidth_bytes_per_second": 725566219
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 12358516736,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 411923096
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 10909384704,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 363621915
+            }
+          ],
+          "bandwidth_bytes_per_second": 775545011
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1501111230,
+      "condition": "control",
+      "parent_irq_cpu": {
+        "A": 0,
+        "B": 0
+      },
+      "parent_irq_deltas": {
+        "A": [
+          89751,
+          0,
+          0,
+          0
+        ],
+        "B": [
+          89258,
+          0,
+          0,
+          0
+        ]
+      },
+      "cpu_utilization": [
+        {
+          "cpu": 0,
+          "busy_percent": 97.4,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 0.0
+        },
+        {
+          "cpu": 1,
+          "busy_percent": 97.37,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 44.87
+        },
+        {
+          "cpu": 2,
+          "busy_percent": 97.95,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 44.7
+        },
+        {
+          "cpu": 3,
+          "busy_percent": 97.4,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 44.57
+        }
+      ],
+      "fio_worker_system_cpu_percent": [
+        81.743942,
+        84.000533,
+        85.537149,
+        84.053865
+      ]
+    },
+    {
+      "profile": "gen3-x2",
+      "bitstream_sha256": "48332600f0143ab9a32a513be1a28ff13d59bc27aeb36a2e2fcb033d09b813a5",
+      "device_tree_sha256": "b7ad928b3a8e7fd229011331dcc3fd63ef3ca1d5c960cdf4f6e228673e4af483",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 27,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 10197401600,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 339890727
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 11701059584,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 390009318
+            }
+          ],
+          "bandwidth_bytes_per_second": 729900045
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 8.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 10548674560,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 351599045
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 10758389760,
+              "runtime_ms": 30001,
+              "bandwidth_bytes_per_second": 358601038
+            }
+          ],
+          "bandwidth_bytes_per_second": 710200083
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1440100128,
+      "condition": "split",
+      "parent_irq_cpu": {
+        "A": 0,
+        "B": 2
+      },
+      "parent_irq_deltas": {
+        "A": [
+          90655,
+          0,
+          0,
+          0
+        ],
+        "B": [
+          0,
+          0,
+          94655,
+          0
+        ]
+      },
+      "cpu_utilization": [
+        {
+          "cpu": 0,
+          "busy_percent": 97.5,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 0.0
+        },
+        {
+          "cpu": 1,
+          "busy_percent": 98.01,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 44.78
+        },
+        {
+          "cpu": 2,
+          "busy_percent": 97.53,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 0.0
+        },
+        {
+          "cpu": 3,
+          "busy_percent": 97.56,
+          "hard_irq_percent": 0.0,
+          "soft_irq_percent": 46.41
+        }
+      ],
+      "fio_worker_system_cpu_percent": [
+        85.723809,
+        86.610446,
+        82.130596,
+        86.626667
+      ]
+    }
+  ]
+}

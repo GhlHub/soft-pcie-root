@@ -9,19 +9,23 @@ foreach pattern {{.*csr/request_payload_q_reg\[[0-9]+\]} {.*csr/core_payload_q_r
 }
 if {[llength [get_cells -hier -regexp {.*host/dma_enable_o_reg}]]!=1} {error "Missing host DMA admission register"}
 if {![llength [get_cells -hier -regexp {.*ddr/.*state_q_reg.*}]]} {error "Missing DDR bridge state"}
+if {[info exists host_scope]} {current_instance}
+set hp_index [expr {[info exists host_hp_index] ? $host_hp_index : 2}]
+set hp_port HP[expr {$hp_index - 2}]
 set ps [get_cells -hier -filter {REF_NAME == PS8}]
 if {[llength $ps]!=1} {error "Expected one PS8"}
-foreach pin {SAXIGP2RCLK SAXIGP2WCLK} {
+foreach pin [list SAXIGP${hp_index}RCLK SAXIGP${hp_index}WCLK] {
  set hpclk [get_pins -of_objects $ps -filter "REF_PIN_NAME == $pin"]
- if {[llength $hpclk]!=1} {error "Missing HP0 clock $pin"}
+ if {[llength $hpclk]!=1} {error "Missing $hp_port clock $pin"}
  set clocks [get_clocks -of_objects $hpclk]
- if {[llength $clocks]!=1 || abs([get_property PERIOD $clocks]-8.0)>0.001} {error "HP0 must be clocked at125MHz: $clocks"}
+ if {[llength $clocks]!=1 || abs([get_property PERIOD $clocks]-8.0)>0.001} {error "$hp_port must be clocked at 125 MHz: $clocks"}
 }
-foreach field {SAXIGP2WDATA SAXIGP2RDATA} {
+foreach field [list SAXIGP${hp_index}WDATA SAXIGP${hp_index}RDATA] {
  set pins [get_pins -of_objects $ps -filter "REF_PIN_NAME =~ ${field}*"]
- if {[llength $pins]!=128} {error "HP0 data width wrong for $field: [llength $pins]"}
+ if {[llength $pins]!=128} {error "$hp_port data width wrong for $field: [llength $pins]"}
 }
-puts "HOST_STRUCTURE_PASS first_stage179 reset_release39 HP0_128bit_125MHz DDR_completer_present"
+if {[info exists host_scope]} {current_instance $host_scope}
+puts "HOST_STRUCTURE_PASS first_stage179 reset_release39 ${hp_port}_128bit_125MHz DDR_completer_present"
 
 foreach {fifo width} {rx_crossing 3 tx_crossing 3} {
  foreach name {s_gray_q m_gray_q s_read_meta_q s_read_mid_q s_read_sync_q m_write_meta_q m_write_mid_q m_write_sync_q} {
@@ -32,7 +36,7 @@ foreach {fifo width} {rx_crossing 3 tx_crossing 3} {
  if {[string match command_crossing/* $fifo]} {
   if {![llength $cdc_capture]} {error "Missing registered command CDC payload $fifo"}
  } else {
-  set packet_ram [get_cells -hier -filter "NAME =~ */$fifo/data_q_reg && REF_NAME =~ RAMB*"]
+  set packet_ram [get_cells -hier -filter "(NAME =~ */$fifo/data_q_reg || NAME =~ *.$fifo/data_q_reg) && REF_NAME =~ RAMB*"]
   if {[llength $packet_ram]!=1} {error "Missing clocked packet RAM $fifo"}
   set bus_width 36
   if {[get_property READ_WIDTH_A $packet_ram]!=$bus_width || [get_property WRITE_WIDTH_B $packet_ram]!=$bus_width ||
@@ -64,8 +68,9 @@ puts "DDR_TWO_OUTSTANDING_STRUCTURE_PASS write_B_owners read_R_owners completion
 set writer [get_cells -hier -regexp {.*ddr/FSM_onehot_write_state_q_reg\[[0-2]\]$}]
 if {[llength $writer]!=3} {error "Missing independent DDR write execution state"}
 set write_address [get_cells -hier -regexp {.*ddr/write_address_q_reg\[[0-9]+\]$}]
-# Exclude the physical replicas of the alignment bit from the 30-bit count.
-if {[llength $write_address] != 30} {error "Missing independent DWORD-aligned DDR write address"}
+# Exact register names exclude the physical replicas of the alignment bit.
+set addr_width [expr {[info exists host_ddr_addr_width] ? $host_ddr_addr_width : 36}]
+if {[llength $write_address] != $addr_width - 2} {error "Missing independent DWORD-aligned DDR write address"}
 puts "DDR_WRITE_PIPELINE_STRUCTURE_PASS independent_writer held_address preparation_state"
 
 

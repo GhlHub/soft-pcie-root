@@ -62,6 +62,77 @@ Choose the FMC pin profile for the installed adapter. The hardware results
 on this page identify the stage-specific images used for those measurements.
 [Vivado customization and AXI interface](../../ip/soft_pcie_root/README.md#zu15eg-catalog)
 
+## Dual NVMe profiles
+
+The `dp04-passive` profile gives each socket an independent root port.
+Both roots use the same build mode and the existing Linux host driver. The profile
+connects data lanes and reference clocks and leaves the FMC sidebands
+undriven. Confirm the adapter's lane mapping and power and reset behavior
+before using this profile.
+
+| Socket | Lane 0 | Lane 1 in x2 modes | Reference clock | Linux PCI domain | DDR port and interrupt | SRP1 and DBR1 base |
+| --- | --- | --- | --- | ---: | --- | --- |
+| A | DP0 | DP1 | GBTCLK0 | 1 | HP0, SPI 89 | `0xa0000000`, `0xa2000000` |
+| B | DP4 | DP5 | GBTCLK1 | 2 | HP1, SPI 90 | `0xa0001000`, `0xa4000000` |
+
+Both roots use `0xa3000000` for endpoint BARs in their respective PCI
+domains. The device tree maps that address to the CPU window at
+`0xa3000000` for socket A and `0xa5000000` for socket B.
+
+Use fresh build directories. The dual-root packages let the board flow
+place the GTH channels on separate banks and constrain each root's clocks.
+
+| Build backend | Package arguments after the output directory | Mode per socket |
+| --- | --- | --- |
+| `legacy` | `0 zu15eg dual-x1` | Gen1/Gen2 x1 |
+| `gen2-x2` | `1 zu15eg dual-gen2-x2` | Gen1/Gen2 x2 |
+| `gen3` | `1 zu15eg dual-gen3` | Gen3 x1 |
+| `gen3-x2` | `1 zu15eg dual-gen3-x2` | Gen3 x2 |
+
+```sh
+vivado -mode batch -source ip/soft_pcie_root/package.tcl \
+  -tclargs build/zu15eg_dual_ip 0 zu15eg dual-x1
+vivado -mode batch -source examples/zu15eg/build.tcl \
+  -tclargs build/zu15eg_dual_x1 build/zu15eg_dual_ip/core dp04-passive legacy
+```
+
+Use the generated PS initialization with
+[`soft-pcie-dual.dts`](soft-pcie-dual.dts) for a fresh RAM Linux boot.
+For a Gen1 test with either Gen1/Gen2 image, set the force-Gen1 bit while
+both roots are disabled. Confirm both PCI domains, SSD identities, and
+negotiated links before running concurrent read-only jobs.
+[SRP1 control](../../docs/registers.md#srp1-offsets)
+
+On 2026-11-23, RAM Linux enumerated a Samsung 990 EVO 1 TB in socket A
+and a Samsung 990 PRO 2 TB in socket B. Both links ran at Gen1 x1. Each
+drive passed two 256 MiB direct reads with matching checksums. A 30-second
+simultaneous fio run used one worker per drive, pinned to separate cores,
+with 1 MiB direct sequential reads at QD8 per worker. Socket A sustained
+**213.72 MB/s**, socket B sustained **214.77 MB/s**, and the combined rate
+was **428.49 MB/s**. Both ports finished active and idle with zero SSD
+writes recorded. Warm-start repeatability remains open.
+[Physical results and artifact hashes](../../docs/evidence/zu15eg_dual_x1_v1/completion.json)
+
+The four-worker read tests covered Gen1 x2, Gen2 x1/x2, and Gen3 x1/x2 on
+both drives simultaneously. [Benchmark summary](../../docs/evidence/zu15eg_dual_performance_v1/summary.md)
+
+### Dual Gen3 x2 with 4 GiB of DMA-accessible DDR
+
+The core defaults to 36-bit AXI DDR addresses. This profile maps both DDR
+banks on each root port so each can DMA to `0x00000000–0x7fffffff` and
+`0x800000000–0x87fffffff`. The two 2 GiB banks map to the same physical
+addresses on HP0 and HP1.
+Each bridge can have two outstanding AXI write bursts awaiting B responses.
+
+```sh
+vivado -mode batch -source ip/soft_pcie_root/package.tcl \
+  -tclargs build/zu15eg_dual_full_ddr_ip 1 zu15eg dual-gen3-x2-full-ddr
+vivado -mode batch -source examples/zu15eg/build.tcl \
+  -tclargs build/zu15eg_dual_full_ddr build/zu15eg_dual_full_ddr_ip/core dp04-passive gen3-x2
+```
+
+Pair this image with [the full-DDR device tree](soft-pcie-dual-full-ddr.dts).
+
 ## Build x1
 
 From the repository root with Vivado 2026.1 on PATH, use fresh output

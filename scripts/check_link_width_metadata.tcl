@@ -22,6 +22,10 @@ if {$begin < 0 || $end <= $begin} {error "Cannot locate production width metadat
 set native_width 1
 set stage ""
 eval [string range $packaging $begin [expr {$end-1}]]
+set ddr_user [ipx::get_user_parameters DDR_ADDR_WIDTH -of_objects $core]
+set ddr_space [ipx::get_address_spaces M_DDR -of_objects $core]
+if {[get_property value $ddr_user] != 36 || [get_property value $ddr_model] != 36 ||
+    [get_property RANGE $ddr_space] != 0x1000000000} {error "Expected 36-bit default DDR addressing"}
 source $root/ip/soft_pcie_root/xgui/soft_pcie_root.tcl
 set user [ipx::get_user_parameters LINK_WIDTH -of_objects $core]
 set model [ipx::get_hdl_parameters LINK_WIDTH -of_objects $core]
@@ -36,5 +40,5 @@ foreach choice {2 1} {
 ipx::create_xgui_files $core
 ipx::update_checksums $core
 ipx::save_core $core
-puts "PASS LINK_WIDTH metadata inference, range, x1 default and real-object GUI propagation"
+puts "PASS LINK_WIDTH metadata, x1 default, real-object GUI propagation, and 36-bit DDR addressing"
 close_project

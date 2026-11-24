@@ -30,6 +30,24 @@ tiles and two GTH channels. [ZU15EG hardware results](examples/zu15eg/README.md#
 [Gen2 data](docs/evidence/zu15eg_gen2_x2_v1/four-core-comparison.json) ·
 [Gen3 data](docs/evidence/zu15eg_gen3_x2_v1/two-thread-comparison.json)
 
+## ZU15EG dual Gen3 x2 results
+
+Two NVMe SSDs reading simultaneously reached **1,782.09 MB/s combined
+(14.26 Gb/s)** with both DDR banks available for DMA. Each SSD used an
+independent Gen3 x2 root port at 8 GT/s. The 30-second fio trials ran 1 MiB
+direct sequential reads at queue depth 4 per worker, with two workers per
+SSD across all four Cortex-A53 cores.
+
+| IRQ cores (A / B) | 990 EVO 1 TB, 4 GiB (MB/s) | 990 PRO 2 TB, 4 GiB (MB/s) | 4 GiB combined (MB/s) | 2 GiB combined (MB/s) | Gain |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| CPU 0 / CPU 0 | 913.75 | 868.34 | **1,782.09** | 1,501.11 | +18.7% |
+| CPU 0 / CPU 2 | 913.75 | 868.32 | **1,782.07** | 1,440.10 | +23.7% |
+
+Both SSDs passed direct reads into verified upper-DDR buffers and repeated
+256 MiB checksum checks. The benchmark recorded zero SSD writes and zero
+SWIOTLB bounce-buffer usage. [Benchmark evidence](docs/evidence/zu15eg_dual_performance_v1/summary.md) ·
+[Dual Gen3 x2 build profile](examples/zu15eg/README.md#dual-gen3-x2-with-4-gib-of-dma-accessible-ddr)
+
 ## Build and test
 
 Use Linux, Python 3.12+, GCC, Icarus Verilog, Verilator and **Vivado 2026.1**

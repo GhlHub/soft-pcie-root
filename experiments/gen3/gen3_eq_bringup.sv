@@ -4,15 +4,16 @@
 // CONFIG_PROBE performs one bounded configuration read without PS/AXI effects.
 module gen3_eq_bringup #(
     // 100 ms at Gen1 PCLK; covers 12 ms Detect quiet + 24/48 ms polling.
-    parameter integer ADAPTIVE_EQ       = 0,
-    parameter integer RECOVERY_ENABLE   = 0,
-    parameter integer STARTUP_TIMEOUT   = 12500000,
-    parameter integer HANDSHAKE_TIMEOUT = 6000000,
-    parameter integer EQ_TIMEOUT        = 6000000,
-    parameter integer INITFC1_PROBE     = 0,
-    parameter integer DATALINK_ENABLE   = 0,
-    parameter integer CONFIG_PROBE      = 0,
-    parameter integer OBSERVE_CYCLES    = 250000
+    parameter integer ADAPTIVE_EQ           = 0,
+    parameter integer RECOVERY_ENABLE       = 0,
+    parameter integer STARTUP_TIMEOUT       = 12500000,
+    parameter integer HANDSHAKE_TIMEOUT     = 6000000,
+    parameter integer EQ_TIMEOUT            = 6000000,
+    parameter integer INITFC1_PROBE         = 0,
+    parameter integer DATALINK_ENABLE       = 0,
+    parameter integer CONFIG_PROBE          = 0,
+    parameter integer OBSERVE_CYCLES        = 250000,
+    parameter integer POSTED_HEADER_CREDITS = 4
 ) (
     input wire clk, reset_i, phy_ready_i,
     input wire [3:0] preset_i,
@@ -494,7 +495,9 @@ module gen3_eq_bringup #(
     end
     generate
         if (DATALINK_ENABLE != 0) begin : data_link
-            gen3_link_layer link (
+            gen3_link_layer #(
+                .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
+            ) link (
                 clk,
                 reset_i,
                 reached_l0,

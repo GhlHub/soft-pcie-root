@@ -2,9 +2,10 @@
 // Native two-lane PHY binding for the selectable board stages.
 // The host-facing packet interface stays two DWORDs wide at all link rates.
 module gen3_native_x2 #(
-    parameter integer GEN2_ENABLE = 0,
-    parameter integer GEN3_ENABLE = 0,
-    parameter integer TX_PRESET   = 4
+    parameter integer GEN2_ENABLE           = 0,
+    parameter integer GEN3_ENABLE           = 0,
+    parameter integer TX_PRESET             = 4,
+    parameter integer POSTED_HEADER_CREDITS = GEN2_ENABLE != 0 && GEN3_ENABLE == 0 ? 8 : 4
 ) (
     input wire reset_i, enable_i,
     input wire refclk_p_i, refclk_n_i,
@@ -344,10 +345,11 @@ module gen3_native_x2 #(
         .fault_o  (rx_width_fault)
     );
     pcie_soft_link #(
-        .LINK_WIDTH (2),
-        .GEN2_ENABLE(GEN2_ENABLE),
-        .GEN3_ENABLE(GEN3_ENABLE),
-        .TX_PRESET  (TX_PRESET)
+        .LINK_WIDTH           (2),
+        .GEN2_ENABLE          (GEN2_ENABLE),
+        .GEN3_ENABLE          (GEN3_ENABLE),
+        .TX_PRESET            (TX_PRESET),
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
     ) link (
         .clk               (pclk),
         .rst_n             (link_reset_n),
@@ -417,7 +419,8 @@ module gen3_native_x2 #(
             valid_q  <= phy_data_valid & rx_valid & {2{link_reset_n && applied_rate == 2}};
         end
         gen3_x2_port #(
-            .TX_PRESET(TX_PRESET)
+            .TX_PRESET            (TX_PRESET),
+            .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
         ) native_gen3 (
             .clk               (pclk),
             .reset_i           (!link_reset_n),

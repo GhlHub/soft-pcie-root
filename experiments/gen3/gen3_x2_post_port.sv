@@ -2,8 +2,9 @@
 // Fixed-width Gen3 x2 port. The optional equalization interface uses the
 // same transmit lanes throughout Gen3 training, Recovery and packet traffic.
 module gen3_x2_post_port #(
-    parameter integer HANDSHAKE_CYCLES = 6000000,
-    parameter bit     INTEGRATED_EQ    = 0
+    parameter integer HANDSHAKE_CYCLES      = 6000000,
+    parameter bit     INTEGRATED_EQ         = 0,
+    parameter integer POSTED_HEADER_CREDITS = 4
 ) (
     input wire clk, reset_i, start_i,
     input wire [1:0] phy_ready_i,
@@ -188,7 +189,9 @@ module gen3_x2_post_port #(
         .eq_restart_interval_i(eq_restart_interval_i),
         .eq_fields_i          (eq_fields_i)
     );
-    gen3_link_layer_x2 link (
+    gen3_link_layer_x2 #(
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
+    ) link (
         .clk                (clk),
         .reset_i            (reset_i),
         .link_up_i          (epoch_o),

@@ -2,8 +2,9 @@
 // External reset and 50MHz management enable must be stable at freerun clock.
 // PERST outputs are FPGA-facing active HIGH (OP063 performs inversion).
 module pcie_soft_root_port #(
-    parameter integer GEN2_ENABLE       = 1,
-    parameter integer PERST_HOLD_CYCLES = 5000000
+    parameter integer GEN2_ENABLE           = 1,
+    parameter integer PERST_HOLD_CYCLES     = 5000000,
+    parameter integer POSTED_HEADER_CREDITS = 4
 ) (
     input wire freerun_clk_i, reset_i, enable_i,
     input wire refclk_p_i, refclk_n_i, rx_p_i, rx_n_i,
@@ -105,7 +106,8 @@ module pcie_soft_root_port #(
     );
     wire unused_target_gen3, unused_gen3_handoff;
     pcie_soft_link #(
-        .GEN2_ENABLE(GEN2_ENABLE)
+        .GEN2_ENABLE          (GEN2_ENABLE),
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
     ) controller (
         .clk               (core_clk_o),
         .rst_n             (release_q[2]),

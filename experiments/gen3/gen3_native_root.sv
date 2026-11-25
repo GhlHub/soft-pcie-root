@@ -3,7 +3,8 @@
 // Enable is latched for the cold boot. Deasserting enable cannot reset accepted
 // ownership. No live reconfiguration, hot removal or stopped-clock recovery.
 module gen3_native_root #(
-    parameter integer TX_PRESET = 4
+    parameter integer TX_PRESET             = 4,
+    parameter integer POSTED_HEADER_CREDITS = 4
 ) (
     input wire freerun_clk_i, reset_i, enable_i,
     input wire refclk_p_i, refclk_n_i, rx_p_i, rx_n_i,
@@ -195,10 +196,11 @@ module gen3_native_root #(
     assign dl_active_o = fallback_selected ? g2_dl_active_o : g3_dl_active_o;
     assign error_o = fallback_selected ? g2_error_o : (g3_error_o && !startup_failed);
     gen3_eq_bringup #(
-        .ADAPTIVE_EQ    (1),
-        .DATALINK_ENABLE(1),
-        .RECOVERY_ENABLE(1),
-        .OBSERVE_CYCLES (0)
+        .ADAPTIVE_EQ          (1),
+        .DATALINK_ENABLE      (1),
+        .RECOVERY_ENABLE      (1),
+        .OBSERVE_CYCLES       (0),
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
     ) experiment (
         .clk              (pclk),
         .reset_i          (reset),
@@ -263,7 +265,9 @@ module gen3_native_root #(
         .txeq_coeff_o     (txeq_coeff_bus),
         .startup_failed_o (startup_failed)
     );
-    gen3_gen2_fallback fallback_link (
+    gen3_gen2_fallback #(
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
+    ) fallback_link (
         .clk               (pclk),
         .reset_i           (reset),
         .start_i           (startup_failed && idle && !gen3_owned),

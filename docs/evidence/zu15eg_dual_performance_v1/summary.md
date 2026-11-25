@@ -36,3 +36,21 @@ Each condition used one 30-second trial with the same four-worker IO
 settings as the 2 GiB DMA retest. CPU utilization fell from about
 97–98% to about 8–12% per core. Both drives recorded zero writes.
 [Full-DDR measurements](gen3-x2-full-ddr.json) · [2 GiB DMA reference](gen3-x2-irq-affinity.json)
+
+## Posted receive credit comparison
+
+The 8/64 setting doubles the posted-write window from four to eight
+128-byte TLPs per port. The benchmarks retained the four-worker read
+workload above and verified both SSDs against their known checksums.
+
+| Mode on both ports | DMA-accessible DDR | 4/32 combined (MB/s) | 8/64 combined (MB/s) | Gain |
+| --- | ---: | ---: | ---: | ---: |
+| Gen2 x2 | 2 GiB | 1,192.33 | 1,424.63 | +19.5% |
+| Gen3 x2 | 4 GiB | 1,785.26 | 2,487.04 | +39.3% |
+
+The Gen2 comparison uses the earlier single-run 4/32 result and the median
+of three 8/64 runs. The Gen3 comparison uses two builds from the same source,
+one per setting, with three trials per build. Both Gen3 builds verified
+upper-DDR DMA and recorded zero SWIOTLB usage. All trials recorded zero
+host writes. [Gen2 measurements](gen2-x2-credit8.json) ·
+[Gen3 measurements](gen3-x2-posted-credit-compare.json)

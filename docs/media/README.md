@@ -30,6 +30,16 @@ Each fio thread used 1 MiB direct reads at QD4, with one thread pinned to
 each of two CPU cores. The FPGA and SSD illustration is conceptual.
 [Hardware measurements](../evidence/zu15eg_gen3_x2_v1/two-thread-comparison.json) · [Image generation prompt](linkedin-gen3-x1-vs-x2-prompt.txt)
 
+## Dual Gen3 x2 posted credits
+
+The new graphic describes the suspected PCIe credit starvation and the
+measured result of doubling the posted credits per port from 4/32 to 8/64.
+Combined sequential read throughput rose from **1,785.26 to 2,487.04 MB/s**
+across two Gen3 x2 NVMe drives, a **39.3% gain**. The hardware illustration
+is conceptual. [LinkedIn graphic](linkedin-dual-gen3-x2-posted-credits.png) ·
+[Benchmark evidence](../evidence/zu15eg_dual_performance_v1/gen3-x2-posted-credit-compare.json) ·
+[Image prompt](linkedin-dual-gen3-x2-posted-credits-prompt.txt)
+
 ## Historical ACK-retirement comparison
 
 Use [the ACK-retirement comparison](linkedin-ack-retirement-gen2-gen3.png) for

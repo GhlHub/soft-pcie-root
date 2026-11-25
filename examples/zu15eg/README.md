@@ -254,6 +254,10 @@ the host datapaths of the two staged implementations.
 
 ## Gen2 x2 development stage
 
+The fixed Gen1/Gen2 x2 package defaults to eight posted header credits and
+64 posted data credits per port, enough for eight 128-byte writes. The
+physical throughput results below used the earlier 4 / 32 credit window.
+
 The `gen2-x2` package links the same two GTH lanes and host bridge. It starts
 at Gen1, then negotiates Gen2 with the endpoint. Both lanes must complete the
 shared PIPE rate change. The board flow targets 250 MHz link timing and

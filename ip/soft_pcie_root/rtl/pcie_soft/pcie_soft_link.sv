@@ -6,9 +6,11 @@ module pcie_soft_link #(
                       POLL_CYCLES        = 3000000,
                       CONFIG_CYCLES      = 250000,
     parameter integer COMPLETION_TIMEOUT = 6250000,
-    parameter integer LINK_WIDTH         = 1,
-    parameter integer GEN3_ENABLE        = 0,
-    parameter integer TX_PRESET          = 4
+    parameter integer LINK_WIDTH = 1,
+    parameter integer GEN3_ENABLE = 0,
+    parameter integer TX_PRESET = 4,
+    parameter integer POSTED_HEADER_CREDITS =
+        LINK_WIDTH == 2 && GEN2_ENABLE != 0 && GEN3_ENABLE == 0 ? 8 : 4
 ) (
     input wire clk,
     // The shell supplies async assertion and three-edge synchronous release.
@@ -427,7 +429,12 @@ module pcie_soft_link #(
     wire fc_dllp_valid, fc_dllp_ready, fc_ready, fc_error, fc_reserve;
     wire [1:0] selected_class;
     wire [8:0] selected_cost;
-    pcie_soft_flow_control flow (
+    // Sixteen shared receive slots cover eight posted TLPs, two non-posted
+    // requests and the single requester completion.
+    pcie_soft_flow_control #(
+        .POSTED_HEADERS(8'(POSTED_HEADER_CREDITS)),
+        .POSTED_DATA   (12'(POSTED_HEADER_CREDITS) * 12'd8)
+    ) flow (
         clk,
         rst_n,
         ownership_live,

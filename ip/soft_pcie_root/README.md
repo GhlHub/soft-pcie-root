@@ -19,6 +19,12 @@ vivado -mode batch -source ip/soft_pcie_root/package.tcl \
 Add `build/zu15eg_catalog_1_2/core` to Vivado's IP repositories and add
 **Soft PCIe Root Port (ZU15EG)** version 1.2 to the block design. Set
 **PCIe mode** on the **Configuration** page and regenerate output products.
+The **Posted receive credits (header / data)** dropdown selects **4 / 32**
+or **8 / 64** per root port. It sets `CONFIG.POSTED_HEADER_CREDITS` to `4`
+or `8`, with eight data credits per header credit. The catalog defaults to
+4 / 32. The fixed `gen2-x2` and `dual-gen2-x2` profiles default to 8 / 64.
+Append `4` or `8` after the profile argument to set a package's initial
+selection from Tcl.
 
 | `CONFIG.PCIE_MODE` | Selection | `M_DDR` at 125 MHz | Outstanding DDR reads |
 | ---: | --- | ---: | ---: |

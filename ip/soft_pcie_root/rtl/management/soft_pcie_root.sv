@@ -1,12 +1,13 @@
 // ZCU104 SSD1 laboratory top; management is independent of the PCIe clock.
 module soft_pcie_root #(
-    parameter integer ENABLE_GEN3     = 0,
-    parameter integer GEN3_TX_PRESET  = 4,
-    parameter integer LINK_WIDTH      = 1,
-    parameter integer X2_GEN1_BRINGUP = 0,
-    parameter integer X2_GEN2_BRINGUP = 0,
-    parameter integer X2_GEN3_BRINGUP = 0,
-    parameter integer DDR_ADDR_WIDTH  = 36
+    parameter integer ENABLE_GEN3           = 0,
+    parameter integer GEN3_TX_PRESET        = 4,
+    parameter integer LINK_WIDTH            = 1,
+    parameter integer X2_GEN1_BRINGUP       = 0,
+    parameter integer X2_GEN2_BRINGUP       = 0,
+    parameter integer X2_GEN3_BRINGUP       = 0,
+    parameter integer DDR_ADDR_WIDTH        = 36,
+    parameter integer POSTED_HEADER_CREDITS = X2_GEN2_BRINGUP != 0 ? 8 : 4
 ) (
     (* X_INTERFACE_INFO="xilinx.com:signal:clock:1.0 aclk CLK",
     X_INTERFACE_PARAMETER="ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET aresetn, FREQ_HZ 50000000" *)
@@ -129,6 +130,11 @@ module soft_pcie_root #(
         X2_GEN1_BRINGUP + X2_GEN2_BRINGUP + X2_GEN3_BRINGUP == 1;
     // Only the explicit ZU15EG stages select the x2 PHY and host interface.
     generate
+        if (POSTED_HEADER_CREDITS != 4 &&
+            POSTED_HEADER_CREDITS != 8) begin : unsupported_posted_credits
+            initial $fatal(1, "POSTED_HEADER_CREDITS must be 4 or 8");
+            soft_pcie_unsupported_posted_credits unavailable_credit_window ();
+        end
         if (DDR_ADDR_WIDTH != 32 && DDR_ADDR_WIDTH != 36) begin : unsupported_ddr_width
             initial $fatal(1, "DDR_ADDR_WIDTH must be 32 or 36");
             soft_pcie_unsupported_ddr_address_width unavailable_ddr_width ();
@@ -486,9 +492,10 @@ module soft_pcie_root #(
                 .m_axi_rready     (m_ddr_rready)
             );
             gen3_native_x2 #(
-                .GEN2_ENABLE(X2_GEN2_BRINGUP | X2_GEN3_BRINGUP),
-                .GEN3_ENABLE(X2_GEN3_BRINGUP),
-                .TX_PRESET  (GEN3_TX_PRESET)
+                .GEN2_ENABLE          (X2_GEN2_BRINGUP | X2_GEN3_BRINGUP),
+                .GEN3_ENABLE          (X2_GEN3_BRINGUP),
+                .TX_PRESET            (GEN3_TX_PRESET),
+                .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
             ) root_port (
                 .reset_i             (!aresetn),
                 .enable_i            (enable),
@@ -619,7 +626,8 @@ module soft_pcie_root #(
             end
             if (ENABLE_GEN3) begin : gen3_mode
                 gen3_native_root #(
-                    .TX_PRESET(GEN3_TX_PRESET)
+                    .TX_PRESET            (GEN3_TX_PRESET),
+                    .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
                 ) root_port (
                     .freerun_clk_i       (aclk),
                     .reset_i             (!aresetn),
@@ -668,7 +676,9 @@ module soft_pcie_root #(
                     .error_o             (error_raw)
                 );
             end else begin : gen2_mode
-                pcie_soft_root_port root_port (
+                pcie_soft_root_port #(
+                    .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
+                ) root_port (
                     .freerun_clk_i       (aclk),
                     .reset_i             (!aresetn),
                     .enable_i            (enable),

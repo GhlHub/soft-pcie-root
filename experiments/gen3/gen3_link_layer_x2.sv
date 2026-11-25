@@ -2,7 +2,9 @@
 // Experimental Gen3 VC0 link layer. Whole validated RX packets arrive from
 // gen3_data_rx. Eight outbound TLPs are retained until peer ACK; DLLPs may interleave
 // only at packet boundaries. No reset of ownership on a physical pause.
-module gen3_link_layer_x2 (
+module gen3_link_layer_x2 #(
+    parameter integer POSTED_HEADER_CREDITS = 4
+) (
     input wire clk, reset_i, link_up_i, enable_i,
     input wire [63:0] rx_data_i,
     input wire [1:0] rx_words_i,
@@ -86,7 +88,10 @@ module gen3_link_layer_x2 (
     wire fc_valid, fc_ready, fc_credit, fc_error, reserve;
     wire [1:0] selected_class;
     wire [8:0] selected_cost;
-    pcie_soft_flow_control flow (
+    pcie_soft_flow_control #(
+        .POSTED_HEADERS(8'(POSTED_HEADER_CREDITS)),
+        .POSTED_DATA   (12'(POSTED_HEADER_CREDITS) * 12'd8)
+    ) flow (
         clk,
         !reset_i,
         link_up_i,

@@ -6,6 +6,31 @@ import pytest
 ROOT=Path(__file__).resolve().parents[1]
 
 
+@pytest.mark.parametrize('gui_name', ['soft_pcie_root.tcl', 'soft_pcie_root_catalog.tcl'])
+def test_posted_credit_gui(tmp_path, gui_name):
+    script = tmp_path / 'credits.tcl'
+    script.write_text(r'''
+array set values {}
+proc set_property {key value object} {global values; set values($object,$key) $value}
+proc get_property {key object} {global values; return $values($object,$key)}
+source [lindex $argv 0]
+foreach choice {4 8 4} {
+ set_property value $choice credits
+ if {![validate_PARAM_VALUE.POSTED_HEADER_CREDITS credits]} {error "Rejected $choice credits"}
+ update_MODELPARAM_VALUE.POSTED_HEADER_CREDITS model credits
+ if {[get_property value model] != $choice} {error "Credit selection did not reach RTL"}
+}
+foreach choice {0 6 16 8.0 invalid} {
+ set_property value $choice credits
+ if {[validate_PARAM_VALUE.POSTED_HEADER_CREDITS credits]} {error "Accepted invalid credits: $choice"}
+}
+puts PASS
+''')
+    gui = ROOT / 'ip/soft_pcie_root/xgui' / gui_name
+    result = subprocess.run(['tclsh', str(script), str(gui)], text=True, capture_output=True, check=True)
+    assert result.stdout.strip() == 'PASS'
+
+
 def test_width_gui_validation_and_propagation(tmp_path):
     script=tmp_path/'gui.tcl'
     script.write_text(r'''

@@ -2,12 +2,13 @@
 // Startup-only Gen2 backend on the SAME native PHY. Never activated after Gen3 L0.
 // The host shell keeps its 64-bit paths/eight slots. No accepted owner is reset.
 module gen3_gen2_fallback #(
-    parameter integer QUIET_CYCLES       = 1500000,
-                      POLL_CYCLES        = 3000000,
-                      CONFIG_CYCLES      = 250000,
-    parameter integer COMPLETION_TIMEOUT = 6250000,
-    parameter integer IDLE_CYCLES        = 250,
-    parameter integer SWITCH_TIMEOUT     = 6000000
+    parameter integer QUIET_CYCLES          = 1500000,
+                      POLL_CYCLES           = 3000000,
+                      CONFIG_CYCLES         = 250000,
+    parameter integer COMPLETION_TIMEOUT    = 6250000,
+    parameter integer IDLE_CYCLES           = 250,
+    parameter integer SWITCH_TIMEOUT        = 6000000,
+    parameter integer POSTED_HEADER_CREDITS = 4
 ) (
     input wire clk, reset_i, start_i,
     input wire phy_ready_i, phystatus_i, rx_idle_i,
@@ -146,11 +147,12 @@ module gen3_gen2_fallback #(
     wire link_reset_n = !reset_i && !first_switch;
     wire unused_target_gen3, unused_gen3_handoff;
     pcie_soft_link #(
-        .GEN2_ENABLE       (1),
-        .QUIET_CYCLES      (QUIET_CYCLES),
-        .POLL_CYCLES       (POLL_CYCLES),
-        .CONFIG_CYCLES     (CONFIG_CYCLES),
-        .COMPLETION_TIMEOUT(COMPLETION_TIMEOUT)
+        .GEN2_ENABLE          (1),
+        .QUIET_CYCLES         (QUIET_CYCLES),
+        .POLL_CYCLES          (POLL_CYCLES),
+        .CONFIG_CYCLES        (CONFIG_CYCLES),
+        .COMPLETION_TIMEOUT   (COMPLETION_TIMEOUT),
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
     ) link (
         .clk               (clk),
         .rst_n             (link_reset_n),

@@ -14,7 +14,8 @@ FIXTURES = Path(__file__).resolve().parent / 'pcie_soft'
 
 @pytest.mark.parametrize('recover', [False, True])
 @pytest.mark.parametrize('entry', ['post-eq', 'phase-zero', 'native', 'native-partial-block'])
-def test_gen3_x2_port(tmp_path, recover, entry):
+@pytest.mark.parametrize('posted_headers', [4, 8])
+def test_gen3_x2_port(tmp_path, recover, entry, posted_headers):
     completion = bytes.fromhex('4a0000010100000400000000') + (0x1234144d).to_bytes(4, 'little')
     app = body(1, 0x4567)
 
@@ -24,6 +25,17 @@ def test_gen3_x2_port(tmp_path, recover, entry):
 
     init1 = block(b''.join(dllp(fc(kind, 2, 16)) for kind in (0x40, 0x50, 0x60)))
     init2 = block(b''.join(dllp(fc(kind, 2, 16)) for kind in (0xc0, 0xd0, 0xe0)))
+    writes = [body(32, marker + 1) for marker in range(posted_headers)]
+    reads = [bytes.fromhex('0000002001005aff00002000'), bytes.fromhex('0000002001005bff00002080')]
+    packets = writes + reads
+    incoming = dllp(ack(0)) + b''.join(tlp(index, packet) for index, packet in enumerate(packets))
+    incoming += tlp(len(packets), completion)
+    expected = []
+    for packet in packets:
+        for offset in range(0, len(packet), 8):
+            beat = packet[offset:offset + 8]
+            end = int(offset + len(beat) == len(packet))
+            expected.append((int.from_bytes(beat, 'little'), len(beat)//4, end))
     recovery = ''
     if recover:
         recovery = f'{block(bytes(28) + EDS)} send_eieos(); train();'
@@ -44,9 +56,17 @@ wire [1:0] tx_valid,tx_start,app_words,peer_words;
 wire [3:0] tx_header;
 wire [2:0] status;
 wire [31:0] result;
+wire [31:0] peer_dllp_body;
 PORT_MODE
-wire peer_fault,peer_valid,peer_last;
+wire peer_fault,peer_valid,peer_last,peer_dllp;
 integer cfg_words=0,app_index=0,lock_entries=0;
+localparam integer HEADERS=CREDIT_COUNT, EXPECTED_BEATS=APP_BEAT_COUNT;
+reg [66:0] expected_app[0:EXPECTED_BEATS-1];
+reg [1:0] saw_init=0;
+reg [19:0] posted_limit=0;
+wire [7:0] peer_dllp_type=peer_dllp_body[7:0];
+wire [7:0] peer_fc_headers={peer_dllp_body[13:8],peer_dllp_body[23:22]};
+wire [11:0] peer_fc_data={peer_dllp_body[19:16],peer_dllp_body[31:24]};
 reg [4:0] last_state=0;
 reg expect_owner=0;
 reg [22:0] lfsr[0:1];
@@ -65,12 +85,18 @@ PORT_MODULE root(
 gen3_x2_receive endpoint_rx(.clk(clk),.reset_i(reset),.enable_i(1'b1),.abort_i(1'b0),
  .lane_data_i(tx_data),.lane_valid_i(tx_valid),.lane_start_i(tx_start),.lane_header_i(tx_header),
  .framing_fault_o(peer_fault),.tlp_data_o(peer_payload),.tlp_words_o(peer_words),.tlp_valid_o(peer_valid),
- .tlp_last_o(peer_last),.tlp_ready_i(1'b1));
+ .tlp_last_o(peer_last),.tlp_ready_i(1'b1),.dllp_o(peer_dllp),.dllp_body_o(peer_dllp_body));
 always @(posedge clk) if (!reset) begin
     if (failed || error || peer_fault) $fatal(1,"post-EQ fault st=%d root=%b phy=%b",state,error,peer_fault);
     if (expect_owner && !active) $fatal(1,"Recovery dropped data-link ownership");
     if (selected && state==19 && last_state!=19) lock_entries <= lock_entries+1;
     last_state <= state;
+    if (peer_dllp && (peer_dllp_type==8'h40 || peer_dllp_type==8'hc0)) begin
+        if (peer_fc_headers!=HEADERS || peer_fc_data!=8*HEADERS)
+            $fatal(1,"InitFC advertised %d/%d",peer_fc_headers,peer_fc_data);
+        saw_init[peer_dllp_type[7]] <= 1;
+    end
+    if (peer_dllp && peer_dllp_type==8'h80) posted_limit <= {peer_fc_headers,peer_fc_data};
     if (peer_valid) begin
         if (cfg_words==0 && (peer_words!=2 || peer_last || peer_payload !== 64'h0f00000001000004))
             $fatal(1,"unexpected configuration header %h",peer_payload);
@@ -83,7 +109,10 @@ always @(posedge clk) if (!reset) begin
         cfg_words <= cfg_words+1;
     end
     if (app_valid && consume) begin
-        if (app_words!=2 || app_last!==app_index[0] || app_data !== (app_index==0 ? APP0 : APP1))
+        // The trailing DWORD occupies only the low half of a short beat.
+        if (app_index>=EXPECTED_BEATS || {app_last,app_words,app_data[31:0]} !==
+            {expected_app[app_index][66:64],expected_app[app_index][31:0]} ||
+            (app_words==2 && app_data[63:32] !== expected_app[app_index][63:32]))
             $fatal(1,"unexpected application TLP beat %d %h",app_index,app_data);
         app_index <= app_index+1;
     end
@@ -148,6 +177,7 @@ task train;
     if (!up || !epoch) $fatal(1,"No Gen3 x2 L0 st=%0d",state);
 endtask
 initial begin
+    INITIALIZE_APP_BEATS
     lfsr[0]=0; lfsr[1]=0;
     repeat(4) @(negedge clk); reset=0; enable=1;
     @(negedge clk); enable=0;
@@ -157,16 +187,20 @@ initial begin
     repeat(8) begin INIT2 end
     @(negedge clk); rx_valid=0;
     wait(active && cmd_ready);
+    wait(saw_init==3 && posted_limit=={8'(HEADERS),12'(8*HEADERS)});
     @(negedge clk); command=1;
     @(negedge clk); command=0;
     wait (cfg_words==2);
     expect_owner=1;
     RECOVERY
-    COMPLETION
-    APPLICATION
+    INBOUND_STREAM
     repeat (4) send_data(0);
-    @(negedge clk); rx_valid=0; consume=1;
-    wait(rsp && app_index==2);
+    @(negedge clk); rx_valid=0;
+    repeat (24) @(negedge clk);
+    if (!app_valid || rsp || posted_limit!={8'(HEADERS),12'(8*HEADERS)})
+        $fatal(1,"Full mixed receive window lost ownership or returned credit early");
+    consume=1;
+    wait(rsp && app_index==EXPECTED_BEATS);
     if (status!=0 || result!=32'h1234144d || lock_entries!=EXPECTED_LOCKS)
         $fatal(1,"wrong completion %h/%d or startup count %d",result,status,lock_entries);
     @(negedge clk); app_tx_data=APP0; app_tx_valid=1; app_tx_last=0;
@@ -175,6 +209,7 @@ initial begin
     do @(posedge clk); while(!app_tx_ready);
     @(negedge clk); app_tx_valid=0;
     wait(cfg_words==4);
+    wait(posted_limit=={8'(2*HEADERS),12'(16*HEADERS)});
     $display("PASS Gen3 x2 port"); $finish;
 end
 initial begin #120000; $fatal(1,"timeout state=%0d active=%b cfg_words=%d",state,active,cfg_words); end
@@ -182,8 +217,14 @@ endmodule
 '''
     replacements = {
         'INIT1': init1, 'INIT2': init2, 'RECOVERY': recovery,
-        'COMPLETION': block(dllp(ack(0)) + tlp(0, completion)),
-        'APPLICATION': block(tlp(1, app)),
+        'INBOUND_STREAM': ' '.join(block(incoming[offset:offset + 32])
+                                   for offset in range(0, len(incoming), 32)),
+        'CREDIT_COUNT': str(posted_headers),
+        'APP_BEAT_COUNT': str(len(expected)),
+        'INITIALIZE_APP_BEATS': '\n    '.join(
+            f"expected_app[{index}] = {{1'b{last}, 2'd{words}, 64'h{data:016x}}};"
+            for index, (data, words, last) in enumerate(expected)
+        ),
         'APP0': f"64'h{int.from_bytes(app[:8], 'little'):016x}",
         'APP1': f"64'h{int.from_bytes(app[8:], 'little'):016x}",
         'EXPECTED_LOCKS': str(1 + recover),
@@ -194,7 +235,8 @@ endmodule
  .tx_data_o(tx_data),.tx_valid_o(tx_valid),.tx_start_o(tx_start),.tx_header_o(tx_header),'''
     if entry != 'post-eq':
         replacements.update({
-            'PORT_MODULE': 'gen3_x2_port #(.GUARD_CYCLES(3),.REQUEST_CYCLES(400),'
+            'PORT_MODULE': f'gen3_x2_port #(.POSTED_HEADER_CREDITS({posted_headers}),'
+                           '.GUARD_CYCLES(3),.REQUEST_CYCLES(400),'
                            '.EVALUATE_CYCLES(12),.APPLY_CYCLES(20))',
             'PORT_PINS': port_pins.replace('PORT_CONTROL', '''
  .phase0_i(enable),.handoff_i(applied_rate==2),.legacy_idle_i(1'b1),.rx_idle_i(2'b11),
@@ -252,7 +294,7 @@ end''',
         })
     else:
         replacements.update({
-            'PORT_MODULE': 'gen3_x2_post_port #(.HANDSHAKE_CYCLES(1500))',
+            'PORT_MODULE': f'gen3_x2_post_port #(.POSTED_HEADER_CREDITS({posted_headers}),.HANDSHAKE_CYCLES(1500))',
             'PORT_PINS': port_pins.replace('PORT_CONTROL', '''
  .start_i(enable),.tx_preset_i(8'h44),.tx_coeff_i({2{{6'd0,6'd40,6'd0}}}),
  .epoch_o(epoch),.failed_o(failed),
@@ -263,7 +305,7 @@ end''',
     if entry.startswith('native'):
         replacements.update({
             'PORT_MODE': (FIXTURES / 'gen3_x2_native_peer.svh').read_text(),
-            'PORT_MODULE': 'gen3_native_x2 #(.GEN2_ENABLE(1),.GEN3_ENABLE(1))',
+            'PORT_MODULE': f'gen3_native_x2 #(.POSTED_HEADER_CREDITS({posted_headers}),.GEN2_ENABLE(1),.GEN3_ENABLE(1))',
             'PORT_PINS': '''
  .reset_i(reset),.enable_i(1'b1),.force_gen1_i(1'b0),
  .refclk_p_i(clk),.refclk_n_i(!clk),.rx_p_i(2'b00),.rx_n_i(2'b11),''',

@@ -6,6 +6,8 @@ module tb_root_link #(
     parameter integer LINK_WIDTH  = 1,
     parameter integer LANE1_DELAY = 0
 );
+    localparam [7:0] POSTED_HEADERS = GEN2_TEST && LINK_WIDTH == 2 ? 8'd8 : 8'd4;
+    localparam [11:0] POSTED_DATA = 12'(POSTED_HEADERS) * 12'd8;
     reg phygen2 = 0, rateready = 1;
     wire targetgen2, speedidle, fallback;
     wire [1:0] native_rate, applied_rate;
@@ -423,8 +425,10 @@ module tb_root_link #(
         acks = 0,
         init1 = 0,
         init2_count = 0;
-    reg [31:0] captured     [0:63];
+    reg [31:0] captured            [0:63];
     reg [11:0] captured_seq;
+    reg [ 7:0] posted_header_limit;
+    reg [11:0] posted_data_limit;
     reg [31:0] check32, actual32;
     reg     [15:0] check16;
     integer        errors = 0;
@@ -489,6 +493,19 @@ module tb_root_link #(
                         if (received[0] == 0) acks = acks + 1;
                         if (received[0] == 8'h40) init1 = init1 + 1;
                         if (received[0] == 8'hc0) init2_count = init2_count + 1;
+                        if (received[0] == 8'h40 || received[0] == 8'hc0 ||
+                            received[0] == 8'h80) begin
+                            posted_header_limit = {received[1][5:0], received[2][7:6]};
+                            posted_data_limit   = {received[2][3:0], received[3]};
+                            if (received[0] != 8'h80 && {posted_header_limit, posted_data_limit} !==
+                                {POSTED_HEADERS, POSTED_DATA})
+                                $fatal(
+                                    1,
+                                    "Wrong posted credits on wire: %0d headers, %0d data",
+                                    posted_header_limit,
+                                    posted_data_limit
+                                );
+                        end
                     end
                     frame_kind = 0;
                 end else if (!phy_tc[index] && frame_kind != 0) begin
@@ -573,6 +590,68 @@ module tb_root_link #(
         end
     integer before_packets, before_naks, before_init, before_errors;
     reg [31:0] held_rx;
+
+    function automatic [31:0] credit_test_word(input integer packet, word_index);
+        case (word_index)
+            0: credit_test_word = swap(packet < 8 ? 32'h40000020 : 32'h00000020);
+            1: credit_test_word = swap(32'h010050ff + 32'(packet * 256));
+            2: credit_test_word = swap(32'h2000 + 32'(packet * 128));
+            default: credit_test_word = 32'hf00d0000 + 32'(packet * 32 + word_index - 3);
+        endcase
+    endfunction
+
+    task check_full_posted_window;
+        reg [31:0] expected_word;
+        // The earlier two writes cost two headers and nine data credits.
+        wait (posted_header_limit == POSTED_HEADERS + 8'd2 &&
+              posted_data_limit == POSTED_DATA + 12'd9);
+        before_errors = errors;
+        before_naks   = naks;
+        fc(8'h90, 7, 21);
+        command(2, 0, 0);
+        wait (packets == 17);
+        ack(0, captured_seq);
+        // Stall the consumer through a full posted window, two non-posted
+        // requests and the outstanding completion.
+        for (integer packet = 0; packet < 10; packet = packet + 1) begin
+            integer words;
+            words = packet < 8 ? 35 : 3;
+            for (integer word_index = 0; word_index < words; word_index = word_index + 1) begin
+                outbound[word_index] = credit_test_word(packet, word_index);
+            end
+            tlp(12'(8 + packet), words, 0);
+        end
+        cpl(18, captured[1][23:16], 1, 32'h7f123456, 0);
+        wait (consumer == producer);
+        cycles(30);
+        expected_word = credit_test_word(0, 0);
+        if (errors != before_errors || naks != before_naks || rspv || !arv ||
+            ard !== expected_word || posted_header_limit != POSTED_HEADERS + 8'd2 ||
+            posted_data_limit != POSTED_DATA + 12'd9)
+            $fatal(1, "Full mixed receive window lost ownership or returned early credit");
+        @(negedge clk);
+        arr = 1;
+        for (integer packet = 0; packet < 10; packet = packet + 1) begin
+            integer words;
+            words = packet < 8 ? 35 : 3;
+            for (integer word_index = 0; word_index < words; word_index = word_index + 1) begin
+                expected_word = credit_test_word(packet, word_index);
+                do @(posedge clk); while (!arv);
+                if (ard !== expected_word || arl !== (word_index == words - 1))
+                    $fatal(
+                        1, "Receive window data mismatch packet %0d DWORD %0d", packet, word_index
+                    );
+            end
+        end
+        @(negedge clk);
+        arr = 0;
+        response(32'h7f123456);
+        wait (posted_header_limit == POSTED_HEADERS + 8'd10 &&
+              posted_data_limit == POSTED_DATA + 12'd73);
+        if (arv || errors != before_errors || naks != before_naks)
+            $fatal(1, "Full mixed receive window failed to drain");
+    endtask
+
     initial begin
         cycles(4);
         @(negedge clk);
@@ -829,6 +908,7 @@ module tb_root_link #(
             $fatal(1, "Unexpected error events %0d baseline %0d", errors, before_errors);
         if (GEN2_TEST && (eios_seen != 4 || eieos_seen < 2))
             $fatal(1, "Missing EIOS/EIEOS sequences %0d/%0d", eios_seen, eieos_seen);
+        if (GEN2_TEST && LINK_WIDTH == 2) check_full_posted_window();
         $display(
             "PASS integrated Gen1/Gen2 link: independent symbol partner, training/scrambling/SKP, FC starvation, config/memory TLPs, CRC/ACK/NAK/replay, duplicate suppression, application TLPs and retrain"
                 );

@@ -1,8 +1,8 @@
 # Build a self-contained local Vivado IP repository. No board access.
 # The ZU15EG catalog contains the legacy PHY and both native PHY widths.
 # The original x1 and fixed-stage entry points still generate version 1.1.
-if {[llength $argv] < 1 || [llength $argv] > 4} {
- error "Supply fresh output directory, optional default ENABLE_GEN3 (0 or 1), board (zcu104 or zu15eg), and optional catalog, gen1-x2, gen2-x2, gen3-x2, dual-x1, dual-gen3, dual-<x2 stage> or dual-gen3-x2-full-ddr profile"
+if {[llength $argv] < 1 || [llength $argv] > 5} {
+ error "Supply fresh output directory, optional default ENABLE_GEN3 (0 or 1), board (zcu104 or zu15eg), profile (catalog, gen1-x2, gen2-x2, gen3-x2, dual-x1, dual-gen3, dual-<x2 stage> or dual-gen3-x2-full-ddr), and optional posted header credits (4 or 8)"
 }
 set enable_gen3 0
 if {[llength $argv] >= 2} {set enable_gen3 [lindex $argv 1]}
@@ -12,7 +12,7 @@ if {[llength $argv] >= 3} {set board [lindex $argv 2]}
 set native_width 1
 set stage ""
 set board_placed 0
-if {[llength $argv] == 4} {
+if {[llength $argv] >= 4} {
  set stage [lindex $argv 3]
  if {[string match dual-* $stage]} {
   if {$board ne "zu15eg"} {error "Dual-root packages require zu15eg"}
@@ -33,6 +33,9 @@ if {[llength $argv] == 4} {
   set native_width 2
  }
 }
+set posted_headers [expr {$stage eq "gen2-x2" ? 8 : 4}]
+if {[llength $argv] == 5} {set posted_headers [lindex $argv 4]}
+if {$posted_headers ni {4 8}} {error "Posted header credits must be 4 or 8"}
 set catalog [expr {$stage eq "catalog"}]
 set version [expr {$catalog ? "1.2" : "1.1"}]
 set widths [expr {$catalog ? {1 2} : [list $native_width]}]
@@ -148,6 +151,13 @@ set preset [ipx::get_user_parameters GEN3_TX_PRESET -of_objects $core]
 if {[llength $preset]!=1} {error "Missing inferred GEN3_TX_PRESET parameter"}
 set_property -dict [list value_format long value_resolve_type user value 4 display_name {Gen3 TX preset (0-10)} value_validation_type range_long value_validation_range_minimum 0 value_validation_range_maximum 10] $preset
 set_property value 4 [ipx::get_hdl_parameters GEN3_TX_PRESET -of_objects $core]
+set credits [ipx::get_user_parameters POSTED_HEADER_CREDITS -of_objects $core]
+if {[llength $credits]!=1} {error "Missing inferred POSTED_HEADER_CREDITS parameter"}
+set_property -dict [list display_name {Posted receive credits (header / data)} value_format long \
+ value_resolve_type user value_dependency {} value_validation_type pairs \
+ value_validation_pairs {{4 / 32} 4 {8 / 64} 8} value $posted_headers] $credits
+set_property -dict [list value_resolve_type generated value_dependency {} value $posted_headers] \
+ [ipx::get_hdl_parameters POSTED_HEADER_CREDITS -of_objects $core]
 set gui_source soft_pcie_root.tcl
 if {$catalog} {
  # One user choice controls the existing RTL backend and port parameters.

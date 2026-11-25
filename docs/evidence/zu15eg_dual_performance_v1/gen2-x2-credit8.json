@@ -1,0 +1,227 @@
+{
+  "date": "2026-11-25",
+  "mode_per_port": "Gen2 x2",
+  "posted_header_credits_per_port": 8,
+  "posted_data_credits_per_port": 64,
+  "dma_access_gib": 2,
+  "ps_init_and_dtb_match_baseline": true,
+  "baseline": {
+    "record": "completion.json",
+    "posted_header_credits_per_port": 4,
+    "posted_data_credits_per_port": 32,
+    "trials": 1,
+    "total_bandwidth_bytes_per_second": 1192328779
+  },
+  "trials": [
+    {
+      "profile": "gen2-x2",
+      "bitstream_sha256": "196a25384020e1a969f9943f67ca8a139dc06334397ce66d5e30f1be1755c400",
+      "device_tree_sha256": "b7ad928b3a8e7fd229011331dcc3fd63ef3ca1d5c960cdf4f6e228673e4af483",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 27,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 5.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 9559867392,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 318641003
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 12143558656,
+              "runtime_ms": 30003,
+              "bandwidth_bytes_per_second": 404744814
+            }
+          ],
+          "bandwidth_bytes_per_second": 723385817
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 5.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 11460935680,
+              "runtime_ms": 30004,
+              "bandwidth_bytes_per_second": 381980258
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 12179210240,
+              "runtime_ms": 30004,
+              "bandwidth_bytes_per_second": 405919552
+            }
+          ],
+          "bandwidth_bytes_per_second": 787899810
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1511285627
+    },
+    {
+      "profile": "gen2-x2",
+      "bitstream_sha256": "196a25384020e1a969f9943f67ca8a139dc06334397ce66d5e30f1be1755c400",
+      "device_tree_sha256": "b7ad928b3a8e7fd229011331dcc3fd63ef3ca1d5c960cdf4f6e228673e4af483",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 27,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 5.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 9255780352,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 308505444
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 10740563968,
+              "runtime_ms": 30003,
+              "bandwidth_bytes_per_second": 357983000
+            }
+          ],
+          "bandwidth_bytes_per_second": 666488444
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 5.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 11201937408,
+              "runtime_ms": 30003,
+              "bandwidth_bytes_per_second": 373360577
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 11544821760,
+              "runtime_ms": 30004,
+              "bandwidth_bytes_per_second": 384776088
+            }
+          ],
+          "bandwidth_bytes_per_second": 758136665
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1424625109
+    },
+    {
+      "profile": "gen2-x2",
+      "bitstream_sha256": "196a25384020e1a969f9943f67ca8a139dc06334397ce66d5e30f1be1755c400",
+      "device_tree_sha256": "b7ad928b3a8e7fd229011331dcc3fd63ef3ca1d5c960cdf4f6e228673e4af483",
+      "fio_version": "fio-3.38",
+      "block_bytes": 1048576,
+      "range_bytes_per_worker": 4294967296,
+      "queue_depth_per_worker": 4,
+      "runtime_seconds": 30,
+      "common_active_samples": 27,
+      "write_sector_deltas": [
+        0,
+        0
+      ],
+      "ports": [
+        {
+          "socket": "A",
+          "pci_bdf": "0001:01:00.0",
+          "model": "Samsung SSD 990 EVO 1TB",
+          "link_speed_gt_s": 5.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 0,
+              "offset_bytes": 0,
+              "read_bytes": 9049210880,
+              "runtime_ms": 30003,
+              "bandwidth_bytes_per_second": 301610201
+            },
+            {
+              "cpu": 1,
+              "offset_bytes": 4294967296,
+              "read_bytes": 11321475072,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 377357345
+            }
+          ],
+          "bandwidth_bytes_per_second": 678967546
+        },
+        {
+          "socket": "B",
+          "pci_bdf": "0002:01:00.0",
+          "model": "Samsung SSD 990 PRO 2TB",
+          "link_speed_gt_s": 5.0,
+          "link_width": 2,
+          "workers": [
+            {
+              "cpu": 2,
+              "offset_bytes": 0,
+              "read_bytes": 11934892032,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 397803214
+            },
+            {
+              "cpu": 3,
+              "offset_bytes": 4294967296,
+              "read_bytes": 9915334656,
+              "runtime_ms": 30002,
+              "bandwidth_bytes_per_second": 330489122
+            }
+          ],
+          "bandwidth_bytes_per_second": 728292336
+        }
+      ],
+      "total_bandwidth_bytes_per_second": 1407259882
+    }
+  ],
+  "median_total_bytes_per_second": 1424625109,
+  "median_gain_percent": 19.482573438747796,
+  "gains_percent": [
+    26.750746406331594,
+    19.482573438747796,
+    18.026160802749523
+  ],
+  "matches_known_256_mib_sha256": {
+    "/dev/nvme1n1": "e3282bfc910dd3630be6eaa8ba02feac62c14cf3ae8e6cd288aa2067ebcdccf4",
+    "/dev/nvme0n1": "149bf23c1bf62a494f7523e0550479ad82ce695829102fe45c4d19f1cf8baa02"
+  },
+  "final_state": "Both Gen2 x2 links active, both NVMe namespaces unmounted and idle. Volatile RAM Linux."
+}

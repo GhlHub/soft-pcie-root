@@ -1,0 +1,22 @@
+Use case: ads-marketing
+Asset type: background illustration for a landscape 16:9 LinkedIn engineering benchmark graphic.
+Create a premium macro product render of a slate-black PCIe FPGA package and exactly two distinct M.2 NVMe SSD modules connected by illuminated circuit traces on a dark navy printed circuit board. This is an original conceptual illustration, with no vendor branding or printed markings. At the right edge, show a wide black squared FPGA package with fine metallic pins near the upper right; below it, two readable slender green-black SSD modules with dark controller chips and gold contacts in a clean parallel diagonal arrangement. Show one restrained pair of cyan traces leading to each drive, with a few warm copper reflections. Physically plausible solder mask, brushed graphite and softly defocused board components. Premium restrained editorial lighting, with sharp, legible shapes on the electronics and a rich blue-black background.
+Composition is crucial: reserve the entire left 61 percent as uninterrupted, low-contrast near-black navy negative space for typesetting. All bright components and highlights remain in the rightmost 39 percent, with a gradual shadow falloff toward center. Full-bleed landscape. No text, lettering, fonts, labels, logos, numbers, charts, borders, or watermarks.
+
+Final typeset content
+
+SOFT PCIe ROOT PORT
+Tuning PCIe credits
+Analysis suggested PCIe credit starvation.
+We doubled the posted credit window.
+Dual Gen3 x2    Combined NVMe sequential read
+Posted header / data credits per port
+4 / 32    1,785.26 MB/s
+8 / 64    2,487.04 MB/s
++39.3%    higher read throughput
+ZU15EG · Samsung 990 EVO + 990 PRO · 4 GiB DMA
+Median of 3 × 30 s runs · 1 MiB direct reads · 4 workers, QD4 each
+github.com/GhlHub/soft-pcie-root
+
+The background was generated with built-in ImageGen. The text and
+proportional bars were typeset from the matched dual Gen3 x2 measurements.

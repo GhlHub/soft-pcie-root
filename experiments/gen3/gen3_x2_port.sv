@@ -2,11 +2,12 @@
 // Gen3 portion of the native x2 link. Legacy training owns the wire until
 // Phase 0 is complete and both PHY lanes have acknowledged the Gen3 rate.
 module gen3_x2_port #(
-    parameter integer TX_PRESET       = 4,
-    parameter integer GUARD_CYCLES    = 125,
-    parameter integer REQUEST_CYCLES  = 375000,
-    parameter integer EVALUATE_CYCLES = 25000,
-    parameter integer APPLY_CYCLES    = 125
+    parameter integer TX_PRESET             = 4,
+    parameter integer GUARD_CYCLES          = 125,
+    parameter integer REQUEST_CYCLES        = 375000,
+    parameter integer EVALUATE_CYCLES       = 25000,
+    parameter integer APPLY_CYCLES          = 125,
+    parameter integer POSTED_HEADER_CREDITS = 4
 ) (
     input wire clk, reset_i, phase0_i, handoff_i, legacy_idle_i,
     input wire [1:0] phy_ready_i, rx_idle_i,
@@ -149,7 +150,8 @@ module gen3_x2_port #(
         .failure_debug_o   (eq_failure_debug)
     );
     gen3_x2_post_port #(
-        .INTEGRATED_EQ(1'b1)
+        .INTEGRATED_EQ        (1'b1),
+        .POSTED_HEADER_CREDITS(POSTED_HEADER_CREDITS)
     ) data_link (
         .clk                  (clk),
         .reset_i              (reset_i),

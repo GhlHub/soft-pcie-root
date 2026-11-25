@@ -11,6 +11,14 @@ proc init_gui {IPINST} {
  set preset [ipgui::add_param $IPINST -name GEN3_TX_PRESET -parent $page]
  set_property display_name {Gen3 TX preset (0-10)} $preset
  set_property tooltip {Initial TX preset applied before Gen3 rate change; Phase 2 may change it at the peer request. Adaptive Phase 2/3 and startup-only Gen2 fallback require hardware qualification. Default 4 was used by the earlier fixed-preset board image. Rebuild and qualify the selected channel.} $preset
+ set credits [ipgui::add_param $IPINST -name POSTED_HEADER_CREDITS -parent $page -widget comboBox]
+ set_property tooltip {Posted PCIe receive credits per root port. Select four or eight 128-byte packets. This is a build-time setting.} $credits
+}
+proc validate_PARAM_VALUE.POSTED_HEADER_CREDITS {PARAM_VALUE.POSTED_HEADER_CREDITS} {
+ return [expr {[get_property value ${PARAM_VALUE.POSTED_HEADER_CREDITS}] in {4 8} ? "true" : "false"}]
+}
+proc update_MODELPARAM_VALUE.POSTED_HEADER_CREDITS {MODELPARAM_VALUE.POSTED_HEADER_CREDITS PARAM_VALUE.POSTED_HEADER_CREDITS} {
+ set_property value [get_property value ${PARAM_VALUE.POSTED_HEADER_CREDITS}] ${MODELPARAM_VALUE.POSTED_HEADER_CREDITS}
 }
 proc update_PARAM_VALUE.ENABLE_GEN3 {PARAM_VALUE.ENABLE_GEN3} {}
 proc validate_PARAM_VALUE.ENABLE_GEN3 {PARAM_VALUE.ENABLE_GEN3} {

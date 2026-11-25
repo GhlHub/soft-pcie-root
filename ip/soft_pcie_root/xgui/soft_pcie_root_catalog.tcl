@@ -7,6 +7,15 @@ proc init_gui {IPINST} {
  set_property tooltip {Build-time generation and lane count. Both x2 modes require the ZU15EG two-lane FMC pin mapping.} $mode
  set preset [ipgui::add_param $IPINST -name GEN3_TX_PRESET -parent $page]
  set_property tooltip {Initial Gen3 transmit preset. The peer may request a different preset during equalization.} $preset
+ set credits [ipgui::add_param $IPINST -name POSTED_HEADER_CREDITS -parent $page -widget comboBox]
+ set_property tooltip {Posted PCIe receive credits per root port. Select four or eight 128-byte packets. This is a build-time setting.} $credits
+}
+
+proc validate_PARAM_VALUE.POSTED_HEADER_CREDITS {PARAM_VALUE.POSTED_HEADER_CREDITS} {
+ return [expr {[get_property value ${PARAM_VALUE.POSTED_HEADER_CREDITS}] in {4 8} ? "true" : "false"}]
+}
+proc update_MODELPARAM_VALUE.POSTED_HEADER_CREDITS {MODELPARAM_VALUE.POSTED_HEADER_CREDITS PARAM_VALUE.POSTED_HEADER_CREDITS} {
+ set_property value [get_property value ${PARAM_VALUE.POSTED_HEADER_CREDITS}] ${MODELPARAM_VALUE.POSTED_HEADER_CREDITS}
 }
 
 proc validate_PARAM_VALUE.PCIE_MODE {PARAM_VALUE.PCIE_MODE} {
